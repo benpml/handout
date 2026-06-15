@@ -1,0 +1,27 @@
+{
+  "name": "lightsite",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.14.0",
+  "scripts": {
+    "dev": "pnpm -r --parallel --if-present dev",
+    "dev:web": "pnpm --filter @lightsite/web dev",
+    "dev:api": "pnpm --filter @lightsite/api dev",
+    "build": "pnpm -r build",
+    "check:public-boundary": "pnpm --filter @lightsite/web check:public-boundary",
+    "check:public-bundle": "pnpm --filter @lightsite/web check:public-bundle",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r --if-present test",
+    "typecheck": "pnpm -r typecheck",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "db:logs": "docker compose logs -f postgres",
+    "db:generate": "pnpm --filter @lightsite/db db:generate",
+    "db:migrate": "pnpm --filter @lightsite/db db:migrate",
+    "db:studio": "pnpm --filter @lightsite/db db:studio"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.2"
+  }
+}

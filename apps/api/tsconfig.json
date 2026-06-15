@@ -1,0 +1,28 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../..",
+    "outDir": "dist",
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@lightsite/config": ["../../packages/config/src/index.ts"],
+      "@lightsite/content-schema": ["../../packages/content-schema/src/index.ts"],
+      "@lightsite/contracts": ["../../packages/contracts/src/index.ts"],
+      "@lightsite/db": ["../../packages/db/src/index.ts"],
+      "@lightsite/db/schema": ["../../packages/db/src/schema.ts"],
+      "@lightsite/domain": ["../../packages/domain/src/index.ts"],
+      "@lightsite/tracking-schema": ["../../packages/tracking-schema/src/index.ts"]
+    },
+    "ignoreDeprecations": "6.0"
+  },
+  "include": [
+    "src",
+    "../../packages/config/src",
+    "../../packages/content-schema/src",
+    "../../packages/contracts/src",
+    "../../packages/db/src",
+    "../../packages/domain/src",
+    "../../packages/tracking-schema/src"
+  ]
+}

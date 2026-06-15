@@ -1,0 +1,168 @@
+import type { Database } from "@lightsite/db";
+import type { Request } from "express";
+import type { AppBootstrap } from "../bootstrap/service";
+import type { CurrentActor } from "./current-actor";
+
+export const DEV_AUTH_BYPASS_HEADER = "x-lightsite-dev-auth";
+
+export const devActor: CurrentActor = {
+  userId: "dev_user_lightsite",
+  email: "dev@lightsite.app",
+  emailVerified: true,
+  name: "Lightsite Dev",
+};
+
+export const devWorkspace = {
+  id: "00000000-0000-4000-8000-000000000101",
+  membershipId: "00000000-0000-4000-8000-000000000102",
+  name: "Lightsite Dev",
+  slug: "lightsite-dev",
+  websiteDomain: "lightsite.app",
+  plan: "pro",
+} as const;
+
+export function isDevAuthBypassRequest(request: Request) {
+  return isDevAuthBypassEnabled() && request.header(DEV_AUTH_BYPASS_HEADER) === "1";
+}
+
+export function isDevAuthBypassEnabled() {
+  return process.env.NODE_ENV !== "production";
+}
+
+export function getDevAppBootstrap(): AppBootstrap {
+  return {
+    user: {
+      id: devActor.userId,
+      email: devActor.email,
+      ...(devActor.name ? { name: devActor.name } : {}),
+      accountSetupComplete: true,
+      internalAccess: true,
+    },
+    activeWorkspace: {
+      id: devWorkspace.id,
+      slug: devWorkspace.slug,
+      name: devWorkspace.name,
+      websiteDomain: devWorkspace.websiteDomain,
+      logoUrl: null,
+      plan: devWorkspace.plan,
+      role: "admin",
+      membershipId: devWorkspace.membershipId,
+    },
+    workspaces: [
+      {
+        id: devWorkspace.id,
+        slug: devWorkspace.slug,
+        name: devWorkspace.name,
+        websiteDomain: devWorkspace.websiteDomain,
+        logoUrl: null,
+        plan: devWorkspace.plan,
+        role: "admin",
+        membershipId: devWorkspace.membershipId,
+      },
+    ],
+    onboarding: {
+      nextStep: "app",
+    },
+  };
+}
+
+export async function provisionDevAuthBypass(database?: Database) {
+  if (!isDevAuthBypassEnabled()) {
+    return null;
+  }
+
+  const {
+    db: defaultDb,
+    user,
+    userProfiles,
+    workspaceMembers,
+    workspaces,
+  } = await import("@lightsite/db");
+  const db = database ?? defaultDb;
+  const now = new Date();
+
+  await db.transaction(async (transaction) => {
+    await transaction
+      .insert(user)
+      .values({
+        id: devActor.userId,
+        name: devActor.name ?? "Lightsite Dev",
+        email: devActor.email,
+        emailVerified: devActor.emailVerified,
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: user.id,
+        set: {
+          name: devActor.name ?? "Lightsite Dev",
+          email: devActor.email,
+          emailVerified: devActor.emailVerified,
+          updatedAt: now,
+        },
+      });
+
+    const [workspace] = await transaction
+      .insert(workspaces)
+      .values({
+        id: devWorkspace.id,
+        name: devWorkspace.name,
+        slug: devWorkspace.slug,
+        websiteDomain: devWorkspace.websiteDomain,
+        status: "active",
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: workspaces.slug,
+        set: {
+          name: devWorkspace.name,
+          websiteDomain: devWorkspace.websiteDomain,
+          status: "active",
+          updatedAt: now,
+        },
+      })
+      .returning({ id: workspaces.id });
+
+    if (!workspace) {
+      throw new Error("Dev workspace provisioning did not return a row.");
+    }
+
+    await transaction
+      .insert(workspaceMembers)
+      .values({
+        id: devWorkspace.membershipId,
+        workspaceId: workspace.id,
+        userId: devActor.userId,
+        role: "admin",
+        status: "active",
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: [workspaceMembers.workspaceId, workspaceMembers.userId],
+        set: {
+          role: "admin",
+          status: "active",
+          removedAt: null,
+          updatedAt: now,
+        },
+      });
+
+    await transaction
+      .insert(userProfiles)
+      .values({
+        userId: devActor.userId,
+        accountSetupCompletedAt: now,
+        lastActiveWorkspaceId: workspace.id,
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: userProfiles.userId,
+        set: {
+          accountSetupCompletedAt: now,
+          lastActiveWorkspaceId: workspace.id,
+          updatedAt: now,
+        },
+      });
+  });
+
+  return devActor;
+}
