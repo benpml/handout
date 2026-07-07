@@ -109,6 +109,7 @@ function AuthCard({
   const switchMode = (nextMode: AuthMode) => {
     onModeChange(nextMode)
     setSubmitError(null)
+    window.history.replaceState(null, "", nextMode === "sign-up" ? "/auth?mode=sign-up" : "/auth")
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -266,4 +267,3 @@ function getBetterAuthErrorMessage(
 
   return mode === "sign-up" ? "Create account failed." : "Check your email and password."
 }
-

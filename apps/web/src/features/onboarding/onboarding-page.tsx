@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { Link, useNavigate } from "@tanstack/react-router"
+import { useNavigate } from "@tanstack/react-router"
 import { IconArrowRight, IconBuilding, IconRefresh, IconUserCircle } from "@tabler/icons-react"
 import { normalizeWebsiteDomain, slugifyName, validateWorkspaceSlug } from "@lightsite/domain"
 
@@ -122,10 +122,10 @@ function OnboardingErrorCard({
       <CardFooter>
         {requiresAuth ? (
           <Button asChild>
-            <Link to="/auth">
+            <a href="/auth?mode=sign-up">
               Continue
               <IconArrowRight data-icon="inline-end" />
-            </Link>
+            </a>
           </Button>
         ) : (
           <Button variant="outline" onClick={onRetry}>
