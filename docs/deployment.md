@@ -106,6 +106,17 @@ Current Cloudflare Pages production URL:
 https://lightsite-bfi.pages.dev
 ```
 
+Current deployment was created with Wrangler direct upload:
+
+```bash
+VITE_API_ORIGIN=https://lightsite-api.onrender.com pnpm --filter @lightsite/web build
+pnpm exec wrangler pages project create lightsite --production-branch main
+pnpm exec wrangler pages deploy apps/web/dist --project-name=lightsite --branch=main
+```
+
+This is enough for the first live preview. For hands-off web deploys, connect
+the Pages project to GitHub using the build settings above.
+
 The app has:
 
 - `apps/web/public/_redirects` for SPA fallback.
