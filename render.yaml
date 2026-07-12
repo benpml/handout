@@ -36,6 +36,8 @@ services:
         generateValue: true
       - key: TRACKING_SIGNING_SECRET
         generateValue: true
+      - key: TRACKING_V2_ENABLED
+        value: true
       - key: DATABASE_URL
         sync: false
       - key: LOGO_DEV_TOKEN
