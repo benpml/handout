@@ -16,6 +16,11 @@ import { createLightsiteQueryClient } from "@/lib/api/query-client"
 
 const queryClient = createLightsiteQueryClient()
 
+const MarketingPage = lazyWithReload(() =>
+  import("@/features/marketing/marketing-page").then((module) => ({
+    default: module.MarketingPage,
+  }))
+)
 const InternalRouteFrame = lazyWithReload(() =>
   import("@/components/layout/internal-route-frame").then((module) => ({
     default: module.InternalRouteFrame,
@@ -141,9 +146,7 @@ const rootRoute = createRootRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
-  beforeLoad: () => {
-    throw redirect({ to: "/sites" })
-  },
+  component: MarketingPage,
 })
 
 const sitesRoute = createRoute({
@@ -295,6 +298,7 @@ export default function App() {
 
 function RootLayout() {
   const location = useLocation()
+  const isMarketingRoute = location.pathname === "/"
   const isEditRoute = location.pathname.startsWith("/edit")
   const isOnboardingRoute = location.pathname.startsWith("/onboarding")
   const isAuthRoute = location.pathname.startsWith("/auth")
@@ -313,7 +317,13 @@ function RootLayout() {
     )
   }
 
-  if (isOnboardingRoute || isAuthRoute || isExtensionConnectRoute || isPublicRoute) {
+  if (
+    isMarketingRoute ||
+    isOnboardingRoute ||
+    isAuthRoute ||
+    isExtensionConnectRoute ||
+    isPublicRoute
+  ) {
     return (
       <Suspense fallback={<RouteFallback />}>
         <Outlet />
