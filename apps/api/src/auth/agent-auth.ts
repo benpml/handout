@@ -31,7 +31,7 @@ export function getAgentAuthContext(request: Request): AgentAuthContext | null {
   return {
     actor: {
       userId: process.env.HANDOUT_AGENT_USER_ID ?? "handout_agent",
-      email: process.env.HANDOUT_AGENT_EMAIL ?? "agent@handout.app",
+      email: process.env.HANDOUT_AGENT_EMAIL ?? "agent@handout.link",
       emailVerified: true,
       name: process.env.HANDOUT_AGENT_NAME ?? "Handout Agent",
     },

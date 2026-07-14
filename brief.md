@@ -37,7 +37,7 @@ Each row should have:
     - Share (If published)
         - This lets you share the public link with others (usually prospects). 
         - This should pull up the sharing modal. 
-        - The sharing modal should have a default link for the site. This should be handout.app/{workspace_username}/{site-slug}
+        - The sharing modal should have a default link for the site. This should be handout.link/{workspace_username}/{site-slug}
         - The user should also be able to see and create and delete custom variants links so they can customize variables per recipient and track specific people/accounts who open the site. 
     - Variants
         - This should pull up the variants modal for the site. 

@@ -3,7 +3,7 @@ import { buildPublicScreenshotPath } from "@handout/site-document/renderer";
 
 import type { PublishedSitePayload } from "./types";
 
-export function getResolvedMetadata(payload: PublishedSitePayload, origin = "https://handout.app") {
+export function getResolvedMetadata(payload: PublishedSitePayload, origin = "https://handout.link") {
   const canonicalPath = [
     "",
     payload.workspace.slug,

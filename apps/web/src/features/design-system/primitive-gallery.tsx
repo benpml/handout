@@ -378,7 +378,7 @@ export function PrimitiveGallery() {
               <FieldLabel>Share link</FieldLabel>
               <InputGroup>
                 <InputGroupAddon>
-                  <InputGroupText>handout.app/acme/</InputGroupText>
+                  <InputGroupText>handout.link/acme/</InputGroupText>
                 </InputGroupAddon>
                 <InputGroupInput defaultValue="rollout-brief" />
                 <InputGroupAddon align="inline-end">
@@ -616,7 +616,7 @@ export function PrimitiveGallery() {
       <GalleryCard title="Selection and feedback" description="Badges, avatars, labels, popovers, toggles, separators, sonner, and switches.">
         <div className="flex flex-wrap items-center gap-2">
           <Avatar>
-            <AvatarFallback>LS</AvatarFallback>
+            <AvatarFallback>H</AvatarFallback>
           </Avatar>
           <Badge>Published</Badge>
           <Badge variant="secondary">Private</Badge>

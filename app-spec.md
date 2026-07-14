@@ -1278,13 +1278,13 @@ Confirmation should say:
 Default public site link:
 
 ```text
-https://handout.app/{workspace-slug}/{site-slug}
+https://handout.link/{workspace-slug}/{site-slug}
 ```
 
 Variant public link:
 
 ```text
-https://handout.app/{workspace-slug}/{site-slug}/{variant-slug}
+https://handout.link/{workspace-slug}/{site-slug}/{variant-slug}
 ```
 
 Rules:
@@ -2583,7 +2583,7 @@ Notes:
 Variant public link:
 
 ```text
-https://handout.app/{workspace-slug}/{site-slug}/{variant-slug}
+https://handout.link/{workspace-slug}/{site-slug}/{variant-slug}
 ```
 
 Rules:
@@ -10148,8 +10148,8 @@ Public links are central to Handout. The default public URL system must be stabl
 V1 public URLs:
 
 ```txt
-https://handout.app/{workspaceSlug}/{siteSlug}
-https://handout.app/{workspaceSlug}/{siteSlug}/{variantSlug}
+https://handout.link/{workspaceSlug}/{siteSlug}
+https://handout.link/{workspaceSlug}/{siteSlug}/{variantSlug}
 ```
 
 Custom domains are future scope, but the routing model should not prevent them.

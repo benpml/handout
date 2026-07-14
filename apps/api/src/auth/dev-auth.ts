@@ -7,7 +7,7 @@ export const DEV_AUTH_BYPASS_HEADER = "x-handout-dev-auth";
 
 export const devActor: CurrentActor = {
   userId: "dev_user_handout",
-  email: "dev@handout.app",
+  email: "dev@handout.link",
   emailVerified: true,
   name: "Handout Dev",
 };
@@ -17,7 +17,7 @@ export const devWorkspace = {
   membershipId: "00000000-0000-4000-8000-000000000102",
   name: "Handout Dev",
   slug: "handout-dev",
-  websiteDomain: "handout.app",
+  websiteDomain: "handout.link",
   plan: "pro",
 } as const;
 
@@ -117,9 +117,10 @@ export async function provisionDevAuthBypass(database?: Database) {
         updatedAt: now,
       })
       .onConflictDoUpdate({
-        target: workspaces.slug,
+        target: workspaces.id,
         set: {
           name: devWorkspace.name,
+          slug: devWorkspace.slug,
           websiteDomain: devWorkspace.websiteDomain,
           plan: devWorkspace.plan,
           status: "active",
@@ -143,8 +144,10 @@ export async function provisionDevAuthBypass(database?: Database) {
         updatedAt: now,
       })
       .onConflictDoUpdate({
-        target: [workspaceMembers.workspaceId, workspaceMembers.userId],
+        target: workspaceMembers.id,
         set: {
+          workspaceId: workspace.id,
+          userId: devActor.userId,
           role: "admin",
           status: "active",
           removedAt: null,

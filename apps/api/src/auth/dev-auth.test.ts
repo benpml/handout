@@ -26,7 +26,7 @@ describe("dev auth bypass", () => {
 
     expect(devActor).toEqual({
       userId: "dev_user_handout",
-      email: "dev@handout.app",
+      email: "dev@handout.link",
       emailVerified: true,
       name: "Handout Dev",
     });

@@ -372,7 +372,7 @@ describe("Handout API", () => {
     expect(response.body).toMatchObject({
       user: {
         id: "dev_user_handout",
-        email: "dev@handout.app",
+        email: "dev@handout.link",
         name: "Handout Dev",
         accountSetupComplete: true,
         internalAccess: true,
