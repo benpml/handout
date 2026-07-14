@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest"
 
 import {
-  LIGHTSITE_THEME_CSS,
-  lightsiteDarkTokens,
-  lightsiteLightTokens,
+  HANDOUT_THEME_CSS,
+  handoutDarkTokens,
+  handoutLightTokens,
   normalizeEditorHighlightColor,
   normalizeEditorTextColor,
 } from "./index"
@@ -34,31 +34,31 @@ const darkPalette = {
 
 describe("shared design tokens", () => {
   it("keeps every semantic light token available in dark mode", () => {
-    expect(Object.keys(lightsiteDarkTokens).sort()).toEqual(
-      Object.keys(lightsiteLightTokens).sort(),
+    expect(Object.keys(handoutDarkTokens).sort()).toEqual(
+      Object.keys(handoutLightTokens).sort(),
     )
   })
 
   it("emits light, dark, and system selectors from the same maps", () => {
-    expect(LIGHTSITE_THEME_CSS).toContain(":root,.light{color-scheme:light")
-    expect(LIGHTSITE_THEME_CSS).toContain(".dark{color-scheme:dark")
-    expect(LIGHTSITE_THEME_CSS).toContain(".system{color-scheme:dark")
-    expect(LIGHTSITE_THEME_CSS).not.toContain("--ls-")
-    expect(LIGHTSITE_THEME_CSS).not.toContain("--lightsite-editor-color-")
-    expect(LIGHTSITE_THEME_CSS).not.toContain("--editor-color-")
-    expect(Object.keys(lightsiteLightTokens).some((name) => name.startsWith("lightsite-"))).toBe(false)
-    expect(Object.keys(lightsiteDarkTokens).some((name) => name.startsWith("lightsite-"))).toBe(false)
+    expect(HANDOUT_THEME_CSS).toContain(":root,.light{color-scheme:light")
+    expect(HANDOUT_THEME_CSS).toContain(".dark{color-scheme:dark")
+    expect(HANDOUT_THEME_CSS).toContain(".system{color-scheme:dark")
+    expect(HANDOUT_THEME_CSS).not.toContain("--handout-")
+    expect(HANDOUT_THEME_CSS).not.toContain("--handout-editor-color-")
+    expect(HANDOUT_THEME_CSS).not.toContain("--editor-color-")
+    expect(Object.keys(handoutLightTokens).some((name) => name.startsWith("handout-"))).toBe(false)
+    expect(Object.keys(handoutDarkTokens).some((name) => name.startsWith("handout-"))).toBe(false)
   })
 
   it("uses the exact role-based palette in both modes", () => {
-    expect(lightsiteLightTokens).toMatchObject(lightPalette)
-    expect(lightsiteDarkTokens).toMatchObject(darkPalette)
-    expect(lightsiteLightTokens).toMatchObject({
+    expect(handoutLightTokens).toMatchObject(lightPalette)
+    expect(handoutDarkTokens).toMatchObject(darkPalette)
+    expect(handoutLightTokens).toMatchObject({
       "variable-background": "var(--cyan-background)",
       "variable-foreground": "var(--cyan-foreground)",
       "variable-border": "var(--cyan-border)",
     })
-    expect(lightsiteDarkTokens).toMatchObject({
+    expect(handoutDarkTokens).toMatchObject({
       "variable-background": "var(--cyan-background)",
       "variable-foreground": "var(--cyan-foreground)",
       "variable-border": "var(--cyan-border)",
@@ -74,7 +74,7 @@ describe("shared design tokens", () => {
   })
 
   it("gives table headers the shared translucent black fill", () => {
-    expect(lightsiteLightTokens["table-header-background"]).toBe("rgb(0 0 0 / 5%)")
-    expect(lightsiteDarkTokens["table-header-background"]).toBe("rgb(0 0 0 / 5%)")
+    expect(handoutLightTokens["table-header-background"]).toBe("rgb(0 0 0 / 5%)")
+    expect(handoutDarkTokens["table-header-background"]).toBe("rgb(0 0 0 / 5%)")
   })
 })

@@ -10,7 +10,7 @@ import {
   replaceSiteCollaborationContent,
   type SiteContent,
   SITE_DOCUMENT_SCHEMA_VERSION,
-} from "@lightsite/site-document"
+} from "@handout/site-document"
 import * as Y from "yjs"
 import type { SiteRecord } from "../sites/repository"
 import type { SiteCollaborationRepository } from "./repository"

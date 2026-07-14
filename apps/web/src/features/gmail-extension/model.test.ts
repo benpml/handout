@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { SiteVariableDefinition, SiteVariant } from "@lightsite/contracts"
+import type { SiteVariableDefinition, SiteVariant } from "@handout/contracts"
 
 import {
   buildRecipientPublicUrl,
@@ -62,20 +62,20 @@ describe("recipient creation", () => {
 describe("sharing output", () => {
   it("builds an encoded personalized URL", () => {
     expect(buildRecipientPublicUrl({
-      publicOrigin: "https://lightsite.io/",
+      publicOrigin: "https://handout.link/",
       recipient: { slug: "acme-ada" },
       siteSlug: "Sales brief",
       workspaceSlug: "north star",
-    })).toBe("https://lightsite.io/north%20star/Sales%20brief/acme-ada")
+    })).toBe("https://handout.link/north%20star/Sales%20brief/acme-ada")
   })
 
   it("escapes all recipient-derived email card content", () => {
     const card = createEmailCard({
       company: '<img src=x onerror="bad">',
       recipientName: "Ada & Co",
-      screenshotUrl: 'https://lightsite.io/embed.jpg?value="bad"',
+      screenshotUrl: 'https://handout.link/embed.jpg?value="bad"',
       siteName: "Q3 <Plan>",
-      url: 'https://lightsite.io/x?value="bad"',
+      url: 'https://handout.link/x?value="bad"',
     })
     expect(card.html.match(/<img/g)).toHaveLength(1)
     expect(card.html).not.toContain("<img src=x")
@@ -86,12 +86,12 @@ describe("sharing output", () => {
 
   it("uses a versioned recipient screenshot URL", () => {
     expect(buildRecipientScreenshotUrl({
-      publicOrigin: "https://lightsite.io",
+      publicOrigin: "https://handout.link",
       recipient: { revisionNumber: 4, slug: "acme-ada" },
       siteSlug: "brief",
       siteVersion: "2026-07-11T17:00:00.000Z",
       workspaceSlug: "north-star",
-    })).toBe("https://lightsite.io/north-star/brief/acme-ada/embed.jpg?v=2026-07-11T17%3A00%3A00.000Z.4")
+    })).toBe("https://handout.link/north-star/brief/acme-ada/embed.jpg?v=2026-07-11T17%3A00%3A00.000Z.4")
   })
 
   it("searches recipient identity, domain, and slug", () => {

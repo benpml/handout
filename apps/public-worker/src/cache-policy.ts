@@ -13,9 +13,9 @@ const RESERVED_FIRST_SEGMENTS = new Set([
   "favicon.ico",
   "fonts",
   "health",
-  "lightsite-logo.svg",
+  "handout-logo.svg",
   "robots.txt",
-  "site-runtime.v3.js",
+  "site-runtime.v4.js",
 ]);
 
 export type PublicRouteKind = "api" | "asset" | "health" | "public-site" | "screenshot" | "not-found";
@@ -35,9 +35,9 @@ export function classifyPublicRoute(pathname: string): PublicRouteKind {
 
   if (
     pathname === "/favicon.ico" ||
-    pathname === "/lightsite-logo.svg" ||
+    pathname === "/handout-logo.svg" ||
     pathname === "/robots.txt" ||
-    pathname === "/site-runtime.v3.js" ||
+    pathname === "/site-runtime.v4.js" ||
     pathname.startsWith("/fonts/") ||
     pathname.startsWith("/editor-assets/")
   ) {

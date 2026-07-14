@@ -378,7 +378,7 @@ export function PrimitiveGallery() {
               <FieldLabel>Share link</FieldLabel>
               <InputGroup>
                 <InputGroupAddon>
-                  <InputGroupText>lightsite.app/acme/</InputGroupText>
+                  <InputGroupText>handout.app/acme/</InputGroupText>
                 </InputGroupAddon>
                 <InputGroupInput defaultValue="rollout-brief" />
                 <InputGroupAddon align="inline-end">
@@ -510,7 +510,7 @@ export function PrimitiveGallery() {
       <GalleryCard title="Content" description="Accordion, collapsible, command, context menu, empty, hover card, items, carousel, and calendar.">
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="one">
-            <AccordionTrigger>What is a Lightsite?</AccordionTrigger>
+            <AccordionTrigger>What is a Handout?</AccordionTrigger>
             <AccordionContent>A prospect-ready one-pager with share links and tracking.</AccordionContent>
           </AccordionItem>
         </Accordion>

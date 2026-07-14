@@ -1,6 +1,6 @@
 import { IconBraces } from "@tabler/icons-react"
 import type { Editor } from "@tiptap/react"
-import { LIGHTSITE_TEXT_LIMITS } from "@lightsite/domain"
+import { HANDOUT_TEXT_LIMITS } from "@handout/domain"
 import {
   useCallback,
   useEffect,
@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 
-import type { LightsiteNextVariableCreatorTarget } from "../tiptap/extensions/suggestion-menu"
+import type { HandoutNextVariableCreatorTarget } from "../tiptap/extensions/suggestion-menu"
 import { useFloatingEditorPopoverPosition } from "./use-floating-editor-popover-position"
 
 type EditorVariableCreatePopoverProps = {
@@ -22,13 +22,13 @@ type EditorVariableCreatePopoverProps = {
 }
 
 type VariableStorage = {
-  subscribeCreator: (listener: (target: LightsiteNextVariableCreatorTarget) => void) => () => void
+  subscribeCreator: (listener: (target: HandoutNextVariableCreatorTarget) => void) => () => void
 }
 
 export function EditorVariableCreatePopover({
   editor,
 }: EditorVariableCreatePopoverProps) {
-  const [target, setTarget] = useState<LightsiteNextVariableCreatorTarget | null>(null)
+  const [target, setTarget] = useState<HandoutNextVariableCreatorTarget | null>(null)
   const [nameDraft, setNameDraft] = useState("")
   const [descriptionDraft, setDescriptionDraft] = useState("")
   const [defaultValueDraft, setDefaultValueDraft] = useState("")
@@ -50,8 +50,8 @@ export function EditorVariableCreatePopover({
 
   useEffect(() => {
     const storage = (
-      editor.storage as unknown as { lightsiteNextVariables?: VariableStorage }
-    ).lightsiteNextVariables
+      editor.storage as unknown as { handoutNextVariables?: VariableStorage }
+    ).handoutNextVariables
 
     if (!storage) {
       return
@@ -142,7 +142,7 @@ export function EditorVariableCreatePopover({
       editor
         .chain()
         .focus()
-        .createAndInsertLightsiteVariable(target.range, {
+        .createAndInsertHandoutVariable(target.range, {
           defaultValue: defaultValueDraft,
           description: descriptionDraft,
           name,
@@ -160,27 +160,27 @@ export function EditorVariableCreatePopover({
   return (
     <div
       ref={popoverRef}
-      className="lightsite-editor-variable-create"
+      className="handout-editor-variable-create"
       role="dialog"
       aria-label="Create variable"
       style={{ left: position.x, maxHeight: position.maxHeight, top: position.y }}
       onWheel={(event) => event.stopPropagation()}
     >
       <form className="grid gap-3" onSubmit={save}>
-        <div className="lightsite-editor-variable-create-header">
+        <div className="handout-editor-variable-create-header">
           <IconBraces aria-hidden />
           <span>New variable</span>
         </div>
-        <p className="lightsite-editor-variable-create-description">
+        <p className="handout-editor-variable-create-description">
           Create a variable to insert custom content for each recipient.
         </p>
-        <div className="lightsite-editor-variable-field">
+        <div className="handout-editor-variable-field">
           <label htmlFor={nameId}>Name</label>
           <Input
             id={nameId}
             ref={nameInputRef}
-            className="lightsite-editor-variable-control"
-            maxLength={LIGHTSITE_TEXT_LIMITS.variableName}
+            className="handout-editor-variable-control"
+            maxLength={HANDOUT_TEXT_LIMITS.variableName}
             placeholder="Enter a variable name..."
             value={nameDraft}
             onChange={(event) => {
@@ -189,38 +189,38 @@ export function EditorVariableCreatePopover({
             }}
             onClick={(event) => event.currentTarget.focus()}
           />
-          {error ? <span className="lightsite-editor-variable-create-error">{error}</span> : null}
+          {error ? <span className="handout-editor-variable-create-error">{error}</span> : null}
         </div>
-        <div className="lightsite-editor-variable-field">
+        <div className="handout-editor-variable-field">
           <label htmlFor={descriptionId}>Description</label>
           <Textarea
             id={descriptionId}
-            className="lightsite-editor-variable-control min-h-18 resize-none"
-            maxLength={LIGHTSITE_TEXT_LIMITS.variableDescription}
+            className="handout-editor-variable-control min-h-18 resize-none"
+            maxLength={HANDOUT_TEXT_LIMITS.variableDescription}
             placeholder="Optional. Useful for AI and teammates."
             value={descriptionDraft}
             onChange={(event) => setDescriptionDraft(event.target.value)}
             onClick={(event) => event.currentTarget.focus()}
           />
         </div>
-        <div className="lightsite-editor-variable-field">
+        <div className="handout-editor-variable-field">
           <label htmlFor={defaultValueId}>Default value</label>
           <Textarea
             id={defaultValueId}
-            className="lightsite-editor-variable-control min-h-18 resize-none"
-            maxLength={LIGHTSITE_TEXT_LIMITS.variableDefaultValue}
+            className="handout-editor-variable-control min-h-18 resize-none"
+            maxLength={HANDOUT_TEXT_LIMITS.variableDefaultValue}
             placeholder="Optional fallback"
             value={defaultValueDraft}
             onChange={(event) => setDefaultValueDraft(event.target.value)}
             onClick={(event) => event.currentTarget.focus()}
           />
         </div>
-        <div className="lightsite-editor-variable-popover-actions">
+        <div className="handout-editor-variable-popover-actions">
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="lightsite-editor-variable-cancel"
+            className="handout-editor-variable-cancel"
             onClick={reset}
           >
             Cancel

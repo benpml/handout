@@ -12,7 +12,7 @@ import {
 } from "./gmail-adapter"
 import { getExtensionPanelRect } from "./panel-position"
 
-const BUTTON_MARKER = "data-lightsite-compose-button"
+const BUTTON_MARKER = "data-handout-compose-button"
 const PANEL_WIDTH = 384
 const PANEL_HEIGHT = 560
 const PANEL_VIEWPORT_PADDING = 12
@@ -44,7 +44,7 @@ window.addEventListener("message", (event) => {
     if (!compose) return
     postToPanel({
       protocolVersion: EXTENSION_PROTOCOL_VERSION,
-      source: "lightsite-gmail-host",
+      source: "handout-gmail-host",
       type: "compose-context",
       context: getComposeContext(compose),
     })
@@ -68,7 +68,7 @@ window.addEventListener("message", (event) => {
 
   postToPanel({
     protocolVersion: EXTENSION_PROTOCOL_VERSION,
-    source: "lightsite-gmail-host",
+    source: "handout-gmail-host",
     type: "insert-result",
     ...result,
   })
@@ -108,8 +108,8 @@ function createToolbarButton(compose: GmailCompose) {
   const button = document.createElement("button")
   button.type = "button"
   button.setAttribute(BUTTON_MARKER, "")
-  button.setAttribute("aria-label", "Share a Lightsite")
-  button.title = "Share a Lightsite"
+  button.setAttribute("aria-label", "Share a Handout")
+  button.title = "Share a Handout"
   button.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M6.5 3.5h8.25a3.75 3.75 0 0 1 3.75 3.75v4.25h-2V7.25A1.75 1.75 0 0 0 14.75 5.5H6.5A1.5 1.5 0 0 0 5 7v10a1.5 1.5 0 0 0 1.5 1.5h7v2h-7A3.5 3.5 0 0 1 3 17V7a3.5 3.5 0 0 1 3.5-3.5Zm8.75 9.25 5.5 3.25-5.5 3.25v-2.1H10.5v-2.3h4.75v-2.1Z"/></svg>'
   Object.assign(button.style, {
     alignItems: "center",
@@ -148,8 +148,8 @@ function openPanel(compose: GmailCompose, savedRange: Range | null) {
 
   const iframe = document.createElement("iframe")
   iframe.src = chrome.runtime.getURL("panel.html")
-  iframe.title = "Share a Lightsite"
-  iframe.setAttribute("aria-label", "Share a Lightsite")
+  iframe.title = "Share a Handout"
+  iframe.setAttribute("aria-label", "Share a Handout")
   Object.assign(iframe.style, {
     background: "Canvas",
     border: "0",

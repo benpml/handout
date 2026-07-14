@@ -1,4 +1,4 @@
-import { validateTextLimit } from "@lightsite/domain";
+import { validateTextLimit } from "@handout/domain";
 import type { CurrentActor } from "../auth/current-actor";
 import type {
   BootstrapRepository,

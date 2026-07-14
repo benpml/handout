@@ -3,7 +3,7 @@ import {
   billingPortalResponseSchema,
   billingSummarySchema,
   createBillingCheckoutRequestSchema,
-} from "@lightsite/contracts";
+} from "@handout/contracts";
 import { Router, type Request } from "express";
 import type { CurrentActor, CurrentActorProvider } from "../auth/current-actor";
 import { devActor, getDevAppBootstrap, isDevAuthBypassRequest } from "../auth/dev-auth";

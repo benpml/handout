@@ -1,12 +1,13 @@
 import {
   TRACKING_V2_SCRIPT_ENDPOINT,
-} from "@lightsite/tracking-schema";
+  TRACKING_V2_VISITOR_NOTICE_VERSION,
+} from "@handout/tracking-schema";
 import {
-  LIGHTSITE_THEME_CSS,
+  HANDOUT_THEME_CSS,
   normalizeEditorHighlightColor,
   normalizeEditorTextColor,
-} from "@lightsite/design-tokens";
-import { normalizeWebsiteDomain } from "@lightsite/domain";
+} from "@handout/design-tokens";
+import { normalizeWebsiteDomain } from "@handout/domain";
 import {
   escapeHTML,
   escapeHTMLAttribute,
@@ -23,7 +24,8 @@ import {
 import { normalizeSiteIconColor, renderSiteIconSvg } from "./site-icons";
 
 import {
-  getNodeText,
+  getSiteMetadata,
+  getSiteVariableValues,
   getSiteSidebarModel,
   getVisibleSitePages,
   PUBLIC_SITE_PAYLOAD_SCHEMA_VERSION,
@@ -33,6 +35,15 @@ import {
   type TiptapNode,
 } from "./model";
 import { SITE_DOCUMENT_CSS } from "./styles";
+import {
+  buildPublicSiteVariableValues,
+  getResolvedNodeText,
+  resolvePublicSiteTracking,
+  resolveSiteTemplate,
+  sanitizePublicActionUrl,
+  sanitizeTrackingPrivacyPolicyUrl,
+  type ResolvedTrackingElement,
+} from "./tracking-manifest";
 
 export type RenderPublicSiteOptions = {
   activePageSlug?: string | null;
@@ -44,12 +55,13 @@ export type RenderPublicSiteOptions = {
 };
 
 export const PUBLIC_SITE_LOGO_ENDPOINT = "/api/public/site-logo" as const;
-export const PUBLIC_SITE_RUNTIME_PATH = "/site-runtime.v3.js" as const;
+export const PUBLIC_SITE_RUNTIME_PATH = "/site-runtime.v4.js" as const;
 
 type RenderContext = {
   logoDelivery: "preview" | "public";
   payload: PublishedSitePayload;
-  values: Record<string, string>;
+  trackingElementsById: ReadonlyMap<string, ResolvedTrackingElement>;
+  values: Readonly<Record<string, string>>;
 };
 
 type NodeRendererProps = NodeProps<TiptapNode, string | string[]>;
@@ -70,31 +82,43 @@ export function renderPublicSiteHtml(
       : `<script defer src="${PUBLIC_SITE_RUNTIME_PATH}"></script>`;
   const pages = getVisibleSitePages(payload.content);
   const activePage = pages.find((page) => page.slug === options.activePageSlug) ?? pages[0];
-  const values = buildVariableValues(payload);
+  const values = buildPublicSiteVariableValues(payload);
+  let trackingElementsById: ReadonlyMap<string, ResolvedTrackingElement> = new Map();
+  try {
+    trackingElementsById = resolvePublicSiteTracking(payload).elementsById;
+  } catch {
+    // Tracking metadata must never make a published site unavailable.
+  }
   const context: RenderContext = {
     logoDelivery: options.logoDelivery ?? "public",
     payload,
+    trackingElementsById,
     values,
   };
   const renderDocument = createDocumentRenderer(context);
   const pagePanels = pages.map((page) => {
     const active = page.id === activePage?.id;
-    return `<article class="ls-page-panel" data-ls-page-panel="${attr(page.slug)}"${active ? "" : " hidden"}>${renderDocument({ content: page.document })}</article>`;
+    return `<article class="handout-page-panel" data-handout-page-panel="${attr(page.slug)}" data-handout-page-id="${attr(page.id)}"${active ? "" : " hidden"}>${renderDocument({ content: page.document })}</article>`;
   }).join("");
-  const sidebar = renderSidebar(payload.content, activePage?.slug ?? null, values);
+  const sidebar = renderSidebar(payload.content, activePage?.slug ?? null, context);
   const canonicalUrl = origin
     ? new URL(buildPublicPath(payload), origin).toString()
     : buildPublicPath(payload);
   const ogImageUrl = payload.metadata.ogImageUrl
     ? resolveAbsoluteUrl(payload.metadata.ogImageUrl, origin)
-    : resolveAbsoluteUrl("/lightsite-logo.svg", origin);
+    : resolveAbsoluteUrl("/handout-logo.svg", origin);
   const trackingScript = includeTracking && payload.trackingV2
-    ? `<script async src="${TRACKING_V2_SCRIPT_ENDPOINT}" data-lightsite-tracking-v2="${attr(JSON.stringify(payload.trackingV2))}"></script>`
+    ? `<script async src="${TRACKING_V2_SCRIPT_ENDPOINT}" data-handout-tracking-v2="${attr(JSON.stringify(payload.trackingV2))}"></script>`
+    : "";
+  const consentPopup = renderTrackingConsent(payload, Boolean(trackingScript));
+  const immediateTrackingScript = payload.content.settings.trackingConsentPopup === "none"
+    ? trackingScript
     : "";
   const theme = resolveTheme(payload.content.themeMode);
+  const primaryStyle = getPrimaryColorStyle(payload.content.settings.primaryColor);
 
   return `<!doctype html>
-<html lang="en" class="${theme}" data-ls-public-site="">
+<html lang="en" class="${theme}" data-handout-public-site="">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -116,22 +140,23 @@ export function renderPublicSiteHtml(
   <meta name="twitter:description" content="${attr(payload.metadata.description)}">
   <meta name="twitter:image" content="${attr(ogImageUrl)}">
   <meta name="twitter:image:alt" content="${attr(payload.metadata.title)}">
-  <style>${LIGHTSITE_THEME_CSS}${SITE_DOCUMENT_CSS}</style>
+  <style>${HANDOUT_THEME_CSS}${SITE_DOCUMENT_CSS}</style>
 </head>
-<body data-ls-public-site="">
-  <div class="ls-site" data-ls-site-id="${attr(payload.site.id)}">
+<body data-handout-public-site="">
+  <div class="handout-site" data-handout-site-id="${attr(payload.site.id)}" style="${attr(primaryStyle)}">
     ${sidebar}
-    <main class="ls-main">
-      <div class="ls-mobile-bar">
-        ${sidebar ? `<button class="ls-mobile-menu" type="button" aria-label="Open site navigation" aria-controls="ls-site-sidebar" aria-expanded="false">${icon("menu")}</button>` : ""}
-        <span data-ls-active-page-label="">${text(activePage?.name ?? payload.site.name)}</span>
+    <main class="handout-main">
+      <div class="handout-mobile-bar">
+        ${sidebar ? `<button class="handout-mobile-menu" type="button" aria-label="Open site navigation" aria-controls="handout-site-sidebar" aria-expanded="false">${icon("menu")}</button>` : ""}
+        <span data-handout-active-page-label="">${text(activePage?.name ?? payload.site.name)}</span>
       </div>
-      <div class="ls-document">${pagePanels || renderEmptyPage()}</div>
-      <footer class="ls-footer"><span>Powered by</span><span class="ls-footer-logo" role="img" aria-label="Lightsite"></span></footer>
+      <div class="handout-document">${pagePanels || renderEmptyPage()}</div>
+      <footer class="handout-footer"><span>Powered by</span><span class="handout-footer-logo" role="img" aria-label="Handout"></span></footer>
     </main>
   </div>
+  ${consentPopup}
   ${runtimeScript}
-  ${trackingScript}
+  ${immediateTrackingScript}
 </body>
 </html>`;
 }
@@ -151,7 +176,11 @@ export function renderPublicSitePreviewHtml(
     variableValues?: Record<string, string>;
   },
 ) {
-  const metadata = getMetadataFromContent(content, input.siteName);
+  const metadata = getSiteMetadata(
+    content,
+    input.siteName,
+    getSiteVariableValues(content, { variableValues: input.variableValues }),
+  );
   const payload: PublishedSitePayload = {
     schemaVersion: PUBLIC_SITE_PAYLOAD_SCHEMA_VERSION,
     workspace: {
@@ -250,57 +279,57 @@ function createNodeMapping(context: RenderContext): Record<string, (props: NodeR
     `<${tag} class="${className}"${attrs}>${childrenText(children)}</${tag}>`;
 
   return {
-    doc: ({ children }) => `<div class="ls-prosemirror">${childrenText(children)}</div>`,
+    doc: ({ children }) => `<div class="handout-prosemirror">${childrenText(children)}</div>`,
     text: ({ node }) => text(resolveTemplate(node.text ?? "", context.values)),
     paragraph: ({ children, node }) => childrenText(children)
-      ? wrap("p", "ls-paragraph", children, nodeId(node))
+      ? wrap("p", "handout-paragraph", children, nodeId(node))
       : "",
     heading: ({ children, node }) => {
       const level = node.attrs?.level === 1 || node.attrs?.level === 3 ? node.attrs.level : 2;
-      return wrap(`h${level}`, `ls-heading ls-heading-${level}`, children, nodeId(node));
+      return wrap(`h${level}`, `handout-heading handout-heading-${level}`, children, nodeId(node));
     },
-    blockquote: ({ children, node }) => wrap("blockquote", "ls-blockquote", children, nodeId(node)),
-    bulletList: ({ children, node }) => wrap("ul", "ls-list", children, nodeId(node)),
-    orderedList: ({ children, node }) => wrap("ol", "ls-list", children, nodeId(node)),
-    listItem: ({ children, node }) => wrap("li", "ls-list-item", children, nodeId(node)),
-    taskList: ({ children, node }) => wrap("ul", "ls-task-list", children, nodeId(node)),
+    blockquote: ({ children, node }) => wrap("blockquote", "handout-blockquote", children, nodeId(node)),
+    bulletList: ({ children, node }) => wrap("ul", "handout-list", children, nodeId(node)),
+    orderedList: ({ children, node }) => wrap("ol", "handout-list", children, nodeId(node)),
+    listItem: ({ children, node }) => wrap("li", "handout-list-item", children, nodeId(node)),
+    taskList: ({ children, node }) => wrap("ul", "handout-task-list", children, nodeId(node)),
     taskItem: ({ children, node }) => {
       const checked = node.attrs?.checked === true;
-      return `<li class="ls-task-item" data-checked="${checked}"><span class="ls-task-check" aria-hidden="true">${checked ? "&#10003;" : ""}</span><div>${childrenText(children)}</div></li>`;
+      return `<li class="handout-task-item" data-checked="${checked}"><span class="handout-task-check" aria-hidden="true">${checked ? "&#10003;" : ""}</span><div>${childrenText(children)}</div></li>`;
     },
     hardBreak: () => "<br>",
-    codeBlock: ({ children, node }) => `<pre class="ls-code-block"${nodeId(node)}><code>${childrenText(children)}</code></pre>`,
-    horizontalRule: ({ node }) => `<hr class="ls-divider"${nodeId(node)}>` ,
+    codeBlock: ({ children, node }) => `<pre class="handout-code-block"${nodeId(node)}><code>${childrenText(children)}</code></pre>`,
+    horizontalRule: ({ node }) => `<hr class="handout-divider"${nodeId(node)}>` ,
     pageTitleSection: ({ children, node }) => renderPageTitle(node, children, context),
-    pageTitleTitle: ({ children }) => wrap("h1", "ls-page-title-heading", children),
-    pageTitleSubtitle: ({ children }) => wrap("p", "ls-page-title-subtitle", children),
-    iconList: ({ children, node }) => wrap("ul", "ls-icon-list", children, nodeId(node)),
-    iconListItem: ({ children, node }) => `<li class="ls-icon-list-item"${nodeId(node)}><span class="ls-icon-tile" data-icon-color="${normalizeSiteIconColor(node.attrs?.iconColor)}">${icon(stringAttr(node.attrs?.icon, "box"))}</span><div>${childrenText(children)}</div></li>`,
-    image: ({ node }) => renderImage(node, "ls-image-block"),
-    gifBlock: ({ node }) => renderImage(node, "ls-image-block ls-gif-block"),
+    pageTitleTitle: ({ children }) => wrap("h1", "handout-page-title-heading", children),
+    pageTitleSubtitle: ({ children }) => wrap("p", "handout-page-title-subtitle", children),
+    iconList: ({ children, node }) => wrap("ul", "handout-icon-list", children, nodeId(node)),
+    iconListItem: ({ children, node }) => `<li class="handout-icon-list-item"${nodeId(node)}><span class="handout-icon-tile" data-icon-color="${normalizeSiteIconColor(node.attrs?.iconColor)}">${icon(stringAttr(node.attrs?.icon, "box"))}</span><div>${childrenText(children)}</div></li>`,
+    image: ({ node }) => renderImage(node, "handout-image-block"),
+    gifBlock: ({ node }) => renderImage(node, "handout-image-block handout-gif-block"),
     imageCard: ({ children, node }) => renderImageCard(node, children, context),
-    imageCardTitle: ({ children }) => wrap("h3", "ls-card-title", children),
-    imageCardBody: ({ children }) => wrap("p", "ls-card-body", children),
-    iconCard: ({ children, node }) => `<article class="ls-icon-card"${nodeId(node)}><span class="ls-card-icon" data-icon-color="${normalizeSiteIconColor(node.attrs?.iconColor)}">${icon(stringAttr(node.attrs?.icon, "bolt"))}</span><div class="ls-card-copy">${childrenText(children)}</div></article>`,
-    iconCardTitle: ({ children }) => wrap("h3", "ls-card-title", children),
-    iconCardBody: ({ children }) => wrap("p", "ls-card-body", children),
+    imageCardTitle: ({ children }) => wrap("h3", "handout-card-title", children),
+    imageCardBody: ({ children }) => wrap("p", "handout-card-body", children),
+    iconCard: ({ children, node }) => `<article class="handout-icon-card"${nodeId(node)}><span class="handout-card-icon" data-icon-color="${normalizeSiteIconColor(node.attrs?.iconColor)}">${icon(stringAttr(node.attrs?.icon, "bolt"))}</span><div class="handout-card-copy">${childrenText(children)}</div></article>`,
+    iconCardTitle: ({ children }) => wrap("h3", "handout-card-title", children),
+    iconCardBody: ({ children }) => wrap("p", "handout-card-body", children),
     testimonialCard: ({ children, node }) => renderTestimonial(node, children),
-    testimonialQuote: ({ children }) => wrap("blockquote", "ls-testimonial-quote", children),
-    testimonialAuthorName: ({ children }) => wrap("p", "ls-testimonial-name", children),
-    testimonialAuthorRole: ({ children }) => wrap("p", "ls-testimonial-role", children),
-    logoGrid: ({ children, node }) => wrap("section", "ls-logo-grid", children, nodeId(node)),
+    testimonialQuote: ({ children }) => wrap("blockquote", "handout-testimonial-quote", children),
+    testimonialAuthorName: ({ children }) => wrap("p", "handout-testimonial-name", children),
+    testimonialAuthorRole: ({ children }) => wrap("p", "handout-testimonial-role", children),
+    logoGrid: ({ children, node }) => wrap("section", "handout-logo-grid", children, nodeId(node)),
     logoGridItem: ({ children, node }) => renderLogoGridItem(node, children),
-    logoGridItemTitle: ({ children }) => wrap("p", "ls-logo-grid-title", children),
+    logoGridItemTitle: ({ children }) => wrap("p", "handout-logo-grid-title", children),
     buttonBlock: ({ children, node }) => renderButtonBlock(node, children, context),
     calendarEmbed: ({ node }) => renderEmbed(node, "calendar"),
     videoEmbed: ({ node }) => renderEmbed(node, "video"),
     gridBlock: ({ children, node }) => {
       const columns = numberAttr(node.attrs?.columns, 2, 1, 4);
-      return `<section class="ls-grid" style="--lightsite-grid-columns:${columns}"${nodeId(node)}>${childrenText(children)}</section>`;
+      return `<section class="handout-grid" style="--handout-grid-columns:${columns}"${nodeId(node)}>${childrenText(children)}</section>`;
     },
-    gridRow: ({ children }) => `<div class="ls-grid-row">${childrenText(children)}</div>`,
-    gridCell: ({ children }) => `<div class="ls-grid-cell">${childrenText(children)}</div>`,
-    table: ({ children, node }) => `<div class="ls-table-scroll"${nodeId(node)}><table class="ls-table"><tbody>${childrenText(children)}</tbody></table></div>`,
+    gridRow: ({ children }) => `<div class="handout-grid-row">${childrenText(children)}</div>`,
+    gridCell: ({ children }) => `<div class="handout-grid-cell">${childrenText(children)}</div>`,
+    table: ({ children, node }) => `<div class="handout-table-scroll"${nodeId(node)}><table class="handout-table"><tbody>${childrenText(children)}</tbody></table></div>`,
     tableRow: ({ children }) => `<tr>${childrenText(children)}</tr>`,
     tableHeader: ({ children, node }) => `<th${tableSpanAttrs(node)}>${childrenText(children)}</th>`,
     tableCell: ({ children, node }) => `<td${tableSpanAttrs(node)}>${childrenText(children)}</td>`,
@@ -315,12 +344,11 @@ function createMarkMapping(context: RenderContext): Record<string, (props: MarkR
     italic: ({ children }) => `<em>${childrenText(children)}</em>`,
     underline: ({ children }) => `<u>${childrenText(children)}</u>`,
     strike: ({ children }) => `<s>${childrenText(children)}</s>`,
-    code: ({ children }) => `<code class="ls-inline-code">${childrenText(children)}</code>`,
-    link: ({ children, mark, node }) => {
+    code: ({ children }) => `<code class="handout-inline-code">${childrenText(children)}</code>`,
+    link: ({ children, mark }) => {
       const href = sanitizeLinkUrl(resolveTemplate(stringAttr(mark.attrs?.href), context.values));
       if (!href) return childrenText(children);
-      const label = getNodeText(node).trim() || "Link";
-      return `<a class="ls-link" href="${attr(href)}" target="_blank" rel="noopener noreferrer"${trackingAttrs({ id: stringAttr(node.attrs?.id, stableElementId("link", label)), kind: "link", label, href, track: "link" })}>${childrenText(children)}</a>`;
+      return `<a class="handout-link" href="${attr(href)}" target="_blank" rel="noopener noreferrer">${childrenText(children)}</a>`;
     },
     textStyle: ({ children, mark }) => {
       const color = sanitizeCssColor(normalizeEditorTextColor(mark.attrs?.color));
@@ -349,12 +377,12 @@ function renderPageTitle(node: TiptapNode, children: string | string[] | undefin
     secondaryLogo ? renderLogo(secondaryLogo, `${recipientDomain} logo`, "recipient") : "",
   ].filter(Boolean);
 
-  return `<section class="ls-page-title" data-align="${align}"${nodeId(node)}>${logos.length ? `<div class="ls-page-title-logos">${logos.join(logos.length > 1 ? '<span class="ls-logo-connector"></span>' : "")}</div>` : ""}<div class="ls-page-title-copy">${childrenText(children)}</div></section>`;
+  return `<section class="handout-page-title" data-align="${align}"${nodeId(node)}>${logos.length ? `<div class="handout-page-title-logos">${logos.join(logos.length > 1 ? '<span class="handout-logo-connector"></span>' : "")}</div>` : ""}<div class="handout-page-title-copy">${childrenText(children)}</div></section>`;
 }
 
 function renderLogo(src: string, altText: string, kind: "recipient" | "workspace") {
   const safeSrc = sanitizeImageUrl(src);
-  return safeSrc ? `<span class="ls-page-title-logo" data-ls-logo-kind="${kind}"><img src="${attr(safeSrc)}" alt="${attr(altText)}"></span>` : "";
+  return safeSrc ? `<span class="handout-page-title-logo" data-handout-logo-kind="${kind}"><img src="${attr(safeSrc)}" alt="${attr(altText)}"></span>` : "";
 }
 
 function buildLogoImagePath(
@@ -392,17 +420,17 @@ function renderImage(node: TiptapNode, className: string) {
 }
 
 function renderImageCard(node: TiptapNode, children: string | string[] | undefined, context: RenderContext) {
-  const src = sanitizeImageUrl(resolveTemplate(stringAttr(node.attrs?.src), context.values));
+  const src = sanitizeImageUrl(resolveSiteTemplate(stringAttr(node.attrs?.src), context.values));
   const includeButton = node.attrs?.includeButton === true;
-  const href = sanitizeLinkUrl(resolveTemplate(stringAttr(node.attrs?.buttonUrl), context.values));
-  const label = resolveTemplate(stringAttr(node.attrs?.buttonLabel, "Learn more"), context.values).trim();
-  const id = stringAttr(node.attrs?.id, stableElementId("image-card", label));
+  const href = sanitizePublicActionUrl(resolveSiteTemplate(stringAttr(node.attrs?.buttonUrl), context.values));
+  const label = resolveSiteTemplate(stringAttr(node.attrs?.buttonLabel, "Learn more"), context.values).trim();
+  const tracking = trackingElement(context, node.attrs?.id, ":button");
   const cta = includeButton && href && label
-    ? `<a class="ls-small-button ls-small-button-outline" href="${attr(href)}" target="_blank" rel="noopener noreferrer"${trackingAttrs({ id: `${id}-button`, kind: "image_card", label, href, track: "button" })}>${text(label)}</a>`
+    ? `<a class="handout-small-button handout-small-button-outline" href="${attr(href)}" target="_blank" rel="noopener noreferrer"${trackingAttrs(tracking)}>${text(label)}</a>`
     : "";
-  const media = src ? `<div class="ls-image-card-media"><img src="${attr(src)}" alt="${attr(stringAttr(node.attrs?.alt))}" loading="lazy" decoding="async"></div>` : "";
+  const media = src ? `<div class="handout-image-card-media"><img src="${attr(src)}" alt="${attr(stringAttr(node.attrs?.alt))}" loading="lazy" decoding="async"></div>` : "";
 
-  return `<article class="ls-image-card"${nodeId(node)}>${media}<div class="ls-image-card-copy"><div>${childrenText(children)}</div>${cta}</div></article>`;
+  return `<article class="handout-image-card"${nodeId(node)}>${media}<div class="handout-image-card-copy"><div>${childrenText(children)}</div>${cta}</div></article>`;
 }
 
 function renderTestimonial(node: TiptapNode, children: string | string[] | undefined) {
@@ -410,35 +438,34 @@ function renderTestimonial(node: TiptapNode, children: string | string[] | undef
   const avatar = src
     ? `<img src="${attr(src)}" alt="" loading="lazy" decoding="async">`
     : icon("quote");
-  return `<article class="ls-testimonial"${nodeId(node)}><span class="ls-testimonial-avatar">${avatar}</span><div>${childrenText(children)}</div></article>`;
+  return `<article class="handout-testimonial"${nodeId(node)}><span class="handout-testimonial-avatar">${avatar}</span><div>${childrenText(children)}</div></article>`;
 }
 
 function renderLogoGridItem(node: TiptapNode, children: string | string[] | undefined) {
   const src = sanitizeImageUrl(stringAttr(node.attrs?.src));
   const logo = src ? `<img src="${attr(src)}" alt="${attr(stringAttr(node.attrs?.alt))}" loading="lazy" decoding="async">` : icon("photo");
-  return `<article class="ls-logo-grid-item"${nodeId(node)}><span class="ls-logo-grid-image">${logo}</span>${childrenText(children)}</article>`;
+  return `<article class="handout-logo-grid-item"${nodeId(node)}><span class="handout-logo-grid-image">${logo}</span>${childrenText(children)}</article>`;
 }
 
 function renderButtonBlock(node: TiptapNode, children: string | string[] | undefined, context: RenderContext) {
-  const href = sanitizeLinkUrl(resolveTemplate(stringAttr(node.attrs?.href), context.values));
-  const label = getNodeText(node).trim();
+  const href = sanitizePublicActionUrl(resolveSiteTemplate(stringAttr(node.attrs?.href), context.values));
+  const label = getResolvedNodeText(node, context.values).trim();
   if (!href || !label) return "";
   const fullWidth = node.attrs?.fullWidth === true;
-  const id = stringAttr(node.attrs?.id, stableElementId("button", label));
-  return `<a class="ls-button-block${fullWidth ? " ls-button-block-full" : ""}" href="${attr(href)}" target="_blank" rel="noopener noreferrer"${nodeId(node)}${trackingAttrs({ id, kind: "button", label, href, track: "button" })}>${childrenText(children)}</a>`;
+  const tracking = trackingElement(context, node.attrs?.id);
+  return `<a class="handout-button-block${fullWidth ? " handout-button-block-full" : ""}" href="${attr(href)}" target="_blank" rel="noopener noreferrer"${nodeId(node)}${trackingAttrs(tracking)}>${childrenText(children)}</a>`;
 }
 
 function renderEmbed(node: TiptapNode, kind: "calendar" | "video") {
   const src = sanitizeEmbedUrl(stringAttr(node.attrs?.src));
   if (!src) return "";
   const height = numberAttr(node.attrs?.height, kind === "calendar" ? 680 : 360, 240, 1200);
-  const id = stringAttr(node.attrs?.id, stableElementId(kind, src));
-  return `<div class="ls-embed" style="height:${height}px"${nodeId(node)} data-ls-element-id="${attr(id)}" data-ls-element-kind="${kind}"><iframe src="${attr(src)}" title="${kind === "calendar" ? "Calendar" : "Video"}" loading="lazy" allow="${kind === "video" ? "accelerometer; autoplay; encrypted-media; picture-in-picture" : "clipboard-write"}" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"></iframe></div>`;
+  return `<div class="handout-embed" style="height:${height}px"${nodeId(node)}><iframe src="${attr(src)}" title="${kind === "calendar" ? "Calendar" : "Video"}" loading="lazy" allow="${kind === "video" ? "accelerometer; autoplay; encrypted-media; picture-in-picture" : "clipboard-write"}" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"></iframe></div>`;
 }
 
 // PUBLISHED-SITE PARITY: This is the sidebar for both Preview and deployed sites.
 // Keep visual changes synchronized with EditorSiteSidebar's edit shell.
-function renderSidebar(content: SiteContent, activePageSlug: string | null, values: Record<string, string>) {
+function renderSidebar(content: SiteContent, activePageSlug: string | null, context: RenderContext) {
   const model = getSiteSidebarModel(content);
   const { pages, links, nextSteps: buttons } = model;
   const tabItems = pages;
@@ -446,58 +473,52 @@ function renderSidebar(content: SiteContent, activePageSlug: string | null, valu
 
   if (!model.showSidebar) return "";
 
-  const tabsHtml = tabItems.map((page) => `<button type="button" class="ls-sidebar-row ls-tab${page.slug === activePageSlug ? " is-active" : ""}" data-ls-page-target="${attr(page.slug)}"${trackingAttrs({ id: page.id, kind: "tab", label: page.name, track: "tab" })}>${icon("notes")}<span>${text(page.name)}</span></button>`).join("");
+  const tabsHtml = tabItems.map((page) => `<button type="button" class="handout-sidebar-row handout-tab${page.slug === activePageSlug ? " is-active" : ""}" data-handout-page-target="${attr(page.slug)}" data-handout-page-id="${attr(page.id)}" data-handout-track="tab">${icon("notes")}<span>${text(page.name)}</span></button>`).join("");
   const linksHtml = links.map((link) => {
-    const href = sanitizeLinkUrl(resolveTemplate(link.href, values));
-    const label = resolveTemplate(link.label, values).trim();
-    return href && label ? `<a class="ls-sidebar-row" href="${attr(href)}" target="_blank" rel="noopener noreferrer"${trackingAttrs({ id: link.id, kind: "sidebar_link", label, href, track: "link" })}>${icon(link.icon === "link" ? "link" : "world")}<span>${text(label)}</span></a>` : "";
+    const href = sanitizePublicActionUrl(resolveSiteTemplate(link.href, context.values));
+    const label = resolveSiteTemplate(link.label, context.values).trim();
+    return href && label ? `<a class="handout-sidebar-row" href="${attr(href)}" target="_blank" rel="noopener noreferrer"${trackingAttrs(trackingElement(context, link.id))}>${icon(link.icon === "link" ? "link" : "world")}<span>${text(label)}</span></a>` : "";
   }).join("");
   const buttonsHtml = buttons.map((button) => {
-    const href = sanitizeLinkUrl(resolveTemplate(button.href, values));
-    const label = resolveTemplate(button.label, values).trim();
-    return href && label ? `<a class="ls-sidebar-button ls-sidebar-button-${button.style}" href="${attr(href)}" target="_blank" rel="noopener noreferrer"${trackingAttrs({ id: button.id, kind: "sidebar_button", label, href, track: "button" })}>${text(label)}</a>` : "";
+    const href = sanitizePublicActionUrl(resolveSiteTemplate(button.href, context.values));
+    const label = resolveSiteTemplate(button.label, context.values).trim();
+    return href && label ? `<a class="handout-sidebar-button handout-sidebar-button-${button.style}" href="${attr(href)}" target="_blank" rel="noopener noreferrer"${trackingAttrs(trackingElement(context, button.id))}>${text(label)}</a>` : "";
   }).join("");
 
-  return `<aside id="ls-site-sidebar" class="ls-sidebar" aria-label="Site navigation"><div class="ls-sidebar-mobile-header"><span class="ls-sidebar-mobile-title" data-ls-active-page-label="">${text(activePageName)}</span><button class="ls-sidebar-close" type="button" aria-label="Close site navigation">${icon("x")}</button></div><div class="ls-sidebar-inner">${renderSidebarSection(content.sidebar.sections.tabs.label, tabsHtml)}${renderSidebarSection(content.sidebar.sections.links.label, linksHtml)}${renderSidebarSection(content.sidebar.sections.nextSteps.label, buttonsHtml, "ls-sidebar-section-buttons")}</div></aside><div class="ls-sidebar-backdrop" aria-hidden="true"></div>`;
+  return `<aside id="handout-site-sidebar" class="handout-sidebar" aria-label="Site navigation"><div class="handout-sidebar-mobile-header"><span class="handout-sidebar-mobile-title" data-handout-active-page-label="">${text(activePageName)}</span><button class="handout-sidebar-close" type="button" aria-label="Close site navigation">${icon("x")}</button></div><div class="handout-sidebar-inner">${renderSidebarSection(content.sidebar.sections.tabs.label, tabsHtml)}${renderSidebarSection(content.sidebar.sections.links.label, linksHtml)}${renderSidebarSection(content.sidebar.sections.nextSteps.label, buttonsHtml, "handout-sidebar-section-buttons")}</div></aside><div class="handout-sidebar-backdrop" aria-hidden="true"></div>`;
 }
 
 function renderSidebarSection(label: string, content: string, className = "") {
-  return content ? `<section class="ls-sidebar-section${className ? ` ${className}` : ""}"><h2>${text(label)}</h2><div>${content}</div></section>` : "";
+  return content ? `<section class="handout-sidebar-section${className ? ` ${className}` : ""}"><h2>${text(label)}</h2><div>${content}</div></section>` : "";
 }
 
 function renderEmptyPage() {
-  return `<div class="ls-empty-page"><h1>This page is empty</h1></div>`;
+  return `<div class="handout-empty-page"><h1>This page is empty</h1></div>`;
 }
 
-function getMetadataFromContent(content: SiteContent, fallbackTitle: string) {
-  const page = getVisibleSitePages(content)[0];
-  const title = page ? findText(page.document, "pageTitleTitle") : "";
-  const description = page ? findText(page.document, "pageTitleSubtitle") : "";
-  return {
-    title: title || fallbackTitle || "Untitled Lightsite",
-    description,
-  };
-}
-
-function findText(node: TiptapNode, type: string): string {
-  if (node.type === type) return getNodeText(node).trim();
-  for (const child of node.content ?? []) {
-    const value = findText(child, type);
-    if (value) return value;
+export function getPrimaryColorStyle(color: SiteContent["settings"]["primaryColor"]) {
+  if (color === "neutral") {
+    return "--handout-primary:var(--foreground);--handout-primary-foreground:var(--background);--handout-primary-soft:var(--accent)";
   }
-  return "";
+
+  return `--handout-primary:var(--${color}-foreground);--handout-primary-foreground:var(--background);--handout-primary-soft:var(--${color}-background)`;
 }
 
-function buildVariableValues(payload: PublishedSitePayload) {
-  const values: Record<string, string> = {};
-  for (const variable of payload.content.variables) {
-    values[variable.key] = toStringValue(variable.defaultValue);
-    values[variable.id] = toStringValue(variable.defaultValue);
-  }
-  Object.assign(values, payload.selectedVariant?.variableValues ?? {});
-  if (payload.selectedVariant?.recipientName) values.recipient_name = payload.selectedVariant.recipientName;
-  if (payload.selectedVariant?.recipientCompany) values.recipient_company = payload.selectedVariant.recipientCompany;
-  return values;
+function renderTrackingConsent(payload: PublishedSitePayload, hasTracking: boolean) {
+  const popup = payload.content.settings.trackingConsentPopup;
+  const privacyPolicyUrl = sanitizeTrackingPrivacyPolicyUrl(payload.content.settings.trackingPrivacyPolicyUrl);
+  if (!hasTracking || !payload.trackingV2 || popup === "none" || !privacyPolicyUrl) return "";
+
+  const isPopupA = popup === "popup-a";
+  const body = isPopupA
+    ? `This site uses cookies and other technology upon consent to help the owner understand how you use it, including session behavior and where you click and scroll. By selecting Allow and proceed, you consent to this as described in the <a href="${attr(privacyPolicyUrl)}" target="_blank" rel="noopener noreferrer">Privacy Policy</a>. You may decline and enter <button type="button" data-handout-consent="deny">here</button>.`
+    : `This site uses cookies and other technology upon consent to help the owner understand how you use it, including session behavior and where you click and scroll. By selecting Allow and proceed, you consent to this as described in the <a href="${attr(privacyPolicyUrl)}" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.`;
+  const actions = isPopupA
+    ? `<button class="handout-consent-button handout-consent-button-primary" type="button" data-handout-consent="allow">Allow and proceed</button>`
+    : `<button class="handout-consent-button" type="button" data-handout-consent="deny">Deny and proceed</button><button class="handout-consent-button handout-consent-button-primary" type="button" data-handout-consent="allow">Allow and proceed</button>`;
+  const bootstrap = JSON.stringify(payload.trackingV2);
+
+  return `<aside class="handout-consent-popup" data-handout-consent-popup="${attr(popup)}" data-handout-consent-site-id="${attr(payload.site.id)}" data-handout-consent-notice-version="${TRACKING_V2_VISITOR_NOTICE_VERSION}" data-handout-consent-script-src="${TRACKING_V2_SCRIPT_ENDPOINT}" data-handout-consent-bootstrap="${attr(bootstrap)}" aria-labelledby="handout-consent-title"><h2 id="handout-consent-title">We value your privacy</h2><p>${body}</p><div class="handout-consent-actions">${actions}</div></aside><button class="handout-privacy-choices" type="button" data-handout-privacy-choices hidden>Privacy choices</button>`;
 }
 
 function resolveVariableToken(node: TiptapNode, values: Record<string, string>) {
@@ -506,30 +527,18 @@ function resolveVariableToken(node: TiptapNode, values: Record<string, string>) 
 }
 
 function resolveTemplate(value: string, values: Record<string, string>) {
-  return value.replace(/\{\{\s*([a-zA-Z0-9_-]+)\s*\}\}/g, (_match, key: string) => values[key] ?? "");
+  return resolveSiteTemplate(value, values);
 }
 
-function trackingAttrs(input: {
-  href?: string;
-  id: string;
-  kind: string;
-  label: string;
-  track: "button" | "link" | "tab";
-}) {
-  return ` data-ls-track="${input.track}" data-ls-element-id="${attr(input.id)}" data-ls-element-kind="${attr(input.kind)}" data-ls-element-label="${attr(input.label)}"${input.href ? ` data-ls-element-href="${attr(sanitizeTrackingHref(input.href))}"` : ""}`;
+function trackingAttrs(element: ResolvedTrackingElement | null) {
+  if (!element) return "";
+  const track = element.eventType === "link_click" ? "link" : "button";
+  return ` data-handout-track="${track}" data-handout-element-id="${attr(element.id)}"`;
 }
 
-function sanitizeTrackingHref(value: string) {
-  try {
-    const url = new URL(value, "https://lightsite.invalid");
-    url.username = "";
-    url.password = "";
-    url.search = "";
-    url.hash = "";
-    return url.origin === "https://lightsite.invalid" ? url.pathname : url.toString();
-  } catch {
-    return "";
-  }
+function trackingElement(context: RenderContext, value: unknown, suffix = "") {
+  if (typeof value !== "string") return null;
+  return context.trackingElementsById.get(`${value.trim()}${suffix}`) ?? null;
 }
 
 function sanitizeLinkUrl(value: string) {
@@ -579,12 +588,7 @@ function tableSpanAttrs(node: TiptapNode) {
 
 function nodeId(node: TiptapNode) {
   const id = stringAttr(node.attrs?.id);
-  return id ? ` data-ls-node-id="${attr(id)}"` : "";
-}
-
-function stableElementId(prefix: string, value: string) {
-  const slug = value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
-  return `${prefix}-${slug || "element"}`;
+  return id ? ` data-handout-node-id="${attr(id)}"` : "";
 }
 
 export function buildPublicPath(payload: PublishedSitePayload) {
@@ -639,10 +643,6 @@ function numberAttr(value: unknown, fallback: number, min: number, max: number) 
   return Number.isFinite(parsed) ? Math.min(max, Math.max(min, Math.round(parsed))) : fallback;
 }
 
-function toStringValue(value: unknown) {
-  return typeof value === "string" ? value : value == null ? "" : String(value);
-}
-
 function text(value: string) {
   return escapeHTML(value);
 }
@@ -656,44 +656,44 @@ function icon(name: string) {
 }
 
 export const PUBLIC_SITE_RUNTIME = `(function(){
-var root=document.querySelector('.ls-site');if(!root)return;
-var sidebar=root.querySelector('.ls-sidebar');
-var menu=root.querySelector('.ls-mobile-menu');
-var closeButton=root.querySelector('.ls-sidebar-close');
-var backdrop=root.querySelector('.ls-sidebar-backdrop');
+var root=document.querySelector('.handout-site');if(!root)return;
+var sidebar=root.querySelector('.handout-sidebar');
+var menu=root.querySelector('.handout-mobile-menu');
+var closeButton=root.querySelector('.handout-sidebar-close');
+var backdrop=root.querySelector('.handout-sidebar-backdrop');
 function setSidebarOpen(open,restoreFocus){
   if(!sidebar)return;
   sidebar.classList.toggle('is-open',open);
   if(backdrop)backdrop.classList.toggle('is-open',open);
   if(menu)menu.setAttribute('aria-expanded',String(open));
-  document.body.classList.toggle('ls-drawer-open',open);
+  document.body.classList.toggle('handout-drawer-open',open);
   if(open&&closeButton)requestAnimationFrame(function(){closeButton.focus();});
   if(!open&&restoreFocus&&menu)menu.focus();
 }
-function removeLogoTile(tile){var group=tile&&tile.parentElement;if(tile)tile.remove();if(group&&!group.querySelector('.ls-page-title-logo'))group.remove();}
+function removeLogoTile(tile){var group=tile&&tile.parentElement;if(tile)tile.remove();if(group&&!group.querySelector('.handout-page-title-logo'))group.remove();}
 function handleLogoError(image){
-  var tile=image.closest('.ls-page-title-logo');if(!tile)return;
-  if(tile.getAttribute('data-ls-logo-kind')==='workspace'&&!image.hasAttribute('data-ls-logo-fallback')){
-    image.setAttribute('data-ls-logo-fallback','');image.alt='Lightsite';image.src='/lightsite-logo.svg';return;
+  var tile=image.closest('.handout-page-title-logo');if(!tile)return;
+  if(tile.getAttribute('data-handout-logo-kind')==='workspace'&&!image.hasAttribute('data-handout-logo-fallback')){
+    image.setAttribute('data-handout-logo-fallback','');image.alt='Handout';image.src='/handout-logo.svg';return;
   }
   removeLogoTile(tile);
 }
-root.querySelectorAll('.ls-page-title-logo img').forEach(function(image){
+root.querySelectorAll('.handout-page-title-logo img').forEach(function(image){
   image.addEventListener('error',function(){handleLogoError(image);});
   if(image.complete&&image.naturalWidth===0)handleLogoError(image);
 });
 function selectPage(slug){
-  root.querySelectorAll('[data-ls-page-panel]').forEach(function(panel){panel.hidden=panel.getAttribute('data-ls-page-panel')!==slug;});
-  root.querySelectorAll('[data-ls-page-target]').forEach(function(tab){tab.classList.toggle('is-active',tab.getAttribute('data-ls-page-target')===slug);});
-  var active=Array.prototype.find.call(root.querySelectorAll('[data-ls-page-target]'),function(tab){return tab.getAttribute('data-ls-page-target')===slug;});
+  root.querySelectorAll('[data-handout-page-panel]').forEach(function(panel){panel.hidden=panel.getAttribute('data-handout-page-panel')!==slug;});
+  root.querySelectorAll('[data-handout-page-target]').forEach(function(tab){tab.classList.toggle('is-active',tab.getAttribute('data-handout-page-target')===slug);});
+  var active=Array.prototype.find.call(root.querySelectorAll('[data-handout-page-target]'),function(tab){return tab.getAttribute('data-handout-page-target')===slug;});
   active=active?active.querySelector('span'):null;
-  if(active)root.querySelectorAll('[data-ls-active-page-label]').forEach(function(label){label.textContent=active.textContent||'';});
+  if(active)root.querySelectorAll('[data-handout-active-page-label]').forEach(function(label){label.textContent=active.textContent||'';});
   setSidebarOpen(false,true);
 }
 root.addEventListener('click',function(event){
-  var target=event.target instanceof Element?event.target.closest('[data-ls-page-target],.ls-mobile-menu,.ls-sidebar-close,.ls-sidebar-backdrop'):null;if(!target)return;
-  if(target.matches('[data-ls-page-target]')){event.preventDefault();selectPage(target.getAttribute('data-ls-page-target')||'');return;}
-  if(target.matches('.ls-mobile-menu')){setSidebarOpen(!sidebar.classList.contains('is-open'),false);return;}
+  var target=event.target instanceof Element?event.target.closest('[data-handout-page-target],.handout-mobile-menu,.handout-sidebar-close,.handout-sidebar-backdrop'):null;if(!target)return;
+  if(target.matches('[data-handout-page-target]')){event.preventDefault();selectPage(target.getAttribute('data-handout-page-target')||'');return;}
+  if(target.matches('.handout-mobile-menu')){setSidebarOpen(!sidebar.classList.contains('is-open'),false);return;}
   setSidebarOpen(false,true);
 });
 document.addEventListener('keydown',function(event){
@@ -707,7 +707,57 @@ document.addEventListener('keydown',function(event){
 });
 var mobileQuery=window.matchMedia('(max-width:760px)');
 mobileQuery.addEventListener('change',function(event){if(!event.matches)setSidebarOpen(false,false);});
+var consentPopup=document.querySelector('[data-handout-consent-popup]');
+var privacyChoices=document.querySelector('[data-handout-privacy-choices]');
+if(consentPopup&&privacyChoices){
+  var consentSiteId=consentPopup.getAttribute('data-handout-consent-site-id')||'';
+  var consentNoticeVersion=Number(consentPopup.getAttribute('data-handout-consent-notice-version'));
+  var consentScriptSrc=consentPopup.getAttribute('data-handout-consent-script-src')||'';
+  var consentBootstrap=consentPopup.getAttribute('data-handout-consent-bootstrap')||'';
+  var consentStorageKey='handout:tracking-consent:'+consentSiteId;
+  var consentMaxAge=15552000000;
+  var storedConsent=null;
+  try{storedConsent=JSON.parse(localStorage.getItem(consentStorageKey)||'null');}catch(error){}
+  function validStoredConsent(value){
+    var age=value&&typeof value.decidedAt==='string'?Date.now()-Date.parse(value.decidedAt):NaN;
+    return value&&value.noticeVersion===consentNoticeVersion&&(value.choice==='allow'||value.choice==='deny')&&Number.isFinite(age)&&age>=0&&age<=consentMaxAge;
+  }
+  function storeConsent(value){try{localStorage.setItem(consentStorageKey,JSON.stringify(value));}catch(error){}}
+  function startTracking(consent){
+    if(!consentScriptSrc||!consentBootstrap||document.querySelector('[data-handout-tracking-v2]'))return;
+    var script=document.createElement('script');
+    script.async=true;
+    script.src=consentScriptSrc;
+    script.setAttribute('data-handout-tracking-v2',consentBootstrap);
+    script.setAttribute('data-handout-replay-consent',JSON.stringify(consent));
+    document.body.appendChild(script);
+  }
+  function showPrivacyChoices(){privacyChoices.hidden=false;}
+  function finishConsent(choice){
+    var decidedAt=new Date().toISOString();
+    storeConsent({choice:choice,noticeVersion:consentNoticeVersion,decidedAt:decidedAt});
+    consentPopup.hidden=true;
+    showPrivacyChoices();
+    if(choice==='allow'){
+      startTracking({noticeVersion:consentNoticeVersion,grantedAt:decidedAt,source:'prompt'});
+      return;
+    }
+    window.dispatchEvent(new Event('handout:tracking-consent-withdrawn'));
+    var trackingScript=document.querySelector('[data-handout-tracking-v2]');
+    if(trackingScript)trackingScript.remove();
+  }
+  privacyChoices.addEventListener('click',function(){privacyChoices.hidden=true;consentPopup.hidden=false;});
+  consentPopup.addEventListener('click',function(event){
+    var target=event.target instanceof Element?event.target.closest('[data-handout-consent]'):null;
+    if(target)finishConsent(target.getAttribute('data-handout-consent')==='allow'?'allow':'deny');
+  });
+  if(validStoredConsent(storedConsent)){
+    consentPopup.hidden=true;
+    showPrivacyChoices();
+    if(storedConsent.choice==='allow')startTracking({noticeVersion:consentNoticeVersion,grantedAt:storedConsent.decidedAt,source:'remembered'});
+  }
+}
 })();`;
 
 export { SITE_DOCUMENT_CSS as PUBLIC_SITE_CSS } from "./styles";
-export { LIGHTSITE_THEME_CSS } from "@lightsite/design-tokens";
+export { HANDOUT_THEME_CSS } from "@handout/design-tokens";

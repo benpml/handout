@@ -13,8 +13,8 @@ import type { PublicSiteResolution, PublicSiteService } from "./service";
 import {
   PUBLIC_SITE_RUNTIME,
   PUBLIC_SITE_RUNTIME_PATH,
-} from "@lightsite/site-document/renderer";
-import { classifyPreviewRequest } from "@lightsite/tracking-schema";
+} from "@handout/site-document/renderer";
+import { classifyPreviewRequest } from "@handout/tracking-schema";
 import type { TrackingRateLimiter } from "../tracking/rate-limit";
 import type { TrackingV2ContextTokenService } from "../tracking/v2/context-token";
 import type { TrackingV2Service } from "../tracking/v2/service";

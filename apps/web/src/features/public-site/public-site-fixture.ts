@@ -2,7 +2,7 @@ import {
   createDefaultSiteContent,
   PUBLIC_SITE_PAYLOAD_SCHEMA_VERSION,
   type PublishedSitePayload,
-} from "@lightsite/site-document"
+} from "@handout/site-document"
 
 const variants = {
   acme: {
@@ -114,7 +114,7 @@ export function getDemoPublishedSite(variant: keyof typeof variants | "default" 
       publishedVersionId: "33333333-3333-4333-8333-333333333333",
       recipientId: variant === "default" ? null : variants[variant].id,
       recipientRevision: variant === "default" ? null : variants[variant].revisionNumber,
-      trackingMode: "events_and_recording",
+      trackingMode: "events",
     },
   }
 }

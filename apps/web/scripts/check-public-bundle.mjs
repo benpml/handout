@@ -14,7 +14,7 @@ const files = await readdir(assetsDir);
 const publicSiteChunks = files.filter((file) => /^public-site-page-.+\.js$/.test(file));
 
 if (publicSiteChunks.length === 0) {
-  fail("Could not find a public-site-page bundle. Run `pnpm --filter @lightsite/web build` first.");
+  fail("Could not find a public-site-page bundle. Run `pnpm --filter @handout/web build` first.");
 }
 
 const publicSiteChunk = await getNewestFile(publicSiteChunks);

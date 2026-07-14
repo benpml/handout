@@ -12,7 +12,7 @@ const outputDirectory = path.join(webDirectory, "dist-extension")
 const sourceDirectory = path.join(webDirectory, "src")
 const mode = process.env.NODE_ENV === "production" ? "production" : "development"
 const env = loadEnv(mode, repositoryDirectory, "")
-const publicOrigin = env.VITE_EXTENSION_PUBLIC_ORIGIN || "https://lightsite.io"
+const publicOrigin = env.VITE_EXTENSION_PUBLIC_ORIGIN || "https://handout.link"
 const previewOrigin = env.VITE_EXTENSION_PREVIEW_ORIGIN || (mode === "production" ? publicOrigin : "http://localhost:3011")
 const define = {
   "import.meta.env.DEV": JSON.stringify(mode !== "production"),
@@ -53,7 +53,7 @@ await rename(
 await rm(path.join(outputDirectory, "extension"), { force: true, recursive: true })
 await Promise.all([
   copyFile(path.join(extensionDirectory, "manifest.json"), path.join(outputDirectory, "manifest.json")),
-  copyFile(path.join(webDirectory, "public/lightsite-logo.svg"), path.join(outputDirectory, "lightsite-logo.svg")),
+  copyFile(path.join(webDirectory, "public/handout-logo.svg"), path.join(outputDirectory, "handout-logo.svg")),
 ])
 
 const panelPath = path.join(outputDirectory, "panel.html")
@@ -76,7 +76,7 @@ async function buildScript(name: string, entry: string) {
       lib: {
         entry,
         formats: ["iife"],
-        name: `Lightsite${name.replace(/\W/g, "")}`,
+        name: `Handout${name.replace(/\W/g, "")}`,
         fileName: () => `${name}.js`,
       },
     },
@@ -89,7 +89,7 @@ async function assertExtensionOutput() {
     "assets",
     "background.js",
     "content-script.js",
-    "lightsite-logo.svg",
+    "handout-logo.svg",
     "manifest.json",
     "panel.html",
   ])

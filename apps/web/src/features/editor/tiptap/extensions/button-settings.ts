@@ -4,7 +4,7 @@ import { TextSelection } from "@tiptap/pm/state"
 
 import { findFirstTextSelectionPosition } from "./selection-utils"
 
-export type LightsiteNextButtonSettingsTarget = {
+export type HandoutNextButtonSettingsTarget = {
   fullWidth: boolean
   href: string
   label: string
@@ -13,8 +13,8 @@ export type LightsiteNextButtonSettingsTarget = {
 }
 
 type ButtonSettingsStorage = {
-  openSettings: (target: LightsiteNextButtonSettingsTarget) => void
-  subscribe: (listener: (target: LightsiteNextButtonSettingsTarget) => void) => () => void
+  openSettings: (target: HandoutNextButtonSettingsTarget) => void
+  subscribe: (listener: (target: HandoutNextButtonSettingsTarget) => void) => () => void
 }
 
 type ButtonAttrs = {
@@ -28,26 +28,26 @@ type ButtonConfig = ButtonAttrs & {
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
-    lightsiteNextButtonSettings: {
-      openLightsiteNextButtonSettings: (
+    handoutNextButtonSettings: {
+      openHandoutNextButtonSettings: (
         pos?: number,
-        mode?: LightsiteNextButtonSettingsTarget["mode"]
+        mode?: HandoutNextButtonSettingsTarget["mode"]
       ) => ReturnType
-      previewLightsiteNextButtonDraft: (pos: number, attrs: ButtonConfig) => ReturnType
-      removeLightsiteNextButtonDraft: (pos: number) => ReturnType
-      setLightsiteNextButtonAttrs: (pos: number, attrs: ButtonConfig) => ReturnType
+      previewHandoutNextButtonDraft: (pos: number, attrs: ButtonConfig) => ReturnType
+      removeHandoutNextButtonDraft: (pos: number) => ReturnType
+      setHandoutNextButtonAttrs: (pos: number, attrs: ButtonConfig) => ReturnType
     }
   }
 }
 
-export const LightsiteNextButtonSettings = Extension.create<
+export const HandoutNextButtonSettings = Extension.create<
   Record<string, never>,
   ButtonSettingsStorage
 >({
-  name: "lightsiteNextButtonSettings",
+  name: "handoutNextButtonSettings",
 
   addStorage() {
-    const listeners = new Set<(target: LightsiteNextButtonSettingsTarget) => void>()
+    const listeners = new Set<(target: HandoutNextButtonSettingsTarget) => void>()
 
     return {
       openSettings: (target) => {
@@ -65,7 +65,7 @@ export const LightsiteNextButtonSettings = Extension.create<
 
   addCommands() {
     return {
-      openLightsiteNextButtonSettings:
+      openHandoutNextButtonSettings:
         (pos, mode = "edit") =>
         ({ state, dispatch }) => {
           const target = resolveButtonTarget(state, pos)
@@ -98,7 +98,7 @@ export const LightsiteNextButtonSettings = Extension.create<
 
           return true
         },
-      removeLightsiteNextButtonDraft:
+      removeHandoutNextButtonDraft:
         (pos) =>
         ({ state, dispatch, view }) => {
           const node = state.doc.nodeAt(pos)
@@ -125,7 +125,7 @@ export const LightsiteNextButtonSettings = Extension.create<
 
           return true
         },
-      previewLightsiteNextButtonDraft:
+      previewHandoutNextButtonDraft:
         (pos, attrs) =>
         ({ state, dispatch }) => {
           const node = state.doc.nodeAt(pos)
@@ -140,7 +140,7 @@ export const LightsiteNextButtonSettings = Extension.create<
 
           return true
         },
-      setLightsiteNextButtonAttrs:
+      setHandoutNextButtonAttrs:
         (pos, attrs) =>
         ({ state, dispatch, view }) => {
           const node = state.doc.nodeAt(pos)

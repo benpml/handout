@@ -31,9 +31,9 @@ export const SiteIconList = BulletList.extend({
   name: "iconList",
   priority: 1000,
   addOptions: () => ({ HTMLAttributes: {}, itemTypeName: "iconListItem", keepAttributes: false, keepMarks: false }),
-  parseHTML: () => [{ tag: "ul[data-lightsite-icon-list]" }],
+  parseHTML: () => [{ tag: "ul[data-handout-icon-list]" }],
   renderHTML({ HTMLAttributes }) {
-    return ["ul", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, { "data-lightsite-icon-list": "" }), 0]
+    return ["ul", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, { "data-handout-icon-list": "" }), 0]
   },
   addCommands() {
     return {
@@ -53,9 +53,9 @@ export const SiteIconListItem = ListItem.extend({
     icon: dataAttribute("icon", "box", true),
     iconColor: dataAttribute("icon-color", "neutral", true),
   }),
-  parseHTML: () => [{ tag: "li[data-lightsite-icon-list-item]" }],
+  parseHTML: () => [{ tag: "li[data-handout-icon-list-item]" }],
   renderHTML({ HTMLAttributes }) {
-    return ["li", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, { "data-lightsite-icon-list-item": "" }), 0]
+    return ["li", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, { "data-handout-icon-list-item": "" }), 0]
   },
 })
 
@@ -73,8 +73,8 @@ export const SitePageTitleSection = Node.create({
       renderHTML: (attributes) => ({ "data-align": normalizePageTitleAlign(attributes.align) }),
     },
   }),
-  parseHTML: () => [{ tag: 'section[data-lightsite-page-title=""]' }],
-  renderHTML: ({ HTMLAttributes }) => ["section", mergeAttributes(HTMLAttributes, { "data-lightsite-page-title": "" }), 0],
+  parseHTML: () => [{ tag: 'section[data-handout-page-title=""]' }],
+  renderHTML: ({ HTMLAttributes }) => ["section", mergeAttributes(HTMLAttributes, { "data-handout-page-title": "" }), 0],
 })
 
 export const SitePageTitleTitle = inlineNode("pageTitleTitle", "h1", "page-title-heading")
@@ -126,8 +126,8 @@ export const SiteButtonBlock = Node.create({
         : {},
     },
   }),
-  parseHTML: () => [{ tag: 'a[data-lightsite-button-block=""]' }],
-  renderHTML: ({ HTMLAttributes }) => ["a", mergeAttributes(HTMLAttributes, { "data-lightsite-button-block": "" }), 0],
+  parseHTML: () => [{ tag: 'a[data-handout-button-block=""]' }],
+  renderHTML: ({ HTMLAttributes }) => ["a", mergeAttributes(HTMLAttributes, { "data-handout-button-block": "" }), 0],
 })
 
 export const SiteLogoGrid = containerNode({ name: "logoGrid", tag: "section", dataName: "logo-grid", content: "logoGridItem+" })
@@ -145,15 +145,15 @@ export const SiteGridBlock = Node.create({
       parseHTML: (element) => normalizeGridColumns(element.getAttribute("data-columns")),
       renderHTML: (attributes) => {
         const columns = normalizeGridColumns(attributes.columns)
-        return { "data-columns": String(columns), style: `--lightsite-grid-columns:${columns}` }
+        return { "data-columns": String(columns), style: `--handout-grid-columns:${columns}` }
       },
     },
   }),
-  parseHTML: () => [{ tag: 'div[data-lightsite-grid=""]' }],
-  renderHTML: ({ HTMLAttributes }) => ["div", mergeAttributes(HTMLAttributes, { class: "ls-grid", "data-lightsite-grid": "" }), 0],
+  parseHTML: () => [{ tag: 'div[data-handout-grid=""]' }],
+  renderHTML: ({ HTMLAttributes }) => ["div", mergeAttributes(HTMLAttributes, { class: "handout-grid", "data-handout-grid": "" }), 0],
 })
-export const SiteGridRow = containerNode({ name: "gridRow", tag: "div", dataName: "grid-row", className: "ls-grid-row", content: "gridCell+", group: undefined, isolating: false })
-export const SiteGridCell = containerNode({ name: "gridCell", tag: "div", dataName: "grid-cell", className: "ls-grid-cell", content: "block+", group: undefined })
+export const SiteGridRow = containerNode({ name: "gridRow", tag: "div", dataName: "grid-row", className: "handout-grid-row", content: "gridCell+", group: undefined, isolating: false })
+export const SiteGridCell = containerNode({ name: "gridCell", tag: "div", dataName: "grid-cell", className: "handout-grid-cell", content: "block+", group: undefined })
 
 export const SiteVariableToken = Node.create({
   name: "variableToken", group: "inline", inline: true, atom: true, selectable: true,
@@ -162,7 +162,7 @@ export const SiteVariableToken = Node.create({
     fallbackName: dataAttribute("variable-name", "Variable"),
   }),
   parseHTML: () => [{ tag: "span[data-variable-id]" }],
-  renderHTML: ({ HTMLAttributes, node }) => ["span", mergeAttributes(HTMLAttributes, { "data-lightsite-variable": "", class: "lightsite-editor-variable-token" }), `{${String(node.attrs.fallbackName || "Variable")}}`],
+  renderHTML: ({ HTMLAttributes, node }) => ["span", mergeAttributes(HTMLAttributes, { "data-handout-variable": "", class: "handout-editor-variable-token" }), `{${String(node.attrs.fallbackName || "Variable")}}`],
   renderText: ({ node }) => `{${String(node.attrs.fallbackName || "Variable")}}`,
   addCommands() {
     return { insertVariableToken: (attrs) => ({ commands }) => commands.insertContent({ type: this.name, attrs }) }
@@ -172,7 +172,7 @@ export const SiteVariableToken = Node.create({
 export const SiteGifBlock = Node.create({
   name: "gifBlock", group: "block", atom: true, selectable: true, draggable: true,
   addOptions: () => ({
-    HTMLAttributes: { class: "lightsite-editor-gif", loading: "lazy" },
+    HTMLAttributes: { class: "handout-editor-gif", loading: "lazy" },
     resize: {
       enabled: true,
       directions: ["left", "right"],
@@ -185,8 +185,8 @@ export const SiteGifBlock = Node.create({
     alt: { default: "GIF" }, giphyId: dataAttribute("giphy-id", ""), height: { default: null },
     src: { default: "" }, title: { default: "" }, width: { default: null },
   }),
-  parseHTML: () => [{ tag: 'figure[data-lightsite-gif=""]' }],
-  renderHTML: ({ HTMLAttributes }) => ["figure", mergeAttributes(HTMLAttributes, { "data-lightsite-gif": "" })],
+  parseHTML: () => [{ tag: 'figure[data-handout-gif=""]' }],
+  renderHTML: ({ HTMLAttributes }) => ["figure", mergeAttributes(HTMLAttributes, { "data-handout-gif": "" })],
 })
 
 export const SiteCalendarEmbed = embedNode("calendarEmbed", "calendar-embed", { height: { default: 420 }, src: dataAttribute("src", "") })
@@ -216,8 +216,8 @@ export const SITE_DOCUMENT_PROSEMIRROR_SCHEMA = getSchema(SITE_DOCUMENT_EXTENSIO
 function inlineNode(name: string, tag: string, dataName: string) {
   return Node.create({
     name, content: "inline*", defining: true,
-    parseHTML: () => [{ tag: `${tag}[data-lightsite-${dataName}]` }],
-    renderHTML: ({ HTMLAttributes }) => [tag, mergeAttributes(HTMLAttributes, { [`data-lightsite-${dataName}`]: "" }), 0],
+    parseHTML: () => [{ tag: `${tag}[data-handout-${dataName}]` }],
+    renderHTML: ({ HTMLAttributes }) => [tag, mergeAttributes(HTMLAttributes, { [`data-handout-${dataName}`]: "" }), 0],
   })
 }
 
@@ -229,11 +229,11 @@ function containerNode(input: {
     name: input.name, group: input.group === undefined && !("group" in input) ? "block" : input.group,
     content: input.content, defining: true, isolating: input.isolating ?? true,
     addAttributes: () => input.attributes ?? {},
-    parseHTML: () => [{ tag: `${input.tag}[data-lightsite-${input.dataName}]` }],
+    parseHTML: () => [{ tag: `${input.tag}[data-handout-${input.dataName}]` }],
     renderHTML: ({ HTMLAttributes }) => [input.tag, mergeAttributes(
       HTMLAttributes,
       input.className ? { class: input.className } : {},
-      { [`data-lightsite-${input.dataName}`]: "" },
+      { [`data-handout-${input.dataName}`]: "" },
     ), 0],
   })
 }
@@ -242,8 +242,8 @@ function embedNode(name: string, dataName: string, attributes: Record<string, Re
   return Node.create({
     name, group: "block", atom: true, selectable: true, draggable: true, isolating: true,
     addAttributes: () => attributes,
-    parseHTML: () => [{ tag: `figure[data-lightsite-${dataName}]` }],
-    renderHTML: ({ HTMLAttributes }) => ["figure", mergeAttributes(HTMLAttributes, { [`data-lightsite-${dataName}`]: "" })],
+    parseHTML: () => [{ tag: `figure[data-handout-${dataName}]` }],
+    renderHTML: ({ HTMLAttributes }) => ["figure", mergeAttributes(HTMLAttributes, { [`data-handout-${dataName}`]: "" })],
   })
 }
 

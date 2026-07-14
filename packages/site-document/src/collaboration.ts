@@ -1,5 +1,5 @@
 import type { Schema } from "@tiptap/pm/model"
-import { LIGHTSITE_COLLECTION_LIMITS } from "@lightsite/domain"
+import { HANDOUT_COLLECTION_LIMITS } from "@handout/domain"
 import {
   prosemirrorJSONToYXmlFragment,
   yXmlFragmentToProsemirrorJSON,
@@ -65,7 +65,7 @@ export function initializeSiteCollaborationDocument(
         document.getXmlFragment(getSitePageCollaborationField(page.id)),
       )
     }
-  }, "lightsite-initialize")
+  }, "handout-initialize")
 }
 
 /**
@@ -99,7 +99,7 @@ export function replaceSiteCollaborationContent(
         value.delete(0, value.length)
       }
     }
-  }, "lightsite-replace")
+  }, "handout-replace")
 }
 
 export function readSiteCollaborationContent(document: Y.Doc): SiteContent {
@@ -167,7 +167,7 @@ export function updateSiteCollaborationMetadata(
         fragment.delete(0, fragment.length)
       }
     }
-  }, "lightsite-metadata")
+  }, "handout-metadata")
 }
 
 export type SiteCollaborationRepair = "collection-limit" | "page-required"
@@ -196,7 +196,7 @@ export function repairSiteCollaborationDocument(
         repairs.add("page-required")
       }
 
-      trimArray(pages, LIGHTSITE_COLLECTION_LIMITS.tabs, repairs)
+      trimArray(pages, HANDOUT_COLLECTION_LIMITS.tabs, repairs)
     }
 
     const variables = metadata.get("variables")
@@ -209,11 +209,11 @@ export function repairSiteCollaborationDocument(
       for (const key of ["links", "nextSteps"]) {
         const collection = sidebar.get(key)
         if (collection instanceof Y.Array) {
-          trimArray(collection, LIGHTSITE_COLLECTION_LIMITS.links, repairs)
+          trimArray(collection, HANDOUT_COLLECTION_LIMITS.links, repairs)
         }
       }
     }
-  }, "lightsite-repair")
+  }, "handout-repair")
 
   return [...repairs]
 }

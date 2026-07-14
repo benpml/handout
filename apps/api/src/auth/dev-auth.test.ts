@@ -25,10 +25,10 @@ describe("dev auth bypass", () => {
     }))).toBe(true);
 
     expect(devActor).toEqual({
-      userId: "dev_user_lightsite",
-      email: "dev@lightsite.app",
+      userId: "dev_user_handout",
+      email: "dev@handout.app",
       emailVerified: true,
-      name: "Lightsite Dev",
+      name: "Handout Dev",
     });
   });
 

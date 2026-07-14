@@ -11,8 +11,8 @@ type BlockRange = {
   to: number
 }
 
-export const LightsiteNextBlockSelection = Extension.create({
-  name: "lightsiteNextBlockSelection",
+export const HandoutNextBlockSelection = Extension.create({
+  name: "handoutNextBlockSelection",
 
   addKeyboardShortcuts() {
     return {

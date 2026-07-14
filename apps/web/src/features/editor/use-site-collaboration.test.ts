@@ -9,7 +9,7 @@ const collaborator: EditorCollaborator = {
   clientId: 11,
   color: "#2563eb",
   id: "user-1",
-  name: "Lightsite Dev",
+  name: "Handout Dev",
 }
 
 describe("collaboratorsAreEqual", () => {

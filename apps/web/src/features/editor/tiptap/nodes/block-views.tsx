@@ -1,5 +1,5 @@
 import { NodeViewContent, NodeViewWrapper } from "@tiptap/react"
-import { LIGHTSITE_TEXT_LIMITS, normalizeWebsiteUrl } from "@lightsite/domain"
+import { HANDOUT_TEXT_LIMITS, normalizeWebsiteUrl } from "@handout/domain"
 import type { NodeViewProps } from "@tiptap/react"
 import { TextSelection } from "@tiptap/pm/state"
 import { IconPhoto, IconUpload, IconWorld, IconX } from "@tabler/icons-react"
@@ -9,7 +9,7 @@ import {
   getSiteIconSvgBody,
   normalizeSiteIconColor,
   normalizeSiteIconName,
-} from "@lightsite/site-document"
+} from "@handout/site-document"
 import { useCallback, useEffect, useId, useRef, useState } from "react"
 import type React from "react"
 
@@ -17,13 +17,13 @@ import { cn } from "@/lib/utils"
 import { getDevAuthBypassHeaders } from "@/lib/api/dev-auth-bypass"
 
 import { fitImageDimensions, loadImageDimensions, readImageFileAsAttrs } from "../image-utils"
-import { getLightsiteVariableValue } from "../variable-state"
+import { getHandoutVariableValue } from "../variable-state"
 
 const iconListOptions = SITE_ICON_OPTIONS
 
 const iconColorOptions = SITE_ICON_COLOR_OPTIONS.map((option) => ({
   ...option,
-  className: `lightsite-editor-icon-color-${option.name}`,
+  className: `handout-editor-icon-color-${option.name}`,
 }))
 
 function useIconPickerMenu(editor: NodeViewProps["editor"]) {
@@ -101,7 +101,7 @@ function IconSelectorMenu({
   return (
     <div
       id={menuId}
-      className={cn("lightsite-editor-icon-picker", className)}
+      className={cn("handout-editor-icon-picker", className)}
       contentEditable={false}
       role="menu"
       onMouseDown={(event) => {
@@ -112,15 +112,15 @@ function IconSelectorMenu({
         event.stopPropagation()
       }}
     >
-      <div className="lightsite-editor-icon-color-rail" aria-label="Icon colors">
+      <div className="handout-editor-icon-color-rail" aria-label="Icon colors">
         {iconColorOptions.map((option) => (
           <button
             key={option.name}
             aria-label={option.label}
             className={cn(
-              "lightsite-editor-icon-color-button",
+              "handout-editor-icon-color-button",
               option.className,
-              option.name === iconColor && "lightsite-editor-icon-color-button-active"
+              option.name === iconColor && "handout-editor-icon-color-button-active"
             )}
             role="menuitemradio"
             aria-checked={option.name === iconColor}
@@ -129,15 +129,15 @@ function IconSelectorMenu({
           />
         ))}
       </div>
-      <div className="lightsite-editor-icon-scroll" aria-label="Icons">
-        <div className="lightsite-editor-icon-picker-grid">
+      <div className="handout-editor-icon-scroll" aria-label="Icons">
+        <div className="handout-editor-icon-picker-grid">
           {iconListOptions.map((option) => (
             <button
               key={option.name}
               aria-label={option.label}
               className={cn(
-                "lightsite-editor-icon-picker-button",
-                option.name === iconName && "lightsite-editor-icon-picker-button-active"
+                "handout-editor-icon-picker-button",
+                option.name === iconName && "handout-editor-icon-picker-button-active"
               )}
               role="menuitemradio"
               aria-checked={option.name === iconName}
@@ -177,14 +177,14 @@ export function IconListItemView({ editor, node, updateAttributes }: NodeViewPro
   return (
     <NodeViewWrapper
       ref={wrapperRef}
-      className="lightsite-editor-icon-list-inner"
+      className="handout-editor-icon-list-inner"
     >
       <button
         aria-expanded={open}
         aria-haspopup="menu"
         aria-label="Change icon bullet"
         aria-controls={open ? menuId : undefined}
-        className={cn("lightsite-editor-icon-bullet", iconColorClass)}
+        className={cn("handout-editor-icon-bullet", iconColorClass)}
         contentEditable={false}
         type="button"
         onClick={openMenu}
@@ -202,7 +202,7 @@ export function IconListItemView({ editor, node, updateAttributes }: NodeViewPro
       >
         <IconGlyph name={iconName} size={14} />
       </button>
-      <NodeViewContent className="lightsite-editor-icon-list-content" />
+      <NodeViewContent className="handout-editor-icon-list-content" />
       {open ? (
         <IconSelectorMenu
           iconColor={iconColor}
@@ -233,7 +233,7 @@ export function PageTitleSectionView({ editor, extension, node }: NodeViewProps)
     resolvedWorkspaceLogoSrc && failedWorkspaceLogoSrc !== resolvedWorkspaceLogoSrc
       ? resolvedWorkspaceLogoSrc
       : null
-  const recipientWebsite = getLightsiteVariableValue(editor, "recipient_website")
+  const recipientWebsite = getHandoutVariableValue(editor, "recipient_website")
   const recipientLogoSrc = buildLogoPreviewImageSrc(recipientWebsite, getCurrentLogoTheme())
   const showRecipientLogo = Boolean(
     recipientLogoSrc && failedRecipientLogoSrc !== recipientLogoSrc
@@ -243,15 +243,15 @@ export function PageTitleSectionView({ editor, extension, node }: NodeViewProps)
     <NodeViewWrapper
       as="section"
       data-align={align}
-      data-lightsite-editor-block=""
-      data-lightsite-editor-block-type="page-title"
-      className="lightsite-editor-page-title-shell ls-page-title"
+      data-handout-editor-block=""
+      data-handout-editor-block-type="page-title"
+      className="handout-editor-page-title-shell handout-page-title"
     >
-      <div className="lightsite-editor-page-title">
-        <div className="lightsite-editor-page-title-logos ls-page-title-logos" contentEditable={false}>
+      <div className="handout-editor-page-title">
+        <div className="handout-editor-page-title-logos handout-page-title-logos" contentEditable={false}>
           <LogoTile
             alt={`${workspaceName} logo`}
-            fallbackImageSrc="/lightsite-logo.svg"
+            fallbackImageSrc="/handout-logo.svg"
             fallback={workspaceName}
             src={workspaceLogoSrc}
             onError={() => {
@@ -271,7 +271,7 @@ export function PageTitleSectionView({ editor, extension, node }: NodeViewProps)
             />
           ) : null}
         </div>
-        <NodeViewContent className="lightsite-editor-page-title-content ls-page-title-copy" />
+        <NodeViewContent className="handout-editor-page-title-content handout-page-title-copy" />
       </div>
     </NodeViewWrapper>
   )
@@ -294,11 +294,11 @@ function LogoTile({
   const imageSrc = src || (fallbackImageSrc && !fallbackImageFailed ? fallbackImageSrc : null)
 
   return (
-    <div className="lightsite-editor-page-title-logo-tile ls-page-title-logo">
+    <div className="handout-editor-page-title-logo-tile handout-page-title-logo">
       {imageSrc ? (
         <img
           alt={alt}
-          className="lightsite-editor-page-title-logo-img"
+          className="handout-editor-page-title-logo-img"
           draggable={false}
           src={imageSrc}
           onError={() => {
@@ -311,7 +311,7 @@ function LogoTile({
           }}
         />
       ) : (
-        <span aria-hidden="true" className="lightsite-editor-page-title-logo-fallback">
+        <span aria-hidden="true" className="handout-editor-page-title-logo-fallback">
           {createLogoFallback(fallback)}
         </span>
       )}
@@ -572,7 +572,7 @@ export function ImageCardView({ editor, getPos, node, updateAttributes }: NodeVi
         return
       }
 
-      editor.commands.openLightsiteNextImageCardButtonSettings(pos, "edit")
+      editor.commands.openHandoutNextImageCardButtonSettings(pos, "edit")
     },
     [editor, getPos]
   )
@@ -638,13 +638,13 @@ export function ImageCardView({ editor, getPos, node, updateAttributes }: NodeVi
   return (
     <NodeViewWrapper
       as="figure"
-      data-lightsite-editor-block=""
-      data-lightsite-editor-block-type="image-card"
-      className="lightsite-editor-image-card-shell"
+      data-handout-editor-block=""
+      data-handout-editor-block-type="image-card"
+      className="handout-editor-image-card-shell"
     >
-      <div className="lightsite-editor-image-card ls-image-card">
+      <div className="handout-editor-image-card handout-image-card">
         <div
-          className="lightsite-editor-image-card-media ls-image-card-media"
+          className="handout-editor-image-card-media handout-image-card-media"
           contentEditable={false}
           data-drag-active={dragActive ? "true" : undefined}
           data-has-image={src ? "true" : undefined}
@@ -659,7 +659,7 @@ export function ImageCardView({ editor, getPos, node, updateAttributes }: NodeVi
             ref={inputRef}
             accept="image/*"
             aria-hidden="true"
-            className="lightsite-editor-image-empty-input"
+            className="handout-editor-image-empty-input"
             hidden
             tabIndex={-1}
             type="file"
@@ -668,7 +668,7 @@ export function ImageCardView({ editor, getPos, node, updateAttributes }: NodeVi
           {src ? (
             <button
               aria-label="Replace image"
-              className="lightsite-editor-image-card-replace-button"
+              className="handout-editor-image-card-replace-button"
               title="Replace image"
               type="button"
               onClick={openFilePicker}
@@ -677,11 +677,11 @@ export function ImageCardView({ editor, getPos, node, updateAttributes }: NodeVi
                 event.stopPropagation()
               }}
             >
-              <img src={src} alt={alt} className="lightsite-editor-image-card-img" />
+              <img src={src} alt={alt} className="handout-editor-image-card-img" />
             </button>
           ) : (
             <button
-              className="lightsite-editor-image-empty-button lightsite-editor-image-card-empty-button"
+              className="handout-editor-image-empty-button handout-editor-image-card-empty-button"
               type="button"
               onClick={openFilePicker}
               onMouseDown={(event) => {
@@ -689,18 +689,18 @@ export function ImageCardView({ editor, getPos, node, updateAttributes }: NodeVi
                 event.stopPropagation()
               }}
             >
-              <span className="lightsite-editor-image-empty-title">Upload image</span>
-              <span className="lightsite-editor-image-empty-description">
+              <span className="handout-editor-image-empty-title">Upload image</span>
+              <span className="handout-editor-image-empty-description">
                 {uploadError ? "This image could not be loaded" : "Click or drag an image file here"}
               </span>
             </button>
           )}
         </div>
-        <div className="lightsite-editor-image-card-copy ls-image-card-copy">
-          <NodeViewContent className="lightsite-editor-card-content lightsite-editor-image-card-content min-w-0" />
+        <div className="handout-editor-image-card-copy handout-image-card-copy">
+          <NodeViewContent className="handout-editor-card-content handout-editor-image-card-content min-w-0" />
           {includeButton ? (
             <a
-              className="lightsite-editor-image-card-cta ls-small-button"
+              className="handout-editor-image-card-cta handout-small-button"
               href={buttonUrl || "#"}
               contentEditable={false}
               onClick={openButtonSettings}
@@ -722,11 +722,11 @@ export function LogoGridView() {
   return (
     <NodeViewWrapper
       as="section"
-      data-lightsite-editor-block=""
-      data-lightsite-editor-block-type="logo-grid"
-      className="lightsite-editor-logo-grid-shell"
+      data-handout-editor-block=""
+      data-handout-editor-block-type="logo-grid"
+      className="handout-editor-logo-grid-shell"
     >
-      <NodeViewContent className="lightsite-editor-logo-grid ls-logo-grid" />
+      <NodeViewContent className="handout-editor-logo-grid handout-logo-grid" />
     </NodeViewWrapper>
   )
 }
@@ -930,7 +930,7 @@ export function LogoGridItemView({ editor, getPos, node, updateAttributes }: Nod
 
       const target =
         event.target instanceof Element
-          ? event.target.closest("[data-lightsite-logo-grid-title]")
+          ? event.target.closest("[data-handout-logo-grid-title]")
           : null
 
       if (!target || !target.classList.contains("is-empty")) {
@@ -960,8 +960,8 @@ export function LogoGridItemView({ editor, getPos, node, updateAttributes }: Nod
   return (
     <NodeViewWrapper
       as="article"
-      className="lightsite-editor-logo-grid-item ls-logo-grid-item"
-      data-lightsite-logo-grid-item=""
+      className="handout-editor-logo-grid-item handout-logo-grid-item"
+      data-handout-logo-grid-item=""
       data-drag-active={dragActive ? "true" : undefined}
       data-has-logo={src ? "true" : undefined}
       data-upload-error={uploadError ? "true" : undefined}
@@ -974,7 +974,7 @@ export function LogoGridItemView({ editor, getPos, node, updateAttributes }: Nod
         ref={inputRef}
         accept="image/*"
         aria-hidden="true"
-        className="lightsite-editor-image-empty-input"
+        className="handout-editor-image-empty-input"
         contentEditable={false}
         hidden
         tabIndex={-1}
@@ -985,7 +985,7 @@ export function LogoGridItemView({ editor, getPos, node, updateAttributes }: Nod
         ref={logoButtonRef}
         aria-expanded={logoMenuOpen}
         aria-label={src ? "Change logo" : "Add logo"}
-        className="lightsite-editor-logo-grid-logo-button ls-logo-grid-image"
+        className="handout-editor-logo-grid-logo-button handout-logo-grid-image"
         contentEditable={false}
         title={src ? "Change logo" : "Add logo"}
         type="button"
@@ -996,7 +996,7 @@ export function LogoGridItemView({ editor, getPos, node, updateAttributes }: Nod
         }}
       >
         {src ? (
-          <img alt={alt} className="lightsite-editor-logo-grid-img" draggable={false} src={src} />
+          <img alt={alt} className="handout-editor-logo-grid-img" draggable={false} src={src} />
         ) : (
           <IconPhoto aria-hidden="true" focusable="false" size={20} stroke={2} />
         )}
@@ -1004,7 +1004,7 @@ export function LogoGridItemView({ editor, getPos, node, updateAttributes }: Nod
       {logoMenuOpen ? (
         <div
           ref={logoMenuRef}
-          className="lightsite-editor-logo-grid-menu"
+          className="handout-editor-logo-grid-menu"
           contentEditable={false}
           onMouseDown={(event) => {
             event.stopPropagation()
@@ -1014,26 +1014,26 @@ export function LogoGridItemView({ editor, getPos, node, updateAttributes }: Nod
           }}
         >
           <button
-            className="lightsite-editor-logo-grid-menu-item"
+            className="handout-editor-logo-grid-menu-item"
             type="button"
             onClick={openFilePicker}
           >
             <IconUpload aria-hidden="true" focusable="false" size={16} stroke={2} />
             <span>Upload image</span>
           </button>
-          <div className="lightsite-editor-logo-grid-menu-separator" />
-          <form className="lightsite-editor-logo-grid-domain-form" onSubmit={applyLogoFromDomain}>
-            <label className="lightsite-editor-logo-grid-domain-label" htmlFor={domainInputId}>
+          <div className="handout-editor-logo-grid-menu-separator" />
+          <form className="handout-editor-logo-grid-domain-form" onSubmit={applyLogoFromDomain}>
+            <label className="handout-editor-logo-grid-domain-label" htmlFor={domainInputId}>
               Company website
             </label>
-            <div className="lightsite-editor-logo-grid-domain-control">
+            <div className="handout-editor-logo-grid-domain-control">
               <IconWorld aria-hidden="true" focusable="false" size={16} stroke={2} />
               <input
                 id={domainInputId}
                 autoComplete="off"
-                className="lightsite-editor-logo-grid-domain-input"
+                className="handout-editor-logo-grid-domain-input"
                 disabled={domainLoading}
-                maxLength={LIGHTSITE_TEXT_LIMITS.url}
+                maxLength={HANDOUT_TEXT_LIMITS.url}
                 name="logo_company_website"
                 placeholder="acme.com"
                 type="text"
@@ -1051,14 +1051,14 @@ export function LogoGridItemView({ editor, getPos, node, updateAttributes }: Nod
               />
             </div>
             {domainError ? (
-              <p className="lightsite-editor-logo-grid-domain-error">{domainError}</p>
+              <p className="handout-editor-logo-grid-domain-error">{domainError}</p>
             ) : null}
             {uploadError ? (
-              <p className="lightsite-editor-logo-grid-domain-error">Could not upload that image.</p>
+              <p className="handout-editor-logo-grid-domain-error">Could not upload that image.</p>
             ) : null}
-            <div className="lightsite-editor-logo-grid-domain-actions">
+            <div className="handout-editor-logo-grid-domain-actions">
               <button
-                className="lightsite-editor-logo-grid-domain-cancel"
+                className="handout-editor-logo-grid-domain-cancel"
                 disabled={domainLoading}
                 type="button"
                 onClick={() => {
@@ -1069,7 +1069,7 @@ export function LogoGridItemView({ editor, getPos, node, updateAttributes }: Nod
                 Cancel
               </button>
               <button
-                className="lightsite-editor-logo-grid-domain-submit"
+                className="handout-editor-logo-grid-domain-submit"
                 disabled={domainLoading}
                 type="submit"
               >
@@ -1079,11 +1079,11 @@ export function LogoGridItemView({ editor, getPos, node, updateAttributes }: Nod
           </form>
         </div>
       ) : null}
-      <NodeViewContent className="lightsite-editor-logo-grid-title-content" />
+      <NodeViewContent className="handout-editor-logo-grid-title-content" />
       {canRemove ? (
         <button
           aria-label="Remove logo"
-          className="lightsite-editor-logo-grid-remove"
+          className="handout-editor-logo-grid-remove"
           contentEditable={false}
           title="Remove logo"
           type="button"
@@ -1187,7 +1187,7 @@ export function TestimonialCardView({ editor, node, updateAttributes }: NodeView
       const target =
         event.target instanceof Element
           ? event.target.closest(
-              "[data-lightsite-testimonial-author-name], [data-lightsite-testimonial-author-role], [data-lightsite-testimonial-quote]"
+              "[data-handout-testimonial-author-name], [data-handout-testimonial-author-role], [data-handout-testimonial-quote]"
             )
           : null
 
@@ -1218,12 +1218,12 @@ export function TestimonialCardView({ editor, node, updateAttributes }: NodeView
   return (
     <NodeViewWrapper
       as="article"
-      data-lightsite-editor-block=""
-      data-lightsite-editor-block-type="testimonial"
-      className="lightsite-editor-testimonial-card-shell"
+      data-handout-editor-block=""
+      data-handout-editor-block-type="testimonial"
+      className="handout-editor-testimonial-card-shell"
     >
       <div
-        className="lightsite-editor-testimonial-card ls-testimonial"
+        className="handout-editor-testimonial-card handout-testimonial"
         data-drag-active={dragActive ? "true" : undefined}
         data-upload-error={uploadError ? "true" : undefined}
         onDragLeave={handleDragLeave}
@@ -1235,7 +1235,7 @@ export function TestimonialCardView({ editor, node, updateAttributes }: NodeView
           ref={inputRef}
           accept="image/*"
           aria-hidden="true"
-          className="lightsite-editor-image-empty-input"
+          className="handout-editor-image-empty-input"
           contentEditable={false}
           hidden
           tabIndex={-1}
@@ -1244,7 +1244,7 @@ export function TestimonialCardView({ editor, node, updateAttributes }: NodeView
         />
         <button
           aria-label={src ? "Replace avatar" : "Upload avatar"}
-          className="lightsite-editor-testimonial-avatar ls-testimonial-avatar"
+          className="handout-editor-testimonial-avatar handout-testimonial-avatar"
           contentEditable={false}
           data-has-image={src ? "true" : undefined}
           title={src ? "Replace avatar" : "Upload avatar"}
@@ -1256,12 +1256,12 @@ export function TestimonialCardView({ editor, node, updateAttributes }: NodeView
           }}
         >
           {src ? (
-            <img src={src} alt={alt} className="lightsite-editor-testimonial-avatar-img" />
+            <img src={src} alt={alt} className="handout-editor-testimonial-avatar-img" />
           ) : (
             <IconPhoto aria-hidden="true" focusable="false" size={20} stroke={2} />
           )}
         </button>
-        <NodeViewContent className="lightsite-editor-testimonial-content" />
+        <NodeViewContent className="handout-editor-testimonial-content" />
       </div>
     </NodeViewWrapper>
   )
@@ -1291,13 +1291,13 @@ export function IconCardView({ editor, node, updateAttributes }: NodeViewProps) 
   return (
     <NodeViewWrapper
       as="article"
-      data-lightsite-editor-block=""
-      data-lightsite-editor-block-type="icon-card"
+      data-handout-editor-block=""
+      data-handout-editor-block-type="icon-card"
     >
-      <div className="ls-icon-card">
+      <div className="handout-icon-card">
         <div
           ref={wrapperRef}
-          className="lightsite-editor-icon-card-picker-anchor"
+          className="handout-editor-icon-card-picker-anchor"
           contentEditable={false}
         >
           <button
@@ -1305,7 +1305,7 @@ export function IconCardView({ editor, node, updateAttributes }: NodeViewProps) 
             aria-haspopup="menu"
             aria-label="Change card icon"
             aria-controls={open ? menuId : undefined}
-            className={cn("lightsite-editor-icon-card-button ls-card-icon", iconColorClass)}
+            className={cn("handout-editor-icon-card-button handout-card-icon", iconColorClass)}
             type="button"
             onClick={openMenu}
             onKeyDown={(event) => {
@@ -1324,7 +1324,7 @@ export function IconCardView({ editor, node, updateAttributes }: NodeViewProps) 
           </button>
           {open ? (
             <IconSelectorMenu
-              className="lightsite-editor-icon-picker-card"
+              className="handout-editor-icon-picker-card"
               iconColor={iconColor}
               iconName={iconName}
               menuId={menuId}
@@ -1333,7 +1333,7 @@ export function IconCardView({ editor, node, updateAttributes }: NodeViewProps) 
             />
           ) : null}
         </div>
-        <NodeViewContent className="lightsite-editor-card-content min-w-0" />
+        <NodeViewContent className="handout-editor-card-content min-w-0" />
       </div>
     </NodeViewWrapper>
   )
@@ -1368,7 +1368,7 @@ export function ButtonBlockView({ editor, getPos, node }: NodeViewProps) {
       editor
         .chain()
         .focus()
-        .openLightsiteNextButtonSettings(pos, href ? "edit" : "create")
+        .openHandoutNextButtonSettings(pos, href ? "edit" : "create")
         .run()
     },
     [editor, getPos, href]
@@ -1376,14 +1376,14 @@ export function ButtonBlockView({ editor, getPos, node }: NodeViewProps) {
 
   return (
     <NodeViewWrapper
-      data-lightsite-editor-block=""
-      data-lightsite-editor-block-type="button"
+      data-handout-editor-block=""
+      data-handout-editor-block-type="button"
       data-full-width={fullWidth ? "true" : undefined}
     >
       <div
         className={cn(
-          "lightsite-editor-button-block ls-button-block",
-          fullWidth && "lightsite-editor-button-block-full ls-button-block-full"
+          "handout-editor-button-block handout-button-block",
+          fullWidth && "handout-editor-button-block-full handout-button-block-full"
         )}
         data-link-empty={href ? undefined : "true"}
         title={href || "No link set"}
@@ -1396,8 +1396,8 @@ export function ButtonBlockView({ editor, getPos, node }: NodeViewProps) {
         tabIndex={0}
       >
         <NodeViewContent
-          className="lightsite-editor-button-label min-w-5 outline-none"
-          data-lightsite-editor-button-label=""
+          className="handout-editor-button-label min-w-5 outline-none"
+          data-handout-editor-button-label=""
         />
       </div>
     </NodeViewWrapper>
@@ -1408,7 +1408,7 @@ function isButtonLabelEventTarget(target: EventTarget | null) {
   const element =
     target instanceof Element ? target : target instanceof Text ? target.parentElement : null
 
-  return Boolean(element?.closest("[data-lightsite-editor-button-label]"))
+  return Boolean(element?.closest("[data-handout-editor-button-label]"))
 }
 
 function IconGlyph({ name, size }: { name: unknown; size: number }) {
@@ -1436,7 +1436,7 @@ function getIconColorClass(color: string) {
 
   return (
     iconColorOptions.find((option) => option.name === normalizedColor)?.className ??
-    "lightsite-editor-icon-color-neutral"
+    "handout-editor-icon-color-neutral"
   )
 }
 

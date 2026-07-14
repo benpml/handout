@@ -1,28 +1,27 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type SetStateAction } from "react"
+/* eslint-disable react-hooks/immutability, react-hooks/set-state-in-effect -- This editor synchronizes imperative ProseMirror collaboration state with React-owned route state. */
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type SetStateAction } from "react"
 import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query"
 import { useNavigate, useParams } from "@tanstack/react-router"
 import { useEditor, useEditorState } from "@tiptap/react"
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model"
 import type { Transaction } from "@tiptap/pm/state"
-import type { ListSitesResponse } from "@lightsite/contracts"
-import { getSitePageCollaborationField } from "@lightsite/site-document"
+import type { ListSitesResponse } from "@handout/contracts"
 import {
-  LIGHTSITE_COLLECTION_LIMITS,
+  getSitePageCollaborationField,
+  type SiteVariableDefinition,
+} from "@handout/site-document"
+import {
+  HANDOUT_COLLECTION_LIMITS,
   clampTextToLimit,
-} from "@lightsite/domain"
+} from "@handout/domain"
 import { toast } from "sonner"
 
 import {
   useActiveWorkspace,
   useAppBootstrap,
 } from "@/features/app-bootstrap/app-bootstrap-hooks"
-import {
-  deleteSite,
-  duplicateSite,
-  listSites,
-  publishSite,
-  updateSite,
-} from "@/features/sites/api"
+import { listSites, publishSite } from "@/features/sites/api"
+import { getSiteVariableUsageCounts } from "@/features/site-settings/model"
 import { queryKeys } from "@/lib/api/query-keys"
 import { getApiErrorMessage, isApiClientError } from "@/lib/api/errors"
 import { cn } from "@/lib/utils"
@@ -44,15 +43,18 @@ import {
   type EditorSiteDraft,
 } from "./site-sidebar-model"
 import { createEditorExtensions } from "./tiptap/extensions"
-import { initialEditorContent, type LightsiteVariableOption } from "./tiptap/schema"
-import { getLightsiteVariableStorage } from "./tiptap/variable-state"
+import { initialEditorContent, type HandoutVariableOption } from "./tiptap/schema"
+import {
+  getHandoutVariableStorage,
+  setHandoutVariableDefinitions,
+} from "./tiptap/variable-state"
 import { editorVariables, editorVariableValues } from "./tiptap/variables"
-import type { EditorMode, SiteTheme, SiteThemeMode } from "./types"
+import type { EditorMode, SiteTheme } from "./types"
 import { useSiteCollaboration } from "./use-site-collaboration"
 
 const editorProps = {
   attributes: {
-    class: "lightsite-editor-prosemirror ls-prosemirror",
+    class: "handout-editor-prosemirror handout-prosemirror",
   },
 } as const
 
@@ -174,9 +176,7 @@ function ReadyEditorPage({
   const activeWorkspace = useActiveWorkspace()
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [variableDefinitions, setVariableDefinitions] =
-    useState<LightsiteVariableOption[]>(() =>
-      getShareVariableDefinitions(null, editorVariables)
-    )
+    useState<HandoutVariableOption[]>(() => editorVariables)
   const variableDefinitionsRef = useRef(variableDefinitions)
   const [editorMode, setEditorMode] = useState<EditorMode>("edit")
   const [documentRevision, setDocumentRevision] = useState(0)
@@ -184,32 +184,6 @@ function ReadyEditorPage({
   const sitesQuery = useQuery({
     queryKey: queryKeys.sites(activeWorkspace.id),
     queryFn: ({ signal }) => listSites(signal),
-  })
-  const renameSiteMutation = useMutation({
-    mutationFn: (name: string) => updateSite(siteId, { name }),
-    onSuccess: async () => {
-      await invalidateSiteQueries(queryClient, activeWorkspace.id, siteId)
-      toast.success("Site renamed")
-    },
-  })
-  const duplicateSiteMutation = useMutation({
-    mutationFn: () => duplicateSite(siteId),
-    onSuccess: async (data) => {
-      await invalidateSiteQueries(queryClient, activeWorkspace.id, siteId)
-      toast.success("Site duplicated")
-      await navigate({
-        to: "/edit/$siteId",
-        params: { siteId: data.site.id },
-      })
-    },
-  })
-  const deleteSiteMutation = useMutation({
-    mutationFn: () => deleteSite(siteId),
-    onSuccess: async () => {
-      await invalidateSiteQueries(queryClient, activeWorkspace.id, siteId)
-      toast.success("Site deleted")
-      await navigate({ to: "/sites" })
-    },
   })
   const publishSiteMutation = useMutation({
     mutationFn: async () => {
@@ -422,21 +396,6 @@ function ReadyEditorPage({
     [activeWorkspace.slug, currentSite?.slug]
   )
 
-  const renameSite = useCallback(
-    (name: string) => renameSiteMutation.mutateAsync(name).then(() => undefined),
-    [renameSiteMutation.mutateAsync]
-  )
-
-  const duplicateCurrentSite = useCallback(
-    () => duplicateSiteMutation.mutateAsync().then(() => undefined),
-    [duplicateSiteMutation.mutateAsync]
-  )
-
-  const deleteCurrentSite = useCallback(
-    () => deleteSiteMutation.mutateAsync().then(() => undefined),
-    [deleteSiteMutation.mutateAsync]
-  )
-
   const publishCurrentSite = useCallback(
     () => publishSiteMutation.mutateAsync().then(() => undefined),
     [publishSiteMutation.mutateAsync]
@@ -446,12 +405,59 @@ function ReadyEditorPage({
     setShareDialogOpen(true)
   }, [])
 
-  const setSiteThemeMode = useCallback((mode: SiteThemeMode) => {
+  const createSiteVariable = useCallback((input: Pick<
+    SiteVariableDefinition,
+    "defaultValue" | "description" | "label"
+  >) => {
+    if (!editor || editor.isDestroyed) return
+    const created = editor.commands.createHandoutVariable({
+      name: input.label,
+      description: input.description,
+      defaultValue: typeof input.defaultValue === "string" ? input.defaultValue : "",
+    })
+    if (!created) return
+    const nextDefinitions = [...getHandoutVariableStorage(editor).definitions]
+    variableDefinitionsRef.current = nextDefinitions
+    setVariableDefinitions(nextDefinitions)
     updateSiteDraft((currentDraft) => ({
       ...currentDraft,
-      themeMode: mode,
+      variables: toSiteVariableDefinitions(nextDefinitions),
     }))
-  }, [updateSiteDraft])
+  }, [editor, updateSiteDraft])
+
+  const editSiteVariable = useCallback((variableId: string, input: Pick<
+    SiteVariableDefinition,
+    "defaultValue" | "description" | "label"
+  >) => {
+    if (!editor || editor.isDestroyed) return
+    const changed = editor.commands.setHandoutVariableDefinition(variableId, {
+      name: input.label,
+      description: input.description,
+      defaultValue: typeof input.defaultValue === "string" ? input.defaultValue : "",
+    })
+    if (!changed) return
+    const nextDefinitions = [...getHandoutVariableStorage(editor).definitions]
+    variableDefinitionsRef.current = nextDefinitions
+    setVariableDefinitions(nextDefinitions)
+    updateSiteDraft((currentDraft) => ({
+      ...currentDraft,
+      variables: toSiteVariableDefinitions(nextDefinitions),
+    }))
+  }, [editor, updateSiteDraft])
+
+  const deleteSiteVariable = useCallback((variableId: string) => {
+    if (!editor || editor.isDestroyed || systemShareVariableIds.has(variableId)) return
+    const nextDefinitions = getHandoutVariableStorage(editor).definitions.filter(
+      (definition) => definition.id !== variableId,
+    )
+    setHandoutVariableDefinitions(editor, nextDefinitions)
+    variableDefinitionsRef.current = nextDefinitions
+    setVariableDefinitions(nextDefinitions)
+    updateSiteDraft((currentDraft) => ({
+      ...currentDraft,
+      variables: toSiteVariableDefinitions(nextDefinitions),
+    }))
+  }, [editor, updateSiteDraft])
 
   const toggleSiteTheme = useCallback(() => {
     updateSiteDraft((currentDraft) => {
@@ -530,7 +536,7 @@ function ReadyEditorPage({
       editor.view.dispatch(
         editor.state.tr
           .setMeta("addToHistory", false)
-          .setMeta("lightsiteEditorMode", editorMode)
+          .setMeta("handoutEditorMode", editorMode)
       )
 
       if (!isEditing) {
@@ -589,18 +595,18 @@ function ReadyEditorPage({
         name: variable.label,
         slug: variable.key,
         type: variable.type,
+        description: variable.description,
         defaultValue: typeof variable.defaultValue === "string" ? variable.defaultValue : "",
       })),
     )
-    const storage = getLightsiteVariableStorage(editor)
+    const storage = getHandoutVariableStorage(editor)
     if (!storage) {
       return
     }
     storage.definitions = loadedVariables
-    const nextShareDefinitions = getShareVariableDefinitions(editor.state.doc, loadedVariables)
-    if (!lightsiteVariablesAreEqual(variableDefinitionsRef.current, nextShareDefinitions)) {
-      variableDefinitionsRef.current = nextShareDefinitions
-      setVariableDefinitions(nextShareDefinitions)
+    if (!handoutVariablesAreEqual(variableDefinitionsRef.current, loadedVariables)) {
+      variableDefinitionsRef.current = loadedVariables
+      setVariableDefinitions(loadedVariables)
     }
   }, [collaboration.isReady, editor, siteDraft.variables])
 
@@ -621,15 +627,12 @@ function ReadyEditorPage({
     }
 
     const syncVariables = (incrementDocumentRevision: boolean) => {
-      const storage = getLightsiteVariableStorage(editor)
+      const storage = getHandoutVariableStorage(editor)
       if (!storage) {
         return
       }
-      const nextDefinitions = getShareVariableDefinitions(
-        editor.state.doc,
-        storage.definitions
-      )
-      const definitionsChanged = !lightsiteVariablesAreEqual(
+      const nextDefinitions = storage.definitions
+      const definitionsChanged = !handoutVariablesAreEqual(
         variableDefinitionsRef.current,
         nextDefinitions,
       )
@@ -639,7 +642,7 @@ function ReadyEditorPage({
         setVariableDefinitions(nextDefinitions)
         updateSiteDraft((currentDraft) => ({
           ...currentDraft,
-          variables: mergeSiteVariableDefinitions(currentDraft.variables, nextDefinitions),
+          variables: toSiteVariableDefinitions(nextDefinitions),
         }))
       }
       if (incrementDocumentRevision) {
@@ -680,8 +683,8 @@ function ReadyEditorPage({
 
     const currentDraft = siteDraftRef.current
 
-    if (currentDraft.pages.length >= LIGHTSITE_COLLECTION_LIMITS.tabs) {
-      toast.error(`You can add up to ${LIGHTSITE_COLLECTION_LIMITS.tabs} tabs.`)
+    if (currentDraft.pages.length >= HANDOUT_COLLECTION_LIMITS.tabs) {
+      toast.error(`You can add up to ${HANDOUT_COLLECTION_LIMITS.tabs} tabs.`)
       return
     }
 
@@ -771,8 +774,8 @@ function ReadyEditorPage({
   }, [activePageId, editor, updateSiteDraft])
 
   const addSidebarLink = useCallback((input: { label: string; href: string }) => {
-    if (siteDraftRef.current.sidebar.links.length >= LIGHTSITE_COLLECTION_LIMITS.links) {
-      toast.error(`You can add up to ${LIGHTSITE_COLLECTION_LIMITS.links} links.`)
+    if (siteDraftRef.current.sidebar.links.length >= HANDOUT_COLLECTION_LIMITS.links) {
+      toast.error(`You can add up to ${HANDOUT_COLLECTION_LIMITS.links} links.`)
       return
     }
 
@@ -824,8 +827,8 @@ function ReadyEditorPage({
     href: string
     style: EditorSidebarButtonStyle
   }) => {
-    if (siteDraftRef.current.sidebar.nextSteps.length >= LIGHTSITE_COLLECTION_LIMITS.links) {
-      toast.error(`You can add up to ${LIGHTSITE_COLLECTION_LIMITS.links} buttons.`)
+    if (siteDraftRef.current.sidebar.nextSteps.length >= HANDOUT_COLLECTION_LIMITS.links) {
+      toast.error(`You can add up to ${HANDOUT_COLLECTION_LIMITS.links} buttons.`)
       return
     }
 
@@ -882,7 +885,7 @@ function ReadyEditorPage({
     return {
       ...currentContent,
       themeMode: siteTheme,
-      variables: mergeSiteVariableDefinitions(currentContent.variables, variableDefinitions),
+      variables: toSiteVariableDefinitions(variableDefinitions),
       pages: currentContent.pages.map((page) =>
         page.id === activePageId
           ? { ...page, document: activeEditor.getJSON() }
@@ -901,6 +904,19 @@ function ReadyEditorPage({
     variableDefinitions,
   ])
 
+  const siteSettingsVariables = useMemo(
+    () => toSiteVariableDefinitions(variableDefinitions),
+    [variableDefinitions],
+  )
+  const siteVariableUsageCounts = useMemo(
+    () => getSiteVariableUsageCounts(previewContent),
+    [previewContent],
+  )
+  const shareVariableDefinitions = useMemo(
+    () => getShareVariableDefinitions(activeEditor?.state.doc ?? null, variableDefinitions),
+    [activeEditor, documentRevision, variableDefinitions],
+  )
+
   return (
     <div
       data-editor-page=""
@@ -908,32 +924,36 @@ function ReadyEditorPage({
       data-theme={siteTheme}
       data-site-id={siteId}
       className={cn(siteTheme, "flex h-svh min-h-0 flex-col overflow-hidden bg-background text-foreground")}
+      style={getEditorPrimaryColorStyle(siteDraft.settings.primaryColor)}
     >
       <EditorHeader
         canRedo={editorState?.canRedo ?? false}
         canUndo={editorState?.canUndo ?? false}
+        canManageTracking={activeWorkspace.role === "admin"}
         collaborators={collaboration.collaborators}
-        isDeletingSite={deleteSiteMutation.isPending}
-        isDuplicatingSite={duplicateSiteMutation.isPending}
+        content={siteDraft}
         isPublishing={publishSiteMutation.isPending}
-        isRenamingSite={renameSiteMutation.isPending}
         lastPublishedAt={currentSite?.publishedAt ?? null}
         liveSiteDisplayUrl={publicSiteDisplayUrl}
         liveSiteUrl={publicSiteUrl}
         mode={editorMode}
         siteName={siteName}
-        onDeleteSite={deleteCurrentSite}
-        onDuplicateSite={duplicateCurrentSite}
+        onContentChange={updateSiteDraft}
+        onCreateVariable={createSiteVariable}
+        onDeleteVariable={deleteSiteVariable}
+        onEditVariable={editSiteVariable}
         onModeChange={setEditorMode}
         onPublish={publishCurrentSite}
-        onRenameSite={renameSite}
         onShare={openShareDialog}
-        onSiteThemeModeChange={setSiteThemeMode}
+        plan={activeWorkspace.plan}
         publishStatus={publishStatus}
         recipientCount={recipients.length}
         saveStatus={collaboration.saveStatus}
+        siteId={siteId}
         siteTheme={siteTheme}
-        siteThemeMode={siteThemeMode}
+        usageCounts={siteVariableUsageCounts}
+        variables={siteSettingsVariables}
+        workspaceId={activeWorkspace.id}
         onRedo={redo}
         onToggleSiteTheme={toggleSiteTheme}
         onUndo={undo}
@@ -998,7 +1018,7 @@ function ReadyEditorPage({
         siteUri={siteUri}
         siteVersion={currentSite?.publishedAt}
         updateRecipient={updateRecipient}
-        variables={variableDefinitions}
+        variables={shareVariableDefinitions}
       />
     </div>
   )
@@ -1007,12 +1027,12 @@ function ReadyEditorPage({
 const systemShareVariableIds = new Set([
   "recipient-name",
   "recipient-company",
-  "var-company-logo",
+  "recipient_website",
 ])
 
 function getShareVariableDefinitions(
   doc: ProseMirrorNode | null,
-  definitions: LightsiteVariableOption[]
+  definitions: HandoutVariableOption[]
 ) {
   const usedVariableIds = new Set<string>()
 
@@ -1032,9 +1052,9 @@ function getShareVariableDefinitions(
   )
 }
 
-function lightsiteVariablesAreEqual(
-  left: LightsiteVariableOption[],
-  right: LightsiteVariableOption[]
+function handoutVariablesAreEqual(
+  left: HandoutVariableOption[],
+  right: HandoutVariableOption[]
 ) {
   if (left.length !== right.length) {
     return false
@@ -1055,43 +1075,60 @@ function lightsiteVariablesAreEqual(
   })
 }
 
-function toSiteVariableDefinitions(variables: LightsiteVariableOption[]) {
+function toSiteVariableDefinitions(variables: HandoutVariableOption[]) {
   return variables.map((variable) => ({
     id: variable.id,
     key: variable.slug,
     label: variable.name,
     type: variable.type ?? getVariableType(variable),
+    description: variable.description,
     defaultValue: variable.defaultValue ?? "",
   }))
 }
 
-function mergeSiteVariableDefinitions(
-  current: EditorSiteDraft["variables"],
-  variables: LightsiteVariableOption[],
-) {
-  const byId = new Map(current.map((variable) => [variable.id, variable]))
-
-  for (const variable of toSiteVariableDefinitions(variables)) {
-    byId.set(variable.id, variable)
-  }
-
-  return [...byId.values()]
-}
-
 function mergeVariableOptions(
-  base: LightsiteVariableOption[],
-  overrides: LightsiteVariableOption[],
+  base: HandoutVariableOption[],
+  overrides: HandoutVariableOption[],
 ) {
   const byId = new Map(base.map((variable) => [variable.id, variable]))
-  overrides.forEach((variable) => byId.set(variable.id, variable))
+  overrides.forEach((variable) => {
+    const systemVariable = byId.get(variable.id)
+    byId.set(variable.id, systemShareVariableIds.has(variable.id) && systemVariable
+      ? {
+          ...variable,
+          name: systemVariable.name,
+          slug: systemVariable.slug,
+          description: systemVariable.description,
+          type: systemVariable.type,
+        }
+      : variable)
+  })
   return [...byId.values()]
 }
 
-function getVariableType(variable: LightsiteVariableOption) {
+function getVariableType(variable: HandoutVariableOption) {
   const value = `${variable.id} ${variable.slug} ${variable.name}`.toLowerCase()
   if (value.includes("logo") || value.includes("image") || value.includes("avatar")) return "image" as const
   if (value.includes("url") || value.includes("website") || value.includes("link")) return "url" as const
   return "text" as const
+}
+
+function getEditorPrimaryColorStyle(
+  color: EditorSiteDraft["settings"]["primaryColor"],
+) {
+  if (color === "neutral") {
+    return {
+      "--handout-primary": "var(--foreground)",
+      "--handout-primary-foreground": "var(--background)",
+      "--handout-primary-soft": "var(--accent)",
+    } as CSSProperties
+  }
+
+  return {
+    "--handout-primary": `var(--${color}-foreground)`,
+    "--handout-primary-foreground": "var(--background)",
+    "--handout-primary-soft": `var(--${color}-background)`,
+  } as CSSProperties
 }
 
 function getPublicSiteUrl(workspaceSlug: string, siteSlug: string) {
@@ -1102,20 +1139,20 @@ function getPublicSiteUrl(workspaceSlug: string, siteSlug: string) {
   const path = `/${workspaceSlug}/${siteSlug}`
 
   if (typeof window === "undefined") {
-    return `https://lightsite.io${path}`
+    return `https://handout.link${path}`
   }
 
   if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
     return `${window.location.origin}${path}`
   }
 
-  return `https://lightsite.io${path}`
+  return `https://handout.link${path}`
 }
 
 function getPublicSiteDisplayUrl(workspaceSlug: string, siteSlug: string) {
   if (!workspaceSlug || !siteSlug) {
-    return "lightsite.io/site-path"
+    return "handout.link/site-path"
   }
 
-  return `lightsite.io/${workspaceSlug}/${siteSlug}`
+  return `handout.link/${workspaceSlug}/${siteSlug}`
 }

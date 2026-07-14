@@ -36,7 +36,7 @@ export type ExtensionAuthCodeService = {
 
 export class ExtensionAuthCodeError extends Error {
   constructor() {
-    super("The Lightsite connection expired or is invalid.");
+    super("The Handout connection expired or is invalid.");
     this.name = "ExtensionAuthCodeError";
   }
 }

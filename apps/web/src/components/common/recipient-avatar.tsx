@@ -18,8 +18,6 @@ const fallbackColors = [
   { background: "bg-green-background", foreground: "text-green-foreground" },
   { background: "bg-yellow-background", foreground: "text-yellow-foreground" },
   { background: "bg-orange-background", foreground: "text-orange-foreground" },
-  { background: "bg-red-background", foreground: "text-red-foreground" },
-  { background: "bg-pink-background", foreground: "text-pink-foreground" },
 ] as const
 
 export function RecipientAvatar({
@@ -31,7 +29,7 @@ export function RecipientAvatar({
   recipient: RecipientAvatarIdentity | null
   size?: ComponentProps<typeof Avatar>["size"]
 }) {
-  const identity = recipient?.company?.trim() || recipient?.name?.trim() || "Lightsite"
+  const identity = recipient?.company?.trim() || recipient?.name?.trim() || "Handout"
   const fallback = identity.charAt(0).toUpperCase() || "L"
   const color = fallbackColors[stableHash(identity) % fallbackColors.length]
   const logoUrl = getRecipientLogoUrl(recipient?.website)

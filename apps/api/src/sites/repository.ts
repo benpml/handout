@@ -9,7 +9,7 @@ import {
   type Database,
   type SiteContent,
   type SiteVariableDefinition,
-} from "@lightsite/db";
+} from "@handout/db";
 
 export type SiteRecord = {
   id: string;

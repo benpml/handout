@@ -24,15 +24,20 @@ const ORIGIN_TIMEOUT_MS = 8000;
 const SCREENSHOT_ORIGIN_TIMEOUT_MS = 20_000;
 const HTML_CONTENT_TYPE = "text/html; charset=utf-8";
 const JPEG_CONTENT_TYPE = "image/jpeg";
-const EDGE_CACHE_NAME = "lightsite-public-v1";
+const EDGE_CACHE_NAME = "handout-public-v1";
 
 export default {
   async fetch(request, env, ctx): Promise<Response> {
     const url = new URL(request.url);
+
+    if (url.pathname === "/") {
+      return Response.redirect("https://www.handout.link", 308);
+    }
+
     const routeKind = classifyPublicRoute(url.pathname);
 
     if (routeKind === "health") {
-      return json({ ok: true, service: "lightsite-public-worker" }, 200, "no-store");
+      return json({ ok: true, service: "handout-public-worker" }, 200, "no-store");
     }
 
     if (routeKind === "api") {
@@ -263,7 +268,7 @@ async function fetchOrigin(
   originUrl.host = apiOrigin.host;
 
   const headers = new Headers(request.headers);
-  headers.set("x-lightsite-edge", "cloudflare-worker");
+  headers.set("x-handout-edge", "cloudflare-worker");
   headers.set("x-forwarded-host", new URL(request.url).host);
 
   return fetch(originUrl, {
@@ -350,7 +355,7 @@ async function writeR2Snapshot(env: Env, key: string, response: Response) {
 
 function withEdgeHeader(response: Response, value: string, requestMethod: string) {
   const headers = new Headers(response.headers);
-  headers.set("x-lightsite-edge-cache", value);
+  headers.set("x-handout-edge-cache", value);
 
   return new Response(requestMethod === "HEAD" ? null : response.body, {
     headers,
@@ -368,7 +373,7 @@ function securityHeaders(headersInit: HeadersInit) {
 }
 
 function publicUrlFor(env: Env, pathname: string) {
-  const origin = env.PUBLIC_ORIGIN ?? "https://lightsite.io";
+  const origin = env.PUBLIC_ORIGIN ?? "https://handout.link";
 
   return new URL(pathname, origin).toString();
 }

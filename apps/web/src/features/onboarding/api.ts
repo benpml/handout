@@ -5,7 +5,7 @@ import type {
   WorkspaceLogoPreviewResponse,
   WorkspaceSlugAvailabilityResponse,
   WorkspaceSummary,
-} from "@lightsite/contracts"
+} from "@handout/contracts"
 
 import { apiRequest } from "@/lib/api/client"
 

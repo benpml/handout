@@ -1,5 +1,5 @@
 import { createContext } from "react"
-import type { AppBootstrapResponse } from "@lightsite/contracts"
+import type { AppBootstrapResponse } from "@handout/contracts"
 
 export type AppBootstrapContextValue = AppBootstrapResponse
 

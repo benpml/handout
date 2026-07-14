@@ -1,42 +1,55 @@
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { parseTrackingReplayStorageEnv } from "@handout/config";
 import { config } from "dotenv";
-import { env } from "../src/env";
-import { createFileTrackingV2RecordingObjectStore } from "../src/tracking/v2/recording-object-store";
 import { createDbTrackingV2Repository } from "../src/tracking/v2/repository";
+import { createConfiguredTrackingV2RecordingObjectStore } from "../src/tracking/v2/recording-config";
+import { createDbTrackingV2RecordingRepository } from "../src/tracking/v2/recording-repository";
 import {
   createTrackingV2RetentionService,
   TrackingV2RetentionInputError,
 } from "../src/tracking/v2/retention";
+import {
+  runTrackingV2RetentionUntilIdle,
+  TrackingV2RetentionUnhealthyError,
+} from "../src/tracking/v2/retention-runner";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 config({ path: resolve(scriptDir, "../../../.env"), quiet: true });
 
 async function main() {
-  const { db, queryClient } = await import("@lightsite/db");
+  const { db, queryClient } = await import("@handout/db");
+  const batchSize = readPositiveIntegerFlag("--batch-size") ?? 500;
+  const maxBatches = readPositiveIntegerFlag("--max-batches") ?? 20;
 
   try {
+    const objectStore = createConfiguredTrackingV2RecordingObjectStore(
+      parseTrackingReplayStorageEnv(process.env),
+    );
     const service = createTrackingV2RetentionService({
       repository: createDbTrackingV2Repository(db),
-      recordingObjectStore: resolveRecordingObjectStore(),
+      ...(objectStore ? {
+        recording: {
+          objectStore,
+          repository: createDbTrackingV2RecordingRepository(db),
+        },
+      } : {}),
     });
-    const result = await service.runOnce({
-      batchSize: readPositiveIntegerFlag("--batch-size"),
-      objectBatchSize: readPositiveIntegerFlag("--object-batch-size"),
-    });
-
-    console.log(JSON.stringify(result, null, 2));
+    try {
+      console.log(JSON.stringify(await runTrackingV2RetentionUntilIdle({
+        service,
+        batchSize,
+        maxBatches,
+      }), null, 2));
+    } catch (error) {
+      if (error instanceof TrackingV2RetentionUnhealthyError) {
+        console.log(JSON.stringify(error.result, null, 2));
+      }
+      throw error;
+    }
   } finally {
     await queryClient.end();
   }
-}
-
-function resolveRecordingObjectStore() {
-  if (!env.TRACKING_RECORDING_ENABLED || !env.TRACKING_RECORDING_STORAGE_DIR) {
-    return null;
-  }
-
-  return createFileTrackingV2RecordingObjectStore(env.TRACKING_RECORDING_STORAGE_DIR);
 }
 
 function readPositiveIntegerFlag(name: string) {

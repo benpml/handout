@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import type {
   ExtensionAuthAuthorizeRequest,
   ExtensionAuthAuthorizeResponse,
-} from "@lightsite/contracts"
+} from "@handout/contracts"
 import { IconCheck, IconPlugConnected } from "@tabler/icons-react"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -50,7 +50,7 @@ export function ExtensionConnectPage() {
       setError(
         caughtError instanceof Error
           ? caughtError.message
-          : "Lightsite could not connect to Gmail. Try again.",
+          : "Handout could not connect to Gmail. Try again.",
       )
     }
   }, [request])
@@ -63,7 +63,7 @@ export function ExtensionConnectPage() {
   return (
     <main className="flex min-h-svh items-center justify-center bg-page-background p-6">
       <section className="flex w-full max-w-sm flex-col items-center gap-6 text-center">
-        <img src="/lightsite-logo.svg" alt="Lightsite" className="h-[17px] w-[83px]" />
+        <img src="/handout-logo.svg" alt="Handout" className="h-[17px] w-[85px]" />
         {state === "error" ? (
           <Alert variant="destructive" className="text-left">
             <AlertTitle>Extension could not connect</AlertTitle>
@@ -81,7 +81,7 @@ export function ExtensionConnectPage() {
             </div>
             <div className="flex flex-col gap-1">
               <h1 className="text-lg font-semibold">
-                {state === "complete" ? "Lightsite connected" : "Connecting to Gmail"}
+                {state === "complete" ? "Handout connected" : "Connecting to Gmail"}
               </h1>
               <p className="text-sm text-muted-foreground">
                 {state === "complete"
@@ -108,7 +108,7 @@ function parseExtensionConnectRequest(): ExtensionAuthAuthorizeRequest | null {
 const extensionAuthorizeResponseSchema = {
   parse(value: unknown): ExtensionAuthAuthorizeResponse {
     if (!value || typeof value !== "object" || Array.isArray(value)) {
-      throw new Error("Lightsite returned an invalid connection response.")
+      throw new Error("Handout returned an invalid connection response.")
     }
     const response = value as Record<string, unknown>
     if (
@@ -116,7 +116,7 @@ const extensionAuthorizeResponseSchema = {
       typeof response.redirectUri !== "string" ||
       typeof response.requestId !== "string"
     ) {
-      throw new Error("Lightsite returned an invalid connection response.")
+      throw new Error("Handout returned an invalid connection response.")
     }
     return {
       code: response.code,

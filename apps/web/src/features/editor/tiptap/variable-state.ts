@@ -1,35 +1,44 @@
 import type { Editor } from "@tiptap/core"
 
-import type { LightsiteVariableOption, LightsiteVariableValueMap } from "./schema"
+import type { HandoutVariableOption, HandoutVariableValueMap } from "./schema"
 
-export const editorVariableStorageKey = "lightsiteNextVariables"
+export const editorVariableStorageKey = "handoutNextVariables"
 
-export type LightsiteVariableStorage = {
+export type HandoutVariableStorage = {
   activeVariantId: string
-  definitions: LightsiteVariableOption[]
-  values: LightsiteVariableValueMap
+  definitions: HandoutVariableOption[]
+  values: HandoutVariableValueMap
 }
 
-export function getLightsiteVariableStorage(editor: Editor): LightsiteVariableStorage {
+export function getHandoutVariableStorage(editor: Editor): HandoutVariableStorage {
   const storage = editor.storage as unknown as Record<string, unknown>
 
-  return storage[editorVariableStorageKey] as LightsiteVariableStorage
+  return storage[editorVariableStorageKey] as HandoutVariableStorage
 }
 
-export function findLightsiteVariable(editor: Editor, variableId: string) {
-  return getLightsiteVariableStorage(editor).definitions.find((variable) => variable.id === variableId)
+export function findHandoutVariable(editor: Editor, variableId: string) {
+  return getHandoutVariableStorage(editor).definitions.find((variable) => variable.id === variableId)
 }
 
-export function getLightsiteVariableValue(editor: Editor, variableId: string) {
-  const storage = getLightsiteVariableStorage(editor)
+export function setHandoutVariableDefinitions(
+  editor: Editor,
+  definitions: HandoutVariableOption[],
+) {
+  const storage = getHandoutVariableStorage(editor)
+  storage.definitions = definitions
+  editor.view.dispatch(editor.state.tr.setMeta("handoutNextVariablesChanged", true))
+}
+
+export function getHandoutVariableValue(editor: Editor, variableId: string) {
+  const storage = getHandoutVariableStorage(editor)
   const variable = storage.definitions.find((definition) => definition.id === variableId)
   const variantValue = storage.values[storage.activeVariantId]?.[variableId]
 
   return variantValue ?? variable?.defaultValue ?? ""
 }
 
-export function createLightsiteVariableId(name: string) {
-  const slug = createLightsiteVariableSlug(name)
+export function createHandoutVariableId(name: string) {
+  const slug = createHandoutVariableSlug(name)
   const suffix =
     typeof crypto !== "undefined" && "randomUUID" in crypto
       ? crypto.randomUUID().slice(0, 8)
@@ -38,7 +47,7 @@ export function createLightsiteVariableId(name: string) {
   return `var-${slug || "variable"}-${suffix}`
 }
 
-export function createLightsiteVariableSlug(name: string) {
+export function createHandoutVariableSlug(name: string) {
   return name
     .trim()
     .toLowerCase()
@@ -47,8 +56,8 @@ export function createLightsiteVariableSlug(name: string) {
     .replace(/^-+|-+$/g, "")
 }
 
-export function getUniqueLightsiteVariableSlug(name: string, variables: LightsiteVariableOption[]) {
-  const baseSlug = createLightsiteVariableSlug(name) || "variable"
+export function getUniqueHandoutVariableSlug(name: string, variables: HandoutVariableOption[]) {
+  const baseSlug = createHandoutVariableSlug(name) || "variable"
   const existingSlugs = new Set(variables.map((variable) => variable.slug))
   let nextSlug = baseSlug
   let suffix = 2
@@ -61,6 +70,6 @@ export function getUniqueLightsiteVariableSlug(name: string, variables: Lightsit
   return nextSlug
 }
 
-export function normalizeLightsiteVariableName(name: string) {
+export function normalizeHandoutVariableName(name: string) {
   return name.trim().replace(/\s+/g, " ")
 }

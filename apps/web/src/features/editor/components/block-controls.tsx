@@ -1,5 +1,5 @@
 import { DragHandle } from "@tiptap/extension-drag-handle-react"
-import { LIGHTSITE_TEXT_LIMITS, normalizeWebsiteUrl } from "@lightsite/domain"
+import { HANDOUT_TEXT_LIMITS, normalizeWebsiteUrl } from "@handout/domain"
 import { NodeRangeSelection } from "@tiptap/extension-node-range"
 import type { Editor } from "@tiptap/react"
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model"
@@ -62,7 +62,7 @@ import {
 import { cn } from "@/lib/utils"
 
 import { fitImageDimensions, loadImageDimensions, readImageFileAsAttrs } from "../tiptap/image-utils"
-import type { LightsiteNextBlockType } from "../tiptap/schema"
+import type { HandoutNextBlockType } from "../tiptap/schema"
 
 type EditorBlockControlsProps = {
   editor: Editor
@@ -91,7 +91,7 @@ const blockMenuWidth = 278
 const blockMenuMaxHeight = 480
 
 const compactBlockHandleAlignment = {
-  name: "lightsiteCompactBlockHandleAlignment",
+  name: "handoutCompactBlockHandleAlignment",
   fn({
     rects,
     y,
@@ -127,7 +127,7 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
   const menuRef = useRef<HTMLDivElement>(null)
   const menuOpen = menuPosition !== null && menuTarget !== null
   const canTurnInto = menuTarget?.node.type.isInGroup("block") ?? false
-  const currentBlockType = menuTarget ? getLightsiteNextBlockType(menuTarget.node) : null
+  const currentBlockType = menuTarget ? getHandoutNextBlockType(menuTarget.node) : null
   const gridContext = menuTarget ? resolveGridMenuContext(editor, menuTarget) : null
   const tableHeaderState =
     menuTarget?.node.type.name === "table" ? getTableHeaderState(menuTarget.node) : null
@@ -188,7 +188,7 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
         items: Array<{
           icon: typeof IconPilcrow
           label: string
-          type: LightsiteNextBlockType
+          type: HandoutNextBlockType
         }>
       }>,
     []
@@ -257,7 +257,7 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
       if (
         target instanceof Element &&
         (menuRef.current?.contains(target) ||
-          target.closest(".lightsite-editor-drag-handle"))
+          target.closest(".handout-editor-drag-handle"))
       ) {
         return
       }
@@ -301,7 +301,7 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
       return
     }
 
-    editor.chain().focus().deleteLightsiteNextBlock(target.pos).run()
+    editor.chain().focus().deleteHandoutNextBlock(target.pos).run()
     closeMenu()
   }, [closeMenu, editor, menuTarget])
 
@@ -550,11 +550,11 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
 
     closeMenu()
     if (target.node.type.name === "iconListItem") {
-      editor.chain().focus().insertLightsiteNextIconListItemAfter(target.pos).run()
+      editor.chain().focus().insertHandoutNextIconListItemAfter(target.pos).run()
       return
     }
 
-    editor.chain().focus().insertLightsiteNextCommandParagraphAfter(target.pos).run()
+    editor.chain().focus().insertHandoutNextCommandParagraphAfter(target.pos).run()
   }, [activeBlock, closeMenu, editor])
 
   const clearDropcursorAfterDrag = useCallback(() => {
@@ -600,17 +600,17 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
       />
       <DragHandle
         editor={editor}
-        className="lightsite-editor-drag-handle"
+        className="handout-editor-drag-handle"
         computePositionConfig={compactBlockHandlePositionConfig}
         onElementDragEnd={clearDropcursorAfterDrag}
         onElementDragStart={closeMenu}
         onNodeChange={handleActiveBlockChange}
-        pluginKey="lightsiteNextDragHandle"
+        pluginKey="handoutNextDragHandle"
       >
         <button
           aria-label="Insert block"
-          className="lightsite-editor-side-button"
-          data-lightsite-editor-block-plus=""
+          className="handout-editor-side-button"
+          data-handout-editor-block-plus=""
           draggable={false}
           title="Insert block"
           type="button"
@@ -636,8 +636,8 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
         </button>
         <span
           aria-label="Block menu"
-          className="lightsite-editor-side-button lightsite-editor-drag-grip"
-          data-lightsite-editor-block-handle=""
+          className="handout-editor-side-button handout-editor-drag-grip"
+          data-handout-editor-block-handle=""
           role="button"
           tabIndex={0}
           title="Block menu"
@@ -666,7 +666,7 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
         <div
           ref={menuRef}
           data-editor-block-menu=""
-          className="lightsite-editor-block-menu"
+          className="handout-editor-block-menu"
           role="menu"
           style={{ left: menuPosition.x, maxHeight: menuPosition.maxHeight, top: menuPosition.y }}
           onPointerDown={(event) => {
@@ -678,7 +678,7 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
         >
           {menuTarget?.node.type.name === "imageCard" ? (
             <>
-              <div className="lightsite-editor-block-menu-label">Image card</div>
+              <div className="handout-editor-block-menu-label">Image card</div>
               <BlockMenuItem
                 icon={menuTarget.node.attrs.src ? IconRefresh : IconUpload}
                 label={menuTarget.node.attrs.src ? "Replace image" : "Upload image"}
@@ -694,7 +694,7 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
                     const node = editor.state.doc.nodeAt(pos)
                     const mode = node?.attrs.includeButton ? "edit" : "create"
 
-                    editor.commands.openLightsiteNextImageCardButtonSettings(pos, mode)
+                    editor.commands.openHandoutNextImageCardButtonSettings(pos, mode)
                   })
                 }}
               />
@@ -722,12 +722,12 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
                   }}
                 />
               ) : null}
-              <div className="lightsite-editor-block-menu-separator" />
+              <div className="handout-editor-block-menu-separator" />
             </>
           ) : null}
           {menuTarget?.node.type.name === "testimonialCard" ? (
             <>
-              <div className="lightsite-editor-block-menu-label">Testimonial</div>
+              <div className="handout-editor-block-menu-label">Testimonial</div>
               <BlockMenuItem
                 icon={menuTarget.node.attrs.src ? IconRefresh : IconUpload}
                 label={menuTarget.node.attrs.src ? "Replace avatar" : "Upload avatar"}
@@ -735,12 +735,12 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
                   imageUploadInputRef.current?.click()
                 }}
               />
-              <div className="lightsite-editor-block-menu-separator" />
+              <div className="handout-editor-block-menu-separator" />
             </>
           ) : null}
           {menuTarget?.node.type.name === "image" ? (
             <>
-              <div className="lightsite-editor-block-menu-label">Image</div>
+              <div className="handout-editor-block-menu-label">Image</div>
               <BlockMenuItem
                 icon={IconUpload}
                 label="Upload image"
@@ -757,12 +757,12 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
                 }}
               />
               {imageUrlFormOpen ? (
-                <form className="lightsite-editor-block-menu-url-form" onSubmit={replaceImageFromUrl}>
+                <form className="handout-editor-block-menu-url-form" onSubmit={replaceImageFromUrl}>
                   <input
                     autoFocus
-                    className="lightsite-editor-block-menu-url-input"
+                    className="handout-editor-block-menu-url-input"
                     inputMode="url"
-                    maxLength={LIGHTSITE_TEXT_LIMITS.url}
+                    maxLength={HANDOUT_TEXT_LIMITS.url}
                     placeholder="https://example.com/image.png"
                     type="text"
                     value={imageUrlDraft}
@@ -785,11 +785,11 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
                     }}
                   />
                   {imageReplaceError ? (
-                    <div className="lightsite-editor-block-menu-url-error">{imageReplaceError}</div>
+                    <div className="handout-editor-block-menu-url-error">{imageReplaceError}</div>
                   ) : null}
-                  <div className="lightsite-editor-block-menu-url-actions">
+                  <div className="handout-editor-block-menu-url-actions">
                     <button
-                      className="lightsite-editor-block-menu-url-button lightsite-editor-block-menu-url-button-cancel"
+                      className="handout-editor-block-menu-url-button handout-editor-block-menu-url-button-cancel"
                       type="button"
                       onClick={() => {
                         setImageUrlFormOpen(false)
@@ -798,69 +798,69 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
                     >
                       Cancel
                     </button>
-                    <button className="lightsite-editor-block-menu-url-button" type="submit">
+                    <button className="handout-editor-block-menu-url-button" type="submit">
                       Replace
                     </button>
                   </div>
                 </form>
               ) : null}
-              <div className="lightsite-editor-block-menu-separator" />
+              <div className="handout-editor-block-menu-separator" />
             </>
           ) : null}
           {menuTarget?.node.type.name === "gifBlock" ? (
             <>
-              <div className="lightsite-editor-block-menu-label">GIF</div>
+              <div className="handout-editor-block-menu-label">GIF</div>
               <BlockMenuItem
                 icon={IconGif}
                 label="Change GIF"
                 onClick={() => {
                   runBlockCommand((pos) => {
-                    editor.chain().focus().openLightsiteNextGifPicker(pos).run()
+                    editor.chain().focus().openHandoutNextGifPicker(pos).run()
                   })
                 }}
               />
-              <div className="lightsite-editor-block-menu-separator" />
+              <div className="handout-editor-block-menu-separator" />
             </>
           ) : null}
           {menuTarget?.node.type.name === "calendarEmbed" ? (
             <>
-              <div className="lightsite-editor-block-menu-label">Calendar</div>
+              <div className="handout-editor-block-menu-label">Calendar</div>
               <BlockMenuItem
                 icon={IconCalendarEvent}
                 label="Edit calendar"
                 onClick={() => {
                   runBlockCommand((pos) => {
-                    editor.chain().focus().openLightsiteNextCalendarEmbedSettings(pos, "edit").run()
+                    editor.chain().focus().openHandoutNextCalendarEmbedSettings(pos, "edit").run()
                   })
                 }}
               />
-              <div className="lightsite-editor-block-menu-separator" />
+              <div className="handout-editor-block-menu-separator" />
             </>
           ) : null}
           {menuTarget?.node.type.name === "videoEmbed" ? (
             <>
-              <div className="lightsite-editor-block-menu-label">Video</div>
+              <div className="handout-editor-block-menu-label">Video</div>
               <BlockMenuItem
                 icon={IconVideo}
                 label="Edit video"
                 onClick={() => {
                   runBlockCommand((pos) => {
-                    editor.chain().focus().openLightsiteNextVideoEmbedSettings(pos, "edit").run()
+                    editor.chain().focus().openHandoutNextVideoEmbedSettings(pos, "edit").run()
                   })
                 }}
               />
-              <div className="lightsite-editor-block-menu-separator" />
+              <div className="handout-editor-block-menu-separator" />
             </>
           ) : null}
           {menuTarget?.node.type.name === "buttonBlock" ? (
             <>
-              <div className="lightsite-editor-block-menu-label">Button</div>
+              <div className="handout-editor-block-menu-label">Button</div>
               <BlockMenuItem
                 icon={IconLink}
                 label="Edit button"
                 onClick={() => {
                   runBlockCommand((pos) => {
-                    editor.chain().focus().openLightsiteNextButtonSettings(pos, "edit").run()
+                    editor.chain().focus().openHandoutNextButtonSettings(pos, "edit").run()
                   })
                 }}
               />
@@ -871,8 +871,8 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
                 trailing={
                   <span
                     className={cn(
-                      "lightsite-editor-block-menu-switch",
-                      menuTarget.node.attrs.fullWidth === true && "lightsite-editor-block-menu-switch-on"
+                      "handout-editor-block-menu-switch",
+                      menuTarget.node.attrs.fullWidth === true && "handout-editor-block-menu-switch-on"
                     )}
                     aria-hidden="true"
                   />
@@ -888,19 +888,19 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
                     editor
                       .chain()
                       .focus()
-                      .setLightsiteNextButtonAttrs(pos, {
+                      .setHandoutNextButtonAttrs(pos, {
                         fullWidth: node.attrs.fullWidth !== true,
                       })
                       .run()
                   })
                 }}
               />
-              <div className="lightsite-editor-block-menu-separator" />
+              <div className="handout-editor-block-menu-separator" />
             </>
           ) : null}
           {menuTarget?.node.type.name === "pageTitleSection" ? (
             <>
-              <div className="lightsite-editor-block-menu-label">Page title</div>
+              <div className="handout-editor-block-menu-label">Page title</div>
               <BlockMenuItem
                 active={menuTarget.node.attrs.align !== "left" && menuTarget.node.attrs.align !== "right"}
                 icon={IconAlignCenter}
@@ -921,12 +921,12 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
                   })
                 }}
               />
-              <div className="lightsite-editor-block-menu-separator" />
+              <div className="handout-editor-block-menu-separator" />
             </>
           ) : null}
           {menuTarget?.node.type.name === "logoGrid" ? (
             <>
-              <div className="lightsite-editor-block-menu-label">Logo grid</div>
+              <div className="handout-editor-block-menu-label">Logo grid</div>
               <BlockMenuItem
                 icon={IconPlus}
                 label="Add logo"
@@ -936,12 +936,12 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
                   })
                 }}
               />
-              <div className="lightsite-editor-block-menu-separator" />
+              <div className="handout-editor-block-menu-separator" />
             </>
           ) : null}
           {menuTarget?.node.type.name === "table" ? (
             <>
-              <div className="lightsite-editor-block-menu-label">Table</div>
+              <div className="handout-editor-block-menu-label">Table</div>
               <BlockMenuItem
                 icon={IconRowInsertTop}
                 label="Add row above"
@@ -1012,18 +1012,18 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
                   runTableCommand(() => editor.commands.deleteTable())
                 }}
               />
-              <div className="lightsite-editor-block-menu-separator" />
+              <div className="handout-editor-block-menu-separator" />
             </>
           ) : null}
           {gridContext ? (
             <>
-              <div className="lightsite-editor-block-menu-label">Grid</div>
+              <div className="handout-editor-block-menu-label">Grid</div>
               <BlockMenuItem
                 icon={IconRowInsertTop}
                 label="Add row above"
                 onClick={() => {
                   runBlockCommand((pos) => {
-                    editor.chain().focus().addLightsiteNextGridRow(pos, "before").run()
+                    editor.chain().focus().addHandoutNextGridRow(pos, "before").run()
                   })
                 }}
               />
@@ -1032,7 +1032,7 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
                 label="Add row below"
                 onClick={() => {
                   runBlockCommand((pos) => {
-                    editor.chain().focus().addLightsiteNextGridRow(pos, "after").run()
+                    editor.chain().focus().addHandoutNextGridRow(pos, "after").run()
                   })
                 }}
               />
@@ -1043,7 +1043,7 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
                     label="Add column left"
                     onClick={() => {
                       runBlockCommand((pos) => {
-                        editor.chain().focus().addLightsiteNextGridColumn(pos, "before").run()
+                        editor.chain().focus().addHandoutNextGridColumn(pos, "before").run()
                       })
                     }}
                   />
@@ -1052,7 +1052,7 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
                     label="Add column right"
                     onClick={() => {
                       runBlockCommand((pos) => {
-                        editor.chain().focus().addLightsiteNextGridColumn(pos, "after").run()
+                        editor.chain().focus().addHandoutNextGridColumn(pos, "after").run()
                       })
                     }}
                   />
@@ -1067,7 +1067,7 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
                       label="Delete row above"
                       onClick={() => {
                         runBlockCommand((pos) => {
-                          editor.chain().focus().deleteLightsiteNextGridRow(pos, "before").run()
+                          editor.chain().focus().deleteHandoutNextGridRow(pos, "before").run()
                         })
                       }}
                     />
@@ -1079,7 +1079,7 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
                       label="Delete row below"
                       onClick={() => {
                         runBlockCommand((pos) => {
-                          editor.chain().focus().deleteLightsiteNextGridRow(pos, "after").run()
+                          editor.chain().focus().deleteHandoutNextGridRow(pos, "after").run()
                         })
                       }}
                     />
@@ -1098,7 +1098,7 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
                           editor
                             .chain()
                             .focus()
-                            .deleteLightsiteNextGridColumn(pos, "before")
+                            .deleteHandoutNextGridColumn(pos, "before")
                             .run()
                         })
                       }}
@@ -1114,7 +1114,7 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
                           editor
                             .chain()
                             .focus()
-                            .deleteLightsiteNextGridColumn(pos, "after")
+                            .deleteHandoutNextGridColumn(pos, "after")
                             .run()
                         })
                       }}
@@ -1122,7 +1122,7 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
                   ) : null}
                 </>
               ) : null}
-              <div className="lightsite-editor-block-menu-separator" />
+              <div className="handout-editor-block-menu-separator" />
             </>
           ) : null}
           <BlockMenuItem
@@ -1130,7 +1130,7 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
             label="Duplicate"
             onClick={() => {
               runBlockCommand((pos) => {
-                editor.chain().focus().duplicateLightsiteNextBlock(pos).run()
+                editor.chain().focus().duplicateHandoutNextBlock(pos).run()
               })
             }}
           />
@@ -1144,13 +1144,13 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
           ) : null}
           {canTurnInto ? (
             <>
-              <div className="lightsite-editor-block-menu-separator" />
-              <div className="lightsite-editor-block-menu-label">Turn into</div>
+              <div className="handout-editor-block-menu-separator" />
+              <div className="handout-editor-block-menu-label">Turn into</div>
               {turnIntoGroups.map((group, groupIndex) => (
                 <div key={group.label}>
-                  {groupIndex > 0 ? <div className="lightsite-editor-block-menu-separator" /> : null}
+                  {groupIndex > 0 ? <div className="handout-editor-block-menu-separator" /> : null}
                   {groupIndex > 0 ? (
-                    <div className="lightsite-editor-block-menu-label">{group.label}</div>
+                    <div className="handout-editor-block-menu-label">{group.label}</div>
                   ) : null}
                   {group.items.map((item) => (
                     <BlockMenuItem
@@ -1160,7 +1160,7 @@ export function EditorBlockControls({ editor }: EditorBlockControlsProps) {
                       label={item.label}
                       onClick={() => {
                         runBlockCommand((pos) => {
-                          editor.chain().focus().turnLightsiteNextBlockInto(pos, item.type).run()
+                          editor.chain().focus().turnHandoutNextBlockInto(pos, item.type).run()
                         })
                       }}
                     />
@@ -1193,8 +1193,8 @@ function BlockMenuItem({
   return (
     <button
       className={cn(
-        "lightsite-editor-block-menu-item",
-        danger && "lightsite-editor-block-menu-item-danger"
+        "handout-editor-block-menu-item",
+        danger && "handout-editor-block-menu-item-danger"
       )}
       data-active={active ? "true" : undefined}
       role="menuitem"
@@ -1202,10 +1202,10 @@ function BlockMenuItem({
       onClick={onClick}
     >
       <Icon />
-      <span className="lightsite-editor-block-menu-item-copy">
-        <span className="lightsite-editor-block-menu-item-label">{label}</span>
+      <span className="handout-editor-block-menu-item-copy">
+        <span className="handout-editor-block-menu-item-label">{label}</span>
       </span>
-      {trailing ?? (active ? <IconCheck className="lightsite-editor-block-menu-item-check" /> : null)}
+      {trailing ?? (active ? <IconCheck className="handout-editor-block-menu-item-check" /> : null)}
     </button>
   )
 }
@@ -1404,7 +1404,7 @@ function getBlockId(node: ProseMirrorNode) {
   return typeof id === "string" && id.length > 0 ? id : null
 }
 
-function getLightsiteNextBlockType(node: ProseMirrorNode): LightsiteNextBlockType | null {
+function getHandoutNextBlockType(node: ProseMirrorNode): HandoutNextBlockType | null {
   switch (node.type.name) {
     case "paragraph":
       if (isEmojiOnlyParagraph(node)) {

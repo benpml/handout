@@ -5,8 +5,8 @@ import {
   workspaceMembers,
   workspaces,
   type Database,
-} from "@lightsite/db";
-import type { BillingInterval, BillingSubscriptionStatus, WorkspacePlan } from "@lightsite/contracts";
+} from "@handout/db";
+import type { BillingInterval, BillingSubscriptionStatus, WorkspacePlan } from "@handout/contracts";
 
 export type BillingRecord = {
   workspaceId: string;

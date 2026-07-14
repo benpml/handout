@@ -2,14 +2,18 @@ import { Router, type Request } from "express";
 import {
   trackingV2EventsQuerySchema,
   trackingV2EventsResponseSchema,
+  trackingV2CreateInternalIpRangeRequestSchema,
   trackingV2EntityIdSchema,
+  trackingV2InternalIpRangesResponseSchema,
+  trackingV2RecordingManifestResponseSchema,
+  trackingV2RecordingSequenceSchema,
   trackingV2SiteTrackingSettingsResponseSchema,
   trackingV2SessionIdSchema,
   trackingV2SessionResponseSchema,
   trackingV2SessionsQuerySchema,
   trackingV2SessionsResponseSchema,
   trackingV2UpdateSiteSettingsRequestSchema,
-} from "@lightsite/tracking-schema";
+} from "@handout/tracking-schema";
 import { getAgentAuthContext } from "../../auth/agent-auth";
 import type { CurrentActor, CurrentActorProvider } from "../../auth/current-actor";
 import { devActor, getDevAppBootstrap, isDevAuthBypassRequest } from "../../auth/dev-auth";
@@ -23,6 +27,7 @@ import { asyncHandler } from "../../http/async-handler";
 import { AppError, issuesFromZodError } from "../../http/errors";
 import {
   TrackingV2InvalidCursorError,
+  TrackingV2InvalidIpRangeError,
   TrackingV2UnavailableError,
   type TrackingV2ReadWorkspace,
   type TrackingV2Service,
@@ -36,6 +41,49 @@ export type TrackingV2ReadRouterOptions = {
 
 export function createTrackingV2ReadRouter(options: TrackingV2ReadRouterOptions) {
   const router = Router({ mergeParams: true });
+
+  router.get("/internal-ip-ranges", asyncHandler(async (request, response) => {
+    const context = await resolveTrackingV2RequestContext(request, options);
+    const ranges = await options.trackingService.listInternalIpRanges(context.workspace.id);
+    response.setHeader("cache-control", "no-store").json(trackingV2InternalIpRangesResponseSchema.parse({
+      ranges,
+      requestId: request.context.requestId,
+    }));
+  }));
+
+  router.post("/internal-ip-ranges", asyncHandler(async (request, response) => {
+    const context = await resolveTrackingV2RequestContext(request, options);
+    requireTrackingAdmin(context.workspace);
+    const parsed = trackingV2CreateInternalIpRangeRequestSchema.safeParse(request.body);
+    if (!parsed.success) throw invalidTrackingV2Payload(parsed.error, "Invalid internal IP range.");
+    let range;
+    try {
+      range = await options.trackingService.createInternalIpRange({
+        workspaceId: context.workspace.id,
+        userId: context.actor.userId,
+        range: parsed.data,
+      });
+    } catch (error) {
+      if (error instanceof TrackingV2InvalidIpRangeError) {
+        throw new AppError({ code: "tracking.invalid_payload", message: error.message, status: 400 });
+      }
+      throw mapTrackingV2ServiceError(error);
+    }
+    response.status(201).setHeader("cache-control", "no-store").json(trackingV2InternalIpRangesResponseSchema.parse({
+      ranges: [range],
+      requestId: request.context.requestId,
+    }));
+  }));
+
+  router.delete("/internal-ip-ranges/:rangeId", asyncHandler(async (request, response) => {
+    const context = await resolveTrackingV2RequestContext(request, options);
+    requireTrackingAdmin(context.workspace);
+    const parsedId = trackingV2EntityIdSchema.safeParse(request.params.rangeId ?? "");
+    if (!parsedId.success) throw invalidTrackingV2Payload(parsedId.error, "Invalid internal IP range.");
+    const deleted = await options.trackingService.deleteInternalIpRange({ workspaceId: context.workspace.id, id: parsedId.data });
+    if (!deleted) throw new AppError({ code: "tracking.unavailable", message: "Internal IP range was not found.", status: 404 });
+    response.status(204).send();
+  }));
 
   router.get("/events", asyncHandler(async (request, response) => {
     const context = await resolveTrackingV2RequestContext(request, options);
@@ -132,13 +180,7 @@ export function createTrackingV2ReadRouter(options: TrackingV2ReadRouterOptions)
   router.put("/sites/:siteId/settings", asyncHandler(async (request, response) => {
     const context = await resolveTrackingV2RequestContext(request, options);
 
-    if (context.workspace.role !== "admin") {
-      throw new AppError({
-        code: "site.permission_denied",
-        message: "You do not have permission to manage tracking settings.",
-        status: 403,
-      });
-    }
+    requireTrackingAdmin(context.workspace);
 
     const parsedSiteId = trackingV2EntityIdSchema.safeParse(request.params.siteId ?? "");
     const parsedBody = trackingV2UpdateSiteSettingsRequestSchema.safeParse(request.body);
@@ -223,58 +265,39 @@ export function createTrackingV2ReadRouter(options: TrackingV2ReadRouterOptions)
 
   router.get("/sessions/:sessionId/recording", asyncHandler(async (request, response) => {
     const context = await resolveTrackingV2RequestContext(request, options);
-    const manifest = await options.trackingService.getRecordingManifest({
+    const sessionId = trackingV2SessionIdSchema.safeParse(request.params.sessionId ?? "");
+    if (!sessionId.success) throw invalidTrackingV2Query(sessionId.error);
+    const recording = await options.trackingService.getRecordingManifest({
       workspaceId: context.workspace.id,
-      sessionId: request.params.sessionId ?? "",
+      sessionId: sessionId.data,
     });
-
-    if (!manifest) {
-      throw new AppError({
-        code: "tracking.unavailable",
-        message: "Recording is not available.",
-        status: 404,
-      });
+    if (!recording) {
+      throw new AppError({ code: "tracking.unavailable", message: "Session replay was not found.", status: 404 });
     }
-
-    response
-      .setHeader("cache-control", "no-store")
-      .json({
-        ...manifest,
-        requestId: request.context.requestId,
-      });
+    response.setHeader("cache-control", "private, no-store").json(trackingV2RecordingManifestResponseSchema.parse({
+      ...recording,
+      requestId: request.context.requestId,
+    }));
   }));
 
   router.get("/recordings/:recordingId/chunks/:sequence", asyncHandler(async (request, response) => {
     const context = await resolveTrackingV2RequestContext(request, options);
-    const sequence = Number(request.params.sequence);
-
-    if (!Number.isInteger(sequence) || sequence < 0) {
-      throw new AppError({
-        code: "tracking.invalid_payload",
-        message: "Invalid recording chunk.",
-        status: 400,
-      });
-    }
-
-    const object = await options.trackingService.getRecordingChunkObject({
+    const recordingId = trackingV2EntityIdSchema.safeParse(request.params.recordingId ?? "");
+    const sequence = trackingV2RecordingSequenceSchema.safeParse(Number(request.params.sequence));
+    if (!recordingId.success) throw invalidTrackingV2Query(recordingId.error);
+    if (!sequence.success) throw invalidTrackingV2Query(sequence.error);
+    const chunk = await options.trackingService.getRecordingChunk({
       workspaceId: context.workspace.id,
-      recordingId: request.params.recordingId ?? "",
-      sequence,
+      recordingId: recordingId.data,
+      sequence: sequence.data,
     });
-
-    if (!object) {
-      throw new AppError({
-        code: "tracking.unavailable",
-        message: "Recording chunk is not available.",
-        status: 404,
-      });
+    if (!chunk) {
+      throw new AppError({ code: "tracking.unavailable", message: "Session replay chunk was not found.", status: 404 });
     }
-
-    response
-      .status(200)
-      .setHeader("cache-control", "no-store")
-      .setHeader("content-type", object.contentType)
-      .send(object.body);
+    response.setHeader("cache-control", "private, no-store");
+    response.setHeader("content-type", chunk.contentType);
+    if (chunk.contentEncoding) response.setHeader("content-encoding", chunk.contentEncoding);
+    response.status(200).send(chunk.body);
   }));
 
   return router;
@@ -286,6 +309,24 @@ function invalidTrackingV2Query(error: Parameters<typeof issuesFromZodError>[0])
     message: "Invalid tracking query.",
     status: 400,
     issues: issuesFromZodError(error),
+  });
+}
+
+function invalidTrackingV2Payload(error: Parameters<typeof issuesFromZodError>[0], message: string) {
+  return new AppError({
+    code: "tracking.invalid_payload",
+    message,
+    status: 400,
+    issues: issuesFromZodError(error),
+  });
+}
+
+function requireTrackingAdmin(workspace: TrackingV2ReadWorkspace) {
+  if (workspace.role === "admin") return;
+  throw new AppError({
+    code: "site.permission_denied",
+    message: "You do not have permission to manage tracking settings.",
+    status: 403,
   });
 }
 
@@ -345,6 +386,7 @@ async function resolveTrackingV2RequestContext(
     workspace: {
       id: activeWorkspace.id,
       role: activeWorkspace.role,
+      plan: activeWorkspace.plan,
     },
   };
 }

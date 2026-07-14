@@ -3,7 +3,7 @@ import {
   extensionAuthAuthorizeResponseSchema,
   extensionAuthExchangeRequestSchema,
   extensionAuthExchangeResponseSchema,
-} from "@lightsite/contracts";
+} from "@handout/contracts";
 import { Router, type Request } from "express";
 import { fromNodeHeaders } from "better-auth/node";
 import { auth } from "../auth";
@@ -48,7 +48,7 @@ export function createExtensionAuthRouter(options: {
     if (!development && !sessionToken) {
       throw new AppError({
         code: "auth.required",
-        message: "Sign in to connect Lightsite.",
+        message: "Sign in to connect Handout.",
         status: 401,
       });
     }

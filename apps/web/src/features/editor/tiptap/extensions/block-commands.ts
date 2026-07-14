@@ -2,53 +2,53 @@ import { Extension, type JSONContent } from "@tiptap/core"
 import { Fragment } from "@tiptap/pm/model"
 import { NodeSelection, TextSelection } from "@tiptap/pm/state"
 
-import type { LightsiteNextBlockType } from "../schema"
+import type { HandoutNextBlockType } from "../schema"
 import { findFirstTextSelectionPosition } from "./selection-utils"
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
-    lightsiteNextBlocks: {
-      insertLightsiteNextBlock: (blockType: LightsiteNextBlockType) => ReturnType
-      insertLightsiteNextBlockAfter: (pos: number, blockType: LightsiteNextBlockType) => ReturnType
-      insertLightsiteNextCommandParagraphAfter: (pos: number) => ReturnType
-      insertLightsiteNextIconListItemAfter: (pos: number) => ReturnType
-      duplicateLightsiteNextBlock: (pos: number) => ReturnType
-      deleteLightsiteNextBlock: (pos: number) => ReturnType
-      turnLightsiteNextBlockInto: (pos: number, blockType: LightsiteNextBlockType) => ReturnType
-      replaceSelectionWithLightsiteNextBlock: (blockType: LightsiteNextBlockType) => ReturnType
+    handoutNextBlocks: {
+      insertHandoutNextBlock: (blockType: HandoutNextBlockType) => ReturnType
+      insertHandoutNextBlockAfter: (pos: number, blockType: HandoutNextBlockType) => ReturnType
+      insertHandoutNextCommandParagraphAfter: (pos: number) => ReturnType
+      insertHandoutNextIconListItemAfter: (pos: number) => ReturnType
+      duplicateHandoutNextBlock: (pos: number) => ReturnType
+      deleteHandoutNextBlock: (pos: number) => ReturnType
+      turnHandoutNextBlockInto: (pos: number, blockType: HandoutNextBlockType) => ReturnType
+      replaceSelectionWithHandoutNextBlock: (blockType: HandoutNextBlockType) => ReturnType
     }
   }
 }
 
-export const LightsiteNextBlockCommands = Extension.create({
-  name: "lightsiteNextBlockCommands",
+export const HandoutNextBlockCommands = Extension.create({
+  name: "handoutNextBlockCommands",
 
   addCommands() {
     return {
-      insertLightsiteNextBlock:
+      insertHandoutNextBlock:
         (blockType) =>
         ({ commands, editor }) => {
           const inserted = commands.insertContent(createInsertedBlockContent(blockType))
 
           if (inserted && blockType === "gif") {
-            editor.commands.openLightsiteNextGifPicker()
+            editor.commands.openHandoutNextGifPicker()
           }
 
           if (inserted && blockType === "button") {
-            editor.commands.openLightsiteNextButtonSettings(undefined, "create")
+            editor.commands.openHandoutNextButtonSettings(undefined, "create")
           }
 
           if (inserted && blockType === "calendar") {
-            editor.commands.openLightsiteNextCalendarEmbedSettings(undefined, "create")
+            editor.commands.openHandoutNextCalendarEmbedSettings(undefined, "create")
           }
 
           if (inserted && blockType === "video") {
-            editor.commands.openLightsiteNextVideoEmbedSettings(undefined, "create")
+            editor.commands.openHandoutNextVideoEmbedSettings(undefined, "create")
           }
 
           return inserted
         },
-      insertLightsiteNextBlockAfter:
+      insertHandoutNextBlockAfter:
         (pos, blockType) =>
         ({ state, dispatch }) => {
           const node = state.doc.nodeAt(pos)
@@ -64,25 +64,25 @@ export const LightsiteNextBlockCommands = Extension.create({
             dispatch(setSelectionInsideInsertedContent(tr, insertionPos))
 
             if (blockType === "gif") {
-              this.editor.commands.openLightsiteNextGifPicker(insertionPos)
+              this.editor.commands.openHandoutNextGifPicker(insertionPos)
             }
 
             if (blockType === "button") {
-              this.editor.commands.openLightsiteNextButtonSettings(insertionPos, "create")
+              this.editor.commands.openHandoutNextButtonSettings(insertionPos, "create")
             }
 
             if (blockType === "calendar") {
-              this.editor.commands.openLightsiteNextCalendarEmbedSettings(insertionPos, "create")
+              this.editor.commands.openHandoutNextCalendarEmbedSettings(insertionPos, "create")
             }
 
             if (blockType === "video") {
-              this.editor.commands.openLightsiteNextVideoEmbedSettings(insertionPos, "create")
+              this.editor.commands.openHandoutNextVideoEmbedSettings(insertionPos, "create")
             }
           }
 
           return true
         },
-      insertLightsiteNextCommandParagraphAfter:
+      insertHandoutNextCommandParagraphAfter:
         (pos) =>
         ({ state, dispatch, view }) => {
           const targetPos = getTopLevelBlockPosition(state.doc, pos)
@@ -108,7 +108,7 @@ export const LightsiteNextBlockCommands = Extension.create({
 
           return true
         },
-      insertLightsiteNextIconListItemAfter:
+      insertHandoutNextIconListItemAfter:
         (pos) =>
         ({ state, dispatch, view }) => {
           const node = state.doc.nodeAt(pos)
@@ -141,7 +141,7 @@ export const LightsiteNextBlockCommands = Extension.create({
 
           return true
         },
-      duplicateLightsiteNextBlock:
+      duplicateHandoutNextBlock:
         (pos) =>
         ({ state, dispatch }) => {
           const node = state.doc.nodeAt(pos)
@@ -159,7 +159,7 @@ export const LightsiteNextBlockCommands = Extension.create({
 
           return true
         },
-      deleteLightsiteNextBlock:
+      deleteHandoutNextBlock:
         (pos) =>
         ({ state, dispatch }) => {
           const node = state.doc.nodeAt(pos)
@@ -183,7 +183,7 @@ export const LightsiteNextBlockCommands = Extension.create({
 
           return true
         },
-      turnLightsiteNextBlockInto:
+      turnHandoutNextBlockInto:
         (pos, blockType) =>
         ({ state, dispatch, view }) => {
           const node = state.doc.nodeAt(pos)
@@ -205,43 +205,43 @@ export const LightsiteNextBlockCommands = Extension.create({
             view.focus()
 
             if (blockType === "gif") {
-              this.editor.commands.openLightsiteNextGifPicker(pos)
+              this.editor.commands.openHandoutNextGifPicker(pos)
             }
 
             if (blockType === "button") {
-              this.editor.commands.openLightsiteNextButtonSettings(pos, "create")
+              this.editor.commands.openHandoutNextButtonSettings(pos, "create")
             }
 
             if (blockType === "calendar") {
-              this.editor.commands.openLightsiteNextCalendarEmbedSettings(pos, "create")
+              this.editor.commands.openHandoutNextCalendarEmbedSettings(pos, "create")
             }
 
             if (blockType === "video") {
-              this.editor.commands.openLightsiteNextVideoEmbedSettings(pos, "create")
+              this.editor.commands.openHandoutNextVideoEmbedSettings(pos, "create")
             }
           }
 
           return true
         },
-      replaceSelectionWithLightsiteNextBlock:
+      replaceSelectionWithHandoutNextBlock:
         (blockType) =>
         ({ commands, editor }) => {
           const inserted = commands.insertContent(createInsertedBlockContent(blockType))
 
           if (inserted && blockType === "gif") {
-            editor.commands.openLightsiteNextGifPicker()
+            editor.commands.openHandoutNextGifPicker()
           }
 
           if (inserted && blockType === "button") {
-            editor.commands.openLightsiteNextButtonSettings(undefined, "create")
+            editor.commands.openHandoutNextButtonSettings(undefined, "create")
           }
 
           if (inserted && blockType === "calendar") {
-            editor.commands.openLightsiteNextCalendarEmbedSettings(undefined, "create")
+            editor.commands.openHandoutNextCalendarEmbedSettings(undefined, "create")
           }
 
           if (inserted && blockType === "video") {
-            editor.commands.openLightsiteNextVideoEmbedSettings(undefined, "create")
+            editor.commands.openHandoutNextVideoEmbedSettings(undefined, "create")
           }
 
           return inserted
@@ -329,7 +329,7 @@ function stripUniqueIds(content: JSONContent): JSONContent {
   }
 }
 
-function createBlockContentWithText(blockType: LightsiteNextBlockType, text: string): JSONContent {
+function createBlockContentWithText(blockType: HandoutNextBlockType, text: string): JSONContent {
   const content = createBlockContent(blockType)
 
   if (
@@ -445,7 +445,7 @@ function createBlockContentWithText(blockType: LightsiteNextBlockType, text: str
   }
 }
 
-export function createBlockContent(blockType: LightsiteNextBlockType): JSONContent {
+export function createBlockContent(blockType: HandoutNextBlockType): JSONContent {
   switch (blockType) {
     case "heading1":
       return {
@@ -583,7 +583,7 @@ export function createBlockContent(blockType: LightsiteNextBlockType): JSONConte
   }
 }
 
-export function createInsertedBlockContent(blockType: LightsiteNextBlockType): JSONContent | JSONContent[] {
+export function createInsertedBlockContent(blockType: HandoutNextBlockType): JSONContent | JSONContent[] {
   const content = createBlockContent(blockType)
 
   if (
@@ -703,7 +703,7 @@ function createGridBlockContent(firstCellText?: string): JSONContent {
 
 function createInsertedBlockNodes(
   schema: import("@tiptap/pm/model").Schema,
-  blockType: LightsiteNextBlockType
+  blockType: HandoutNextBlockType
 ) {
   const content = createInsertedBlockContent(blockType)
   const contentItems = Array.isArray(content) ? content : [content]

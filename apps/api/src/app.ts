@@ -1,13 +1,17 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { existsSync } from "node:fs";
-import {
-  TRACKING_V2_RECORDING_ENDPOINT_PREFIX,
-  TRACKING_V2_RECORDING_MAX_CHUNK_BYTES,
-} from "@lightsite/tracking-schema";
 import cors from "cors";
 import express from "express";
 import { toNodeHandler } from "better-auth/node";
+import {
+  TRACKING_V2_EVENTS_ENDPOINT,
+  TRACKING_V2_RECORDING_ENDPOINT_PREFIX,
+  TRACKING_V2_RECORDING_MAX_CHUNK_BYTES,
+  TRACKING_V2_SESSION_END_ENDPOINT,
+  TRACKING_V2_SESSION_HEARTBEAT_ENDPOINT,
+  TRACKING_V2_SESSION_START_ENDPOINT,
+} from "@handout/tracking-schema";
 import { auth } from "./auth";
 import { getCurrentActor, type CurrentActorProvider } from "./auth/current-actor";
 import { createDevAuthRouter } from "./auth/dev-auth-router";
@@ -45,8 +49,10 @@ import {
   type TrackingRateLimiter,
 } from "./tracking/rate-limit";
 import { createEncryptedTrackingV2ContextTokenService } from "./tracking/v2/context-token";
-import { createFileTrackingV2RecordingObjectStore } from "./tracking/v2/recording-object-store";
 import { createDbTrackingV2Repository } from "./tracking/v2/repository";
+import { createConfiguredTrackingV2RecordingObjectStore } from "./tracking/v2/recording-config";
+import { createDbTrackingV2RecordingRepository } from "./tracking/v2/recording-repository";
+import { createTrackingV2RecordingService } from "./tracking/v2/recording-service";
 import { createTrackingV2ReadRouter } from "./tracking/v2/read-router";
 import { createTrackingV2Router } from "./tracking/v2/router";
 import { createTrackingV2Service, type TrackingV2Service } from "./tracking/v2/service";
@@ -99,22 +105,19 @@ export function createApp(options: CreateAppOptions = {}) {
     });
   const logoPreview =
     options.logoPreview ?? createLogoDevPreviewService(env.LOGO_DEV_TOKEN);
-  const trackingMarkerHashSecret =
-    env.TRACKING_MARKER_HASH_SECRET ?? env.TRACKING_SIGNING_SECRET;
   const trackingV2ContextTokens = env.TRACKING_V2_ENABLED
     ? createEncryptedTrackingV2ContextTokenService(env.TRACKING_SIGNING_SECRET)
     : undefined;
   const trackingV2Service = trackingV2ContextTokens
-    ? createLazyTrackingV2Service({
+      ? createLazyTrackingV2Service({
         tokenSecret: env.TRACKING_SIGNING_SECRET,
-        markerHashSecret: trackingMarkerHashSecret,
-        recordingStorageDirectory: resolveRecordingStorageDirectory(),
       })
     : undefined;
   const publicSites =
     options.publicSites ??
     createPublicSiteService(createDbPublicSiteRepository(), {
       trackingV2ContextTokens,
+      trackingV2Service,
     });
   const publicSiteScreenshots =
     options.publicSiteScreenshots ?? createPublicSiteScreenshotService();
@@ -144,15 +147,21 @@ export function createApp(options: CreateAppOptions = {}) {
     createBillingWebhookRouter({ billingService: billing }),
   );
   app.use(
-    `${TRACKING_V2_RECORDING_ENDPOINT_PREFIX}/:recordingId/chunks`,
-    express.json({ limit: TRACKING_V2_RECORDING_MAX_CHUNK_BYTES + 16 * 1024 }),
+    TRACKING_V2_RECORDING_ENDPOINT_PREFIX,
+    express.json({ limit: TRACKING_V2_RECORDING_MAX_CHUNK_BYTES + 32 * 1024 }),
   );
+  app.use([
+    TRACKING_V2_SESSION_START_ENDPOINT,
+    TRACKING_V2_EVENTS_ENDPOINT,
+    TRACKING_V2_SESSION_HEARTBEAT_ENDPOINT,
+    TRACKING_V2_SESSION_END_ENDPOINT,
+  ], express.json({ limit: "16kb" }));
   app.use(express.json({ limit: env.API_JSON_BODY_LIMIT }));
 
   app.get("/api/health", (request, response) => {
     response.json({
       ok: true,
-      service: "lightsite-api",
+      service: "handout-api",
       requestId: request.context.requestId,
     });
   });
@@ -201,6 +210,8 @@ export function createApp(options: CreateAppOptions = {}) {
       contextTokens: trackingV2ContextTokens,
       trackingService: trackingV2Service!,
       rateLimiter: trackingRateLimiter,
+      rateLimitKeySecret: env.TRACKING_SIGNING_SECRET,
+      trustCloudflareGeoHeaders: env.TRACKING_TRUST_CLOUDFLARE_GEO,
     }));
   }
   app.use(createPublicTrackingScriptRouter());
@@ -288,27 +299,28 @@ function resolvePublicAssetsDirectory() {
 
 function createLazyTrackingV2Service(input: {
   tokenSecret: string;
-  markerHashSecret: string;
-  recordingStorageDirectory: string | null;
 }): TrackingV2Service {
   let servicePromise: Promise<TrackingV2Service> | null = null;
 
   const getService = () => {
-    servicePromise ??= import("@lightsite/db").then(({ db }) => {
-      const recordingObjectStore = input.recordingStorageDirectory
-        ? createFileTrackingV2RecordingObjectStore(input.recordingStorageDirectory)
-        : null;
+    servicePromise ??= import("@handout/db").then(({ db }) => {
       const suppressionService = createTrackingSuppressionService({
         repository: createDbTrackingSuppressionRepository(db),
-        hashSecret: input.markerHashSecret,
       });
+      const recordingObjectStore = createConfiguredTrackingV2RecordingObjectStore(env);
+      const recordingService = recordingObjectStore
+        ? createTrackingV2RecordingService({
+            repository: createDbTrackingV2RecordingRepository(db),
+            objectStore: recordingObjectStore,
+            tokenSecret: input.tokenSecret,
+          })
+        : null;
 
       return createTrackingV2Service({
         repository: createDbTrackingV2Repository(db),
-        recordingObjectStore,
         suppressionService,
         tokenSecret: input.tokenSecret,
-        markerHashSecret: input.markerHashSecret,
+        recordingService,
       });
     });
 
@@ -316,6 +328,9 @@ function createLazyTrackingV2Service(input: {
   };
 
   return {
+    async preparePublicContext(payload) {
+      return (await getService()).preparePublicContext(payload);
+    },
     async listEvents(input) {
       return (await getService()).listEvents(input);
     },
@@ -331,6 +346,15 @@ function createLazyTrackingV2Service(input: {
     async updateSiteSettings(input) {
       return (await getService()).updateSiteSettings(input);
     },
+    async listInternalIpRanges(workspaceId) {
+      return (await getService()).listInternalIpRanges(workspaceId);
+    },
+    async createInternalIpRange(input) {
+      return (await getService()).createInternalIpRange(input);
+    },
+    async deleteInternalIpRange(input) {
+      return (await getService()).deleteInternalIpRange(input);
+    },
     async startSession(request) {
       return (await getService()).startSession(request);
     },
@@ -339,6 +363,15 @@ function createLazyTrackingV2Service(input: {
     },
     async recordSlackShare(input) {
       return (await getService()).recordSlackShare(input);
+    },
+    async recordWebhookSend(input) {
+      return (await getService()).recordWebhookSend(input);
+    },
+    async recordHeartbeat(heartbeat) {
+      return (await getService()).recordHeartbeat(heartbeat);
+    },
+    async endSession(end) {
+      return (await getService()).endSession(end);
     },
     async recordRecordingChunk(input) {
       return (await getService()).recordRecordingChunk(input);
@@ -349,28 +382,8 @@ function createLazyTrackingV2Service(input: {
     async getRecordingManifest(input) {
       return (await getService()).getRecordingManifest(input);
     },
-    async getRecordingChunkObject(input) {
-      return (await getService()).getRecordingChunkObject(input);
-    },
-    async recordHeartbeat(heartbeat) {
-      return (await getService()).recordHeartbeat(heartbeat);
-    },
-    async endSession(end) {
-      return (await getService()).endSession(end);
+    async getRecordingChunk(input) {
+      return (await getService()).getRecordingChunk(input);
     },
   };
-}
-
-function resolveRecordingStorageDirectory() {
-  if (!env.TRACKING_RECORDING_ENABLED) {
-    return null;
-  }
-
-  if (env.TRACKING_RECORDING_STORAGE_DIR) {
-    return env.TRACKING_RECORDING_STORAGE_DIR;
-  }
-
-  return env.NODE_ENV === "production"
-    ? null
-    : path.resolve(process.cwd(), ".local/tracking-recordings");
 }

@@ -18,7 +18,6 @@ import {
   IconRefresh,
   IconRoute,
   IconScan,
-  IconSwipeDown,
   IconTarget,
   IconUser,
   IconWorld,
@@ -70,7 +69,7 @@ type TrackingDetailsDrawerProps = {
   onSelectEvent?: (event: TrackingEventDrawerData) => void
   onViewFullSession?: (event: TrackingEventDrawerData) => void
   open: boolean
-  replay?: ReactNode
+  recordingReplay?: ReactNode
   session: TrackingSessionDrawerData | null
 }
 
@@ -86,7 +85,7 @@ export function TrackingDetailsDrawer({
   onSelectEvent,
   onViewFullSession,
   open,
-  replay,
+  recordingReplay,
   session,
 }: TrackingDetailsDrawerProps) {
   const showsEvent = event !== null
@@ -97,7 +96,7 @@ export function TrackingDetailsDrawer({
         overlayClassName="bg-black/20 backdrop-blur-none"
         showCloseButton={false}
         onOpenAutoFocus={(event) => event.preventDefault()}
-        className="inset-y-1.5! right-1.5! h-auto! w-[calc(100%-12px)]! gap-0 overflow-hidden rounded-2xl border-0 bg-background p-0 shadow-lg sm:w-[526px]! sm:max-w-[526px]!"
+        className="inset-y-1.5! right-1.5! h-auto! w-[calc(100%-12px)]! gap-0 overflow-hidden rounded-2xl border border-border bg-background p-0 shadow-lg sm:w-[526px]! sm:max-w-[526px]!"
       >
         <div className="h-full w-full min-w-0 overflow-x-hidden overflow-y-auto">
           <SheetTitle className="sr-only">
@@ -120,7 +119,7 @@ export function TrackingDetailsDrawer({
               onClose={() => onOpenChange(false)}
               onRetry={onRetry}
               onSelectEvent={onSelectEvent}
-              replay={replay}
+              recordingReplay={recordingReplay}
               session={session}
             />
           )}
@@ -138,7 +137,7 @@ function SessionDrawerContent({
   onClose,
   onRetry,
   onSelectEvent,
-  replay,
+  recordingReplay,
   session,
 }: {
   error: string | null
@@ -148,7 +147,7 @@ function SessionDrawerContent({
   onClose: () => void
   onRetry?: () => void
   onSelectEvent?: (event: TrackingEventDrawerData) => void
-  replay?: ReactNode
+  recordingReplay?: ReactNode
   session: TrackingSessionDrawerData | null
 }) {
   return (
@@ -194,8 +193,8 @@ function SessionDrawerContent({
 
       {session ? (
         <div className="flex w-full min-w-0 flex-col gap-6">
+          {recordingReplay}
           <SessionMetadataCard session={session} />
-          {replay}
           <SessionEventTimeline events={events} onSelectEvent={onSelectEvent} />
         </div>
       ) : null}
@@ -311,7 +310,7 @@ function SessionMetadataCard({ session }: { session: TrackingSessionDrawerData }
       <MetadataRow icon={IconNavigationX} label="End reason" value={session.endReason} />
       <MetadataRow icon={IconMapPin} label="Location" value={session.location} />
       <MetadataRow icon={IconDeviceDesktop} label="Device" value={session.device} />
-      <MetadataRow icon={IconSwipeDown} label="Scroll depth" value={session.scrollDepth} />
+      <MetadataRow icon={IconNotes} label="Initial page" value={session.initialPage} />
       <MetadataRow icon={IconActivity} label="Session id" value={shortId(session.id)} />
     </MetadataCard>
   )

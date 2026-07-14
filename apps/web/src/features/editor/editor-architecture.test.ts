@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 
-import { SITE_DOCUMENT_CSS } from "@lightsite/site-document"
+import { SITE_DOCUMENT_CSS } from "@handout/site-document"
 import { describe, expect, it } from "vitest"
 
 import { createBlockContent } from "./tiptap/extensions/block-commands"
@@ -29,19 +29,19 @@ const sharedSiteExtensionSource = readFileSync(
 describe("editor architecture", () => {
   it("does not define a second theme or private published-site tokens", () => {
     expect(stylesheetSource).not.toMatch(/(^|\n):root(?:,|\s*\{)/)
-    expect(stylesheetSource).not.toContain("--ls-")
-    expect(stylesheetSource).not.toContain("  .lightsite-editor-image-card {\n")
-    expect(stylesheetSource).not.toContain("  .lightsite-editor-testimonial-card {\n")
-    expect(stylesheetSource).not.toContain("  .lightsite-editor-page-title-shell {\n")
-    expect(stylesheetSource).not.toContain("  .lightsite-editor-card-content :where(h1, h2) {\n")
+    expect(stylesheetSource).not.toContain("--handout-primary")
+    expect(stylesheetSource).not.toContain("  .handout-editor-image-card {\n")
+    expect(stylesheetSource).not.toContain("  .handout-editor-testimonial-card {\n")
+    expect(stylesheetSource).not.toContain("  .handout-editor-page-title-shell {\n")
+    expect(stylesheetSource).not.toContain("  .handout-editor-card-content :where(h1, h2) {\n")
     expect(stylesheetSource).not.toMatch(/color-mix\([^\n]*var\(--variable-/)
     expect(stylesheetSource).toContain("background: var(--variable-background);")
     expect(stylesheetSource).toContain("border-color: var(--variable-border);")
     expect(stylesheetSource).toContain("color: var(--variable-foreground);")
     expect(stylesheetSource).toContain("rounded-md border px-1 align-baseline")
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-image-card{display:grid")
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-testimonial{display:grid")
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-page-title{display:flex")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-image-card{display:grid")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-testimonial{display:grid")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-page-title{display:flex")
   })
 
   it("uses the canonical site stylesheet and only invalidates preview content for document changes", () => {
@@ -49,8 +49,8 @@ describe("editor architecture", () => {
     const pageSource = editorModules["./editor-page.tsx"] as string
 
     expect(canvasSource).toContain('SITE_DOCUMENT_CSS')
-    expect(canvasSource).toContain('data-lightsite-site-document-styles')
-    expect(pageSource).toContain('class: "lightsite-editor-prosemirror ls-prosemirror"')
+    expect(canvasSource).toContain('data-handout-site-document-styles')
+    expect(pageSource).toContain('class: "handout-editor-prosemirror handout-prosemirror"')
     expect(pageSource).toContain('syncVariables(transaction.docChanged)')
     expect(pageSource).not.toContain('editorProps: {\n      attributes:')
   })
@@ -60,9 +60,9 @@ describe("editor architecture", () => {
     const previewSource = editorModules["./components/site-preview.tsx"] as string
 
     expect(sidebarSource).toContain('data-[side=left]:w-[min(289px,86vw)]')
-    expect(sidebarSource).toContain('className="ls-editor-sidebar-content flex min-w-0 w-full flex-col gap-4"')
-    expect(sidebarSource).toContain("ls-editor-sidebar-desktop")
-    expect(sidebarSource).toContain("ls-editor-mobile-bar")
+    expect(sidebarSource).toContain('className="handout-editor-sidebar-content flex min-w-0 w-full flex-col gap-4"')
+    expect(sidebarSource).toContain("handout-editor-sidebar-desktop")
+    expect(sidebarSource).toContain("handout-editor-mobile-bar")
     expect(sidebarSource).not.toContain("md:w-[241px]")
     expect(sidebarSource).toContain("props.model.pages.length > 0")
     expect(sidebarSource).toContain('text-base leading-6 font-medium text-tertiary-foreground')
@@ -70,9 +70,9 @@ describe("editor architecture", () => {
     expect(sidebarSource).toContain("IconNotes")
     expect(sidebarSource).not.toContain("IconFileText")
     expect(previewSource).toContain("renderPublicSitePreviewHtml")
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-sidebar-section>h2{height:26px;min-width:0;margin:0;overflow:hidden;color:var(--muted-foreground);font-size:14px;font-weight:500")
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-sidebar-mobile-title{min-width:0;flex:1;overflow:hidden;color:var(--tertiary-foreground);font-size:16px;font-weight:500")
-    expect(SITE_DOCUMENT_CSS).not.toContain("--ls-")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-sidebar-section>h2{height:26px;min-width:0;margin:0;overflow:hidden;color:var(--muted-foreground);font-size:14px;font-weight:500")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-sidebar-mobile-title{min-width:0;flex:1;overflow:hidden;color:var(--tertiary-foreground);font-size:16px;font-weight:500")
+    expect(SITE_DOCUMENT_CSS).toContain("--handout-primary")
   })
 
   it("creates icon cards with explicit Tiptap title and body nodes", () => {
@@ -239,7 +239,7 @@ describe("editor architecture", () => {
     expect(blockCommandsSource).not.toContain('text: "Quote"')
     expect(extensionSource).toContain("emptyNodeClass")
     expect(extensionSource).toContain("isAlwaysVisiblePlaceholderNode")
-    expect(extensionSource).toContain("lightsite-editor-card-placeholder-empty")
+    expect(extensionSource).toContain("handout-editor-card-placeholder-empty")
     expect(extensionSource).toContain('node.type.name === "buttonBlock"')
     expect(extensionSource).not.toContain('return "Button"')
     expect(extensionSource).toContain("includeChildren: true")
@@ -365,7 +365,7 @@ describe("editor architecture", () => {
     expect(blockControlsSource).toContain("Delete current column")
     expect(blockControlsSource).toContain("deleteTable")
     expect(stylesheetSource).toContain(".tableWrapper")
-    expect(stylesheetSource).toContain(".lightsite-editor-table")
+    expect(stylesheetSource).toContain(".handout-editor-table")
     expect(stylesheetSource).toContain(".selectedCell")
     expect(stylesheetSource).toContain(".column-resize-handle")
     expect(extensionSource).toContain("isTableCellParagraph")
@@ -394,7 +394,7 @@ describe("editor architecture", () => {
     expect(extensionSource).toContain("GridCell")
     expect(extensionSource).toContain("GridRow")
     expect(extensionSource).toContain("GridBlock")
-    expect(extensionSource).toContain("LightsiteNextGridCommands")
+    expect(extensionSource).toContain("HandoutNextGridCommands")
     expect(extensionSource).toContain("isGridCellParagraph")
     expect(extensionSource).toContain("!hasAnchor && isRedundantGridCellParagraph")
     expect(extensionSource).toContain('$pos.parent.childCount === 1')
@@ -405,10 +405,10 @@ describe("editor architecture", () => {
     expect(blockCommandsSource).toContain('$pos.parent.type.name === "gridCell"')
     expect(blockCommandsSource).toContain('node.type.name === "gridBlock"')
     expect(blockCommandsSource).toContain("paragraphType.create()")
-    expect(gridCommandsSource).toContain("addLightsiteNextGridColumn")
-    expect(gridCommandsSource).toContain("addLightsiteNextGridRow")
-    expect(gridCommandsSource).toContain("deleteLightsiteNextGridColumn")
-    expect(gridCommandsSource).toContain("deleteLightsiteNextGridRow")
+    expect(gridCommandsSource).toContain("addHandoutNextGridColumn")
+    expect(gridCommandsSource).toContain("addHandoutNextGridRow")
+    expect(gridCommandsSource).toContain("deleteHandoutNextGridColumn")
+    expect(gridCommandsSource).toContain("deleteHandoutNextGridRow")
     expect(gridCommandsSource).toContain("GridDeletePlacement")
     expect(gridCommandsSource).toContain("getRelativeIndex")
     expect(gridCommandsSource).toContain("appendTransaction")
@@ -429,19 +429,19 @@ describe("editor architecture", () => {
     expect(blockControlsSource).toContain('label="Delete row below"')
     expect(blockControlsSource).toContain('label="Delete column left"')
     expect(blockControlsSource).toContain('label="Delete column right"')
-    expect(blockControlsSource).toContain("addLightsiteNextGridRow")
-    expect(blockControlsSource).toContain("deleteLightsiteNextGridColumn")
+    expect(blockControlsSource).toContain("addHandoutNextGridRow")
+    expect(blockControlsSource).toContain("deleteHandoutNextGridColumn")
     expect(blockControlsSource).toContain('storedTarget?.node.type.name === "gridBlock"')
     expect(blockControlsSource).toContain("isTargetInsideGrid")
     expect(blockControlsSource).toContain("resolveDeleteBlockTarget")
     expect(blockControlsSource).toContain("findSingleMeaningfulGridContentTarget")
     expect(blockControlsSource).toContain("for (let depth = $position.depth; depth > 0; depth -= 1)")
     expect(blockControlsSource).toContain("node.type.isInGroup(\"block\")")
-    expect(stylesheetSource).toContain("[data-lightsite-grid-cell] > .react-renderer")
-    expect(stylesheetSource).toContain("[data-lightsite-grid-cell] > :not(:last-child)")
-    expect(stylesheetSource).toContain("p.lightsite-editor-placeholder-hidden")
+    expect(stylesheetSource).toContain("[data-handout-grid-cell] > .react-renderer")
+    expect(stylesheetSource).toContain("[data-handout-grid-cell] > :not(:last-child)")
+    expect(stylesheetSource).toContain("p.handout-editor-placeholder-hidden")
     expect(stylesheetSource).toContain("margin-bottom: 0")
-    expect(stylesheetSource).toContain("p.lightsite-editor-placeholder-hidden")
+    expect(stylesheetSource).toContain("p.handout-editor-placeholder-hidden")
     expect(stylesheetSource).toContain(".react-renderer.node-imageCard")
     expect(stylesheetSource).toContain(".react-renderer.node-iconCard")
     expect(stylesheetSource).toContain(".react-renderer.node-testimonialCard")
@@ -540,8 +540,8 @@ describe("editor architecture", () => {
     expect(blockMarqueeSelectionSource).toContain("nativeSelectionAllowed")
     expect(blockMarqueeSelectionSource).toContain("startsInsideTopLevelBlock")
     expect(blockMarqueeSelectionSource).toContain("if (!nativeSelectionAllowed)")
-    expect(blockMarqueeSelectionSource).toContain(".lightsite-editor-button-settings")
-    expect(selectionCleanupSource).toContain(".lightsite-editor-button-settings")
+    expect(blockMarqueeSelectionSource).toContain(".handout-editor-button-settings")
+    expect(selectionCleanupSource).toContain(".handout-editor-button-settings")
     expect(blockMarqueeSelectionSource).not.toContain("event.buttons === 0")
     expect(selectionCleanupSource).not.toContain(
       'querySelectorAll(".ProseMirror-selectednoderange")'
@@ -561,9 +561,9 @@ describe("editor architecture", () => {
     const buttonSettingsPopoverSource =
       editorModules["./components/button-settings-popover.tsx"]
 
-    expect(buttonSettingsSource).toContain("previewLightsiteNextButtonDraft")
+    expect(buttonSettingsSource).toContain("previewHandoutNextButtonDraft")
     expect(buttonSettingsSource).toContain('setMeta("addToHistory", false)')
-    expect(buttonSettingsPopoverSource).toContain("previewLightsiteNextButtonDraft")
+    expect(buttonSettingsPopoverSource).toContain("previewHandoutNextButtonDraft")
     expect(buttonSettingsPopoverSource).toContain('previewButtonDraft({ label: nextLabel.trim() || "Button" })')
     expect(buttonSettingsPopoverSource).toContain("previewButtonDraft({ fullWidth: nextFullWidth })")
     expect(buttonSettingsPopoverSource).toContain("Button text")
@@ -585,8 +585,8 @@ describe("editor architecture", () => {
     const imageCardButtonPopoverSource =
       editorModules["./components/image-card-button-settings-popover.tsx"]
 
-    expect(extensionSource).toContain("LightsiteNextImageCardButtonSettings")
-    expect(blockControlsSource).toContain("openLightsiteNextImageCardButtonSettings")
+    expect(extensionSource).toContain("HandoutNextImageCardButtonSettings")
+    expect(blockControlsSource).toContain("openHandoutNextImageCardButtonSettings")
     expect(blockControlsSource).toContain("updateImageCardBlock")
     expect(blockControlsSource).toContain('label={menuTarget.node.attrs.src ? "Replace image" : "Upload image"}')
     expect(blockControlsSource).toContain('label="Button"')
@@ -600,17 +600,17 @@ describe("editor architecture", () => {
     expect(blockViewsSource).toContain('aria-hidden="true"')
     expect(blockViewsSource).toContain("hidden")
     expect(blockViewsSource).toContain('aria-label="Replace image"')
-    expect(blockViewsSource).toContain("lightsite-editor-image-card-replace-button")
-    expect(blockViewsSource).toContain("lightsite-editor-image-card-empty-button")
-    expect(blockViewsSource).toContain("openLightsiteNextImageCardButtonSettings")
-    expect(blockViewsSource).not.toContain("lightsite-editor-image-card-shell py-2")
+    expect(blockViewsSource).toContain("handout-editor-image-card-replace-button")
+    expect(blockViewsSource).toContain("handout-editor-image-card-empty-button")
+    expect(blockViewsSource).toContain("openHandoutNextImageCardButtonSettings")
+    expect(blockViewsSource).not.toContain("handout-editor-image-card-shell py-2")
     expect(blockViewsSource).not.toContain('className="py-2"')
     expect(stylesheetSource).toContain("> .react-renderer.node-imageCard")
     expect(stylesheetSource).toContain("> .react-renderer.node-iconCard")
     expect(stylesheetSource).toContain("> .react-renderer.node-buttonBlock")
-    expect(stylesheetSource).toContain("> .lightsite-editor-image-card-shell")
+    expect(stylesheetSource).toContain("> .handout-editor-image-card-shell")
     expect(imageCardButtonSettingsSource).toContain('node.type.name !== "imageCard"')
-    expect(imageCardButtonSettingsSource).toContain("previewLightsiteNextImageCardButtonDraft")
+    expect(imageCardButtonSettingsSource).toContain("previewHandoutNextImageCardButtonDraft")
     expect(imageCardButtonSettingsSource).toContain('"addToHistory"')
     expect(imageCardButtonSettingsSource).toContain("false")
     expect(imageCardButtonPopoverSource).toContain("normalizeButtonHref")
@@ -647,9 +647,9 @@ describe("editor architecture", () => {
     expect(blockViewsSource).toContain("/api/workspaces/logo-preview")
     expect(blockViewsSource).toContain("blobToDataUrl")
     expect(blockViewsSource).not.toContain("https://img.logo.dev")
-    expect(blockViewsSource).toContain("data-lightsite-editor-block-type=\"logo-grid\"")
+    expect(blockViewsSource).toContain("data-handout-editor-block-type=\"logo-grid\"")
     expect(blockViewsSource).toContain("data-has-logo={src ? \"true\" : undefined}")
-    expect(blockViewsSource).toContain("lightsite-editor-logo-grid-menu")
+    expect(blockViewsSource).toContain("handout-editor-logo-grid-menu")
     expect(blockViewsSource).toContain("Company website")
     expect(blockViewsSource).toContain("Use logo")
     expect(blockViewsSource).toContain("getLogoGridItemCount")
@@ -672,29 +672,29 @@ describe("editor architecture", () => {
     expect(blockControlsSource).toContain("addLogoGridItem")
     expect(stylesheetSource).toContain(".react-renderer.node-logoGrid")
     expect(stylesheetSource).toMatch(
-      /\.lightsite-editor \.react-renderer\.node-logoGrid,[\s\S]*?@apply mx-auto w-\[612px\] max-w-\[calc\(100%-104px\)\]/,
+      /\.handout-editor \.react-renderer\.node-logoGrid,[\s\S]*?@apply mx-auto w-\[612px\] max-w-\[calc\(100%-104px\)\]/,
     )
-    expect(stylesheetSource).toContain(".lightsite-editor-logo-grid")
-    expect(stylesheetSource).toContain(".lightsite-editor-logo-grid-item")
-    expect(stylesheetSource).toContain(".lightsite-editor-logo-grid-menu")
-    expect(stylesheetSource).toContain(".lightsite-editor-logo-grid-domain-control")
+    expect(stylesheetSource).toContain(".handout-editor-logo-grid")
+    expect(stylesheetSource).toContain(".handout-editor-logo-grid-item")
+    expect(stylesheetSource).toContain(".handout-editor-logo-grid-menu")
+    expect(stylesheetSource).toContain(".handout-editor-logo-grid-domain-control")
     expect(SITE_DOCUMENT_CSS).toContain("repeat(3,minmax(0,1fr))")
   })
 
   it("uses the shared semantic fill for table header cells", () => {
     expect(stylesheetSource).toContain("background: var(--table-header-background)")
     expect(SITE_DOCUMENT_CSS).toContain(
-      ".ls-table th{background:var(--table-header-background)",
+      ".handout-table th{background:var(--table-header-background)",
     )
   })
 
   it("keeps logo-grid wrappers inside the standard responsive content width", () => {
     expect(stylesheetSource).toMatch(
-      /\.lightsite-editor \.react-renderer\.node-logoGrid,[\s\S]*?@apply mx-auto w-\[612px\] max-w-\[calc\(100%-104px\)\]/,
+      /\.handout-editor \.react-renderer\.node-logoGrid,[\s\S]*?@apply mx-auto w-\[612px\] max-w-\[calc\(100%-104px\)\]/,
     )
-    expect(stylesheetSource).toContain(".lightsite-editor-logo-grid-shell {\n    width: 100%;")
+    expect(stylesheetSource).toContain(".handout-editor-logo-grid-shell {\n    width: 100%;")
     expect(SITE_DOCUMENT_CSS).toContain(
-      ".ls-logo-grid{display:grid;width:100%;min-width:0;max-width:100%",
+      ".handout-logo-grid{display:grid;width:100%;min-width:0;max-width:100%",
     )
   })
 
@@ -713,16 +713,16 @@ describe("editor architecture", () => {
     expect(extensionSource).toContain("@tiptap/extension-text-style")
     expect(extensionSource).toContain("@tiptap/extensions/trailing-node")
     expect(extensionSource).toContain("@tiptap/extension-emoji")
-    expect(extensionSource).toContain("LightsiteImage")
-    expect(extensionSource).toContain("LightsiteGif")
+    expect(extensionSource).toContain("HandoutImage")
+    expect(extensionSource).toContain("HandoutGif")
     expect(extensionSource).toContain("Emoji.configure")
     expect(extensionSource).toContain("TextStyle")
     expect(extensionSource).toContain("Color")
     expect(extensionSource).toContain("Highlight.configure")
     expect(extensionSource).toContain("multicolor: true")
-    expect(extensionSource).toContain("LightsiteImage.configure")
-    expect(extensionSource).toContain("LightsiteGif.configure")
-    expect(extensionSource).toContain("LightsiteNextGifPicker")
+    expect(extensionSource).toContain("HandoutImage.configure")
+    expect(extensionSource).toContain("HandoutGif.configure")
+    expect(extensionSource).toContain("HandoutNextGifPicker")
     expect(extensionSource).toContain("resize: {")
     expect(extensionSource).toContain('directions: ["left", "right"]')
     expect(extensionSource).not.toContain('"top-left"')
@@ -730,7 +730,7 @@ describe("editor architecture", () => {
     expect(extensionSource).toContain("alwaysPreserveAspectRatio: true")
     expect(extensionSource).toContain("ListKeymap.configure")
     expect(extensionSource).toContain('itemName: "iconListItem"')
-    expect(extensionSource).not.toContain("LightsiteNextIconListNavigation")
+    expect(extensionSource).not.toContain("HandoutNextIconListNavigation")
     expect(extensionSource).toContain("TaskList")
     expect(extensionSource).toContain("TaskItem.configure")
     expect(extensionSource).toContain("levels: [1, 2, 3]")
@@ -796,13 +796,13 @@ describe("editor architecture", () => {
 
   it("suppresses native list markers for icon lists at every valid nesting level", () => {
     expect(stylesheetSource).toContain(
-      ".lightsite-editor .ProseMirror ul[data-lightsite-icon-list],"
+      ".handout-editor .ProseMirror ul[data-handout-icon-list],"
     )
     expect(stylesheetSource).toContain(
-      ".lightsite-editor .ProseMirror li[data-lightsite-icon-list-item]"
+      ".handout-editor .ProseMirror li[data-handout-icon-list-item]"
     )
     expect(stylesheetSource).toContain(
-      ".lightsite-editor .ProseMirror li[data-lightsite-icon-list-item]::marker"
+      ".handout-editor .ProseMirror li[data-handout-icon-list-item]::marker"
     )
   })
 
@@ -823,7 +823,7 @@ describe("editor architecture", () => {
     expect(blockCommandsSource).toContain('{ type: "iconCardBody" }')
     expect(blockCommandsSource).toContain('{ type: "imageCardTitle" }')
     expect(blockCommandsSource).toContain('{ type: "imageCardBody" }')
-    expect(extensionSource).toContain("createLightsiteNextEmojiSuggestion")
+    expect(extensionSource).toContain("createHandoutNextEmojiSuggestion")
     expect(suggestionMenuSource).toContain('id: "heading3"')
     expect(suggestionMenuSource).toContain('id: "emoji"')
     expect(suggestionMenuSource).toContain("filterEmojiItems")
@@ -835,7 +835,7 @@ describe("editor architecture", () => {
     const blockControlsSource =
       editorModules["./components/block-controls.tsx"]
     const imageNodeSource =
-      editorModules["./tiptap/nodes/lightsite-image.ts"]
+      editorModules["./tiptap/nodes/handout-image.ts"]
     const suggestionMenuSource =
       editorModules["./tiptap/extensions/suggestion-menu.ts"]
     const createBlockContentSource = blockCommandsSource.slice(
@@ -854,7 +854,7 @@ describe("editor architecture", () => {
     ).not.toContain("src:")
     expect(blockCommandsSource).toContain("NodeSelection.create")
     expect(imageNodeSource).toContain("@tiptap/extension-image")
-    expect(imageNodeSource).toContain("dataset.lightsiteImageEmpty")
+    expect(imageNodeSource).toContain("dataset.handoutImageEmpty")
     expect(imageNodeSource).toContain('input.ariaHidden = "true"')
     expect(imageNodeSource).toContain("input.hidden = true")
     expect(imageNodeSource).toContain("Click or drag an image file here")
@@ -879,7 +879,7 @@ describe("editor architecture", () => {
     const editorCanvasSource =
       editorModules["./components/editor-canvas.tsx"]
     const gifNodeSource =
-      editorModules["./tiptap/nodes/lightsite-gif.ts"]
+      editorModules["./tiptap/nodes/handout-gif.ts"]
     const gifPickerSource =
       editorModules["./tiptap/extensions/gif-picker.ts"]
     const giphySource =
@@ -887,17 +887,17 @@ describe("editor architecture", () => {
 
     expect(blockCommandsSource).toContain('type: "gifBlock"')
     expect(blockCommandsSource).not.toContain("media.giphy.com")
-    expect(blockCommandsSource).toContain("openLightsiteNextGifPicker")
+    expect(blockCommandsSource).toContain("openHandoutNextGifPicker")
     expect(blockCommandsSource).toContain('insertedNode?.type.name === "gifBlock"')
     expect(gifNodeSource).toContain("ResizableNodeView")
     expect(gifNodeSource).toContain("SiteGifBlock.extend")
     expect(sharedSiteExtensionSource).toContain('name: "gifBlock"')
     expect(sharedSiteExtensionSource).toContain("selectable: true")
     expect(sharedSiteExtensionSource).toContain("draggable: true")
-    expect(gifNodeSource).toContain("dataset.lightsiteGifEmpty")
+    expect(gifNodeSource).toContain("dataset.handoutGifEmpty")
     expect(gifNodeSource).toContain("Search GIPHY")
     expect(gifNodeSource).toContain('element.style.height = "auto"')
-    expect(gifPickerSource).toContain("setLightsiteNextGif")
+    expect(gifPickerSource).toContain("setHandoutNextGif")
     expect(gifPickerSource).toContain("subscribe")
     expect(editorCanvasSource).toContain("EditorGifPickerDialog")
     expect(blockControlsSource).toContain('node.type.name === "gifBlock"')
@@ -929,29 +929,29 @@ describe("editor architecture", () => {
       editorModules["./components/use-floating-editor-popover-position.ts"]
     const embedUrlSource = editorModules["./lib/embed-url.ts"]
     const calendarFrameStyles = stylesheetSource.slice(
-      stylesheetSource.indexOf(".lightsite-editor-calendar-embed-frame"),
-      stylesheetSource.indexOf(".lightsite-editor-calendar-settings-menu")
+      stylesheetSource.indexOf(".handout-editor-calendar-embed-frame"),
+      stylesheetSource.indexOf(".handout-editor-calendar-settings-menu")
     )
 
     expect(schemaSource).toContain('"calendar"')
     expect(schemaSource).toContain("siteDocumentUniqueIdNodeTypes")
     expect(extensionSource).toContain("CalendarEmbed")
-    expect(extensionSource).toContain("LightsiteNextCalendarEmbedSettings")
+    expect(extensionSource).toContain("HandoutNextCalendarEmbedSettings")
     expect(blockCommandsSource).toContain('type: "calendarEmbed"')
-    expect(blockCommandsSource).toContain("openLightsiteNextCalendarEmbedSettings")
+    expect(blockCommandsSource).toContain("openHandoutNextCalendarEmbedSettings")
     expect(blockCommandsSource).toContain('insertedNode?.type.name === "calendarEmbed"')
     expect(suggestionMenuSource).toContain('id: "calendar"')
     expect(suggestionMenuSource).toContain("IconCalendarEvent")
-    expect(suggestionMenuSource).toContain("openLightsiteNextCalendarEmbedSettings")
+    expect(suggestionMenuSource).toContain("openHandoutNextCalendarEmbedSettings")
     expect(blockControlsSource).toContain('node.type.name === "calendarEmbed"')
     expect(blockControlsSource).toContain("Edit calendar")
     expect(editorCanvasSource).toContain("EditorCalendarEmbedSettingsMenu")
     expect(calendarNodeSource).toContain("SiteCalendarEmbed.extend")
     expect(sharedSiteExtensionSource).toContain('embedNode("calendarEmbed"')
     expect(calendarNodeViewSource).toContain("<iframe")
-    expect(calendarSettingsSource).toContain("setLightsiteNextCalendarEmbedAttrs")
-    expect(calendarSettingsSource).toContain("removeLightsiteNextCalendarEmbedDraft")
-    expect(calendarMenuSource).toContain("lightsite-editor-calendar-settings-menu")
+    expect(calendarSettingsSource).toContain("setHandoutNextCalendarEmbedAttrs")
+    expect(calendarSettingsSource).toContain("removeHandoutNextCalendarEmbedDraft")
+    expect(calendarMenuSource).toContain("handout-editor-calendar-settings-menu")
     expect(calendarMenuSource).toContain("normalizeIframeEmbedUrl")
     expect(calendarMenuSource).toContain("useFloatingEditorPopoverPosition")
     expect(calendarMenuSource).not.toContain("useLayoutEffect")
@@ -963,8 +963,8 @@ describe("editor architecture", () => {
     expect(embedUrlSource).toContain("extractIframeSrc")
     expect(embedUrlSource).toContain("normalizeWebsiteUrl")
     expect(stylesheetSource).toContain(".react-renderer.node-calendarEmbed")
-    expect(stylesheetSource).toContain(".lightsite-editor-calendar-embed-frame")
-    expect(stylesheetSource).toContain(".lightsite-editor-calendar-settings-menu")
+    expect(stylesheetSource).toContain(".handout-editor-calendar-embed-frame")
+    expect(stylesheetSource).toContain(".handout-editor-calendar-settings-menu")
     expect(calendarFrameStyles).not.toContain("pointer-events: none")
   })
 
@@ -991,29 +991,29 @@ describe("editor architecture", () => {
       editorModules["./components/use-floating-editor-popover-position.ts"]
     const videoUrlSource = editorModules["./lib/video-embed-url.ts"]
     const videoFrameStyles = stylesheetSource.slice(
-      stylesheetSource.indexOf(".lightsite-editor-video-embed-frame"),
-      stylesheetSource.indexOf(".lightsite-editor-calendar-settings-menu")
+      stylesheetSource.indexOf(".handout-editor-video-embed-frame"),
+      stylesheetSource.indexOf(".handout-editor-calendar-settings-menu")
     )
 
     expect(schemaSource).toContain('"video"')
     expect(schemaSource).toContain("siteDocumentUniqueIdNodeTypes")
     expect(extensionSource).toContain("VideoEmbed")
-    expect(extensionSource).toContain("LightsiteNextVideoEmbedSettings")
+    expect(extensionSource).toContain("HandoutNextVideoEmbedSettings")
     expect(blockCommandsSource).toContain('type: "videoEmbed"')
-    expect(blockCommandsSource).toContain("openLightsiteNextVideoEmbedSettings")
+    expect(blockCommandsSource).toContain("openHandoutNextVideoEmbedSettings")
     expect(blockCommandsSource).toContain('insertedNode?.type.name === "videoEmbed"')
     expect(suggestionMenuSource).toContain('id: "video"')
     expect(suggestionMenuSource).toContain("IconVideo")
-    expect(suggestionMenuSource).toContain("openLightsiteNextVideoEmbedSettings")
+    expect(suggestionMenuSource).toContain("openHandoutNextVideoEmbedSettings")
     expect(blockControlsSource).toContain('node.type.name === "videoEmbed"')
     expect(blockControlsSource).toContain("Edit video")
     expect(editorCanvasSource).toContain("EditorVideoEmbedSettingsMenu")
     expect(videoNodeSource).toContain("SiteVideoEmbed.extend")
     expect(sharedSiteExtensionSource).toContain('embedNode("videoEmbed"')
     expect(videoNodeViewSource).toContain("<iframe")
-    expect(videoSettingsSource).toContain("setLightsiteNextVideoEmbedAttrs")
-    expect(videoSettingsSource).toContain("removeLightsiteNextVideoEmbedDraft")
-    expect(videoMenuSource).toContain("lightsite-editor-video-settings-menu")
+    expect(videoSettingsSource).toContain("setHandoutNextVideoEmbedAttrs")
+    expect(videoSettingsSource).toContain("removeHandoutNextVideoEmbedDraft")
+    expect(videoMenuSource).toContain("handout-editor-video-settings-menu")
     expect(videoMenuSource).toContain("normalizeVideoEmbedUrl")
     expect(videoMenuSource).toContain("useFloatingEditorPopoverPosition")
     expect(videoMenuSource).not.toContain("useLayoutEffect")
@@ -1025,8 +1025,8 @@ describe("editor architecture", () => {
     expect(videoUrlSource).toContain("normalizeVimeoUrl")
     expect(videoUrlSource).toContain("normalizeLoomUrl")
     expect(stylesheetSource).toContain(".react-renderer.node-videoEmbed")
-    expect(stylesheetSource).toContain(".lightsite-editor-video-embed-frame")
-    expect(stylesheetSource).toContain(".lightsite-editor-video-settings-menu")
+    expect(stylesheetSource).toContain(".handout-editor-video-embed-frame")
+    expect(stylesheetSource).toContain(".handout-editor-video-settings-menu")
     expect(videoFrameStyles).not.toContain("pointer-events: none")
   })
 
@@ -1038,7 +1038,7 @@ describe("editor architecture", () => {
       blockControlsSource.indexOf('label="Duplicate"')
     )
     expect(blockControlsSource.indexOf('label="Duplicate"')).toBeLessThan(
-      blockControlsSource.indexOf('lightsite-editor-block-menu-label">Turn into')
+      blockControlsSource.indexOf('handout-editor-block-menu-label">Turn into')
     )
   })
 
@@ -1076,30 +1076,28 @@ describe("editor architecture", () => {
     expect(headerSource).not.toContain('<Button variant="secondary" size="compact">Publish</Button>')
   })
 
-  it("keeps site settings actions in the editor header menu", () => {
+  it("opens the reusable site settings drawer from the editor header", () => {
     const headerSource =
       editorModules["./components/editor-header.tsx"] as string
     const settingsMenuSource =
       editorModules["./components/site-settings-menu.tsx"] as string
     const pageSource = editorModules["./editor-page.tsx"] as string
-    const sitesApiSource = readFileSync(new URL("../sites/api.ts", import.meta.url), "utf8")
+    const drawerSource = readFileSync(
+      new URL("../site-settings/components/site-settings-drawer.tsx", import.meta.url),
+      "utf8",
+    )
 
     expect(headerSource).toContain("EditorSiteSettingsMenu")
-    expect(settingsMenuSource).toContain("Site settings")
-    expect(settingsMenuSource).toContain("Rename site")
-    expect(settingsMenuSource).toContain("Duplicate site")
-    expect(settingsMenuSource).toContain("Page theme")
-    expect(settingsMenuSource).toContain("published page")
-    expect(settingsMenuSource).toContain("Delete site")
-    expect(settingsMenuSource).toContain('"dark"')
-    expect(settingsMenuSource).toContain('"light"')
-    expect(settingsMenuSource).toContain('"system"')
-    expect(settingsMenuSource).toContain("DeleteSiteDialog")
-    expect(pageSource).toContain("setSiteThemeMode")
-    expect(pageSource).toContain("duplicateSiteMutation")
-    expect(pageSource).toContain("deleteSiteMutation")
-    expect(sitesApiSource).toContain("`/api/sites/${siteId}/duplicate`")
-    expect(sitesApiSource).toContain("`/api/sites/${siteId}`")
+    expect(settingsMenuSource).toContain("SiteSettingsDrawer")
+    expect(drawerSource).toContain("Appearance")
+    expect(drawerSource).toContain("Tracking")
+    expect(drawerSource).toContain("Variables")
+    expect(drawerSource).toContain('w-[384px]')
+    expect(pageSource).toContain("getSiteVariableUsageCounts")
+    expect(pageSource).toContain("createSiteVariable")
+    expect(pageSource).toContain("deleteSiteVariable")
+    expect(pageSource).not.toContain("duplicateSiteMutation")
+    expect(pageSource).not.toContain("deleteSiteMutation")
   })
 
   it("keeps suggestion pointer hover separate from keyboard selection state", () => {

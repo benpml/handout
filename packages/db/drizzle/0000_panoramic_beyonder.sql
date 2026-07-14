@@ -109,7 +109,7 @@ CREATE TABLE "sites" (
 	"slug" varchar(96) NOT NULL,
 	"status" "site_status" DEFAULT 'draft' NOT NULL,
 	"visibility" "site_visibility" DEFAULT 'private' NOT NULL,
-	"draft_content" jsonb DEFAULT '{"schemaVersion":1,"header":{"avatarMode":"single","title":"Untitled Lightsite"},"settings":{"showTableOfContents":true,"allowSearchIndexing":false},"variables":[],"blocks":[]}'::jsonb NOT NULL,
+	"draft_content" jsonb DEFAULT '{"schemaVersion":1,"header":{"avatarMode":"single","title":"Untitled Handout"},"settings":{"showTableOfContents":true,"allowSearchIndexing":false},"variables":[],"blocks":[]}'::jsonb NOT NULL,
 	"draft_revision" integer DEFAULT 1 NOT NULL,
 	"published_version_id" uuid,
 	"published_at" timestamp with time zone,

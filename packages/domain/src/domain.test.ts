@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   canServeWorkspacePublicPages,
-  LIGHTSITE_COLLECTION_LIMITS,
-  LIGHTSITE_TEXT_LIMITS,
+  HANDOUT_COLLECTION_LIMITS,
+  HANDOUT_TEXT_LIMITS,
   clampTextToLimit,
   normalizeWebsiteDomain,
   normalizeWebsiteUrl,
@@ -71,7 +71,7 @@ describe("domain slug rules", () => {
 
 describe("domain limit rules", () => {
   it("defines safety limits for editor collections", () => {
-    expect(LIGHTSITE_COLLECTION_LIMITS).toMatchObject({
+    expect(HANDOUT_COLLECTION_LIMITS).toMatchObject({
       blocksPerTab: 500,
       links: 25,
       tabs: 25,
@@ -79,7 +79,7 @@ describe("domain limit rules", () => {
   });
 
   it("validates and clamps text by named intent", () => {
-    const oversizedName = "x".repeat(LIGHTSITE_TEXT_LIMITS.siteName + 1);
+    const oversizedName = "x".repeat(HANDOUT_TEXT_LIMITS.siteName + 1);
 
     expect(validateTextLimit("Acme", "siteName", "Site name")).toEqual({
       ok: true,
@@ -88,10 +88,10 @@ describe("domain limit rules", () => {
     expect(validateTextLimit(oversizedName, "siteName", "Site name")).toMatchObject({
       ok: false,
       code: "text.too_long",
-      limit: LIGHTSITE_TEXT_LIMITS.siteName,
+      limit: HANDOUT_TEXT_LIMITS.siteName,
     });
     expect(clampTextToLimit(oversizedName, "siteName")).toHaveLength(
-      LIGHTSITE_TEXT_LIMITS.siteName,
+      HANDOUT_TEXT_LIMITS.siteName,
     );
   });
 });
@@ -112,10 +112,10 @@ describe("domain website rules", () => {
       domain: "text.text",
       url: "https://text.text",
     });
-    expect(normalizeWebsiteUrl(" http://www.Acme.com/team?ref=lightsite#intro ")).toEqual({
+    expect(normalizeWebsiteUrl(" http://www.Acme.com/team?ref=handout#intro ")).toEqual({
       ok: true,
       domain: "acme.com",
-      url: "http://acme.com/team?ref=lightsite#intro",
+      url: "http://acme.com/team?ref=handout#intro",
     });
   });
 

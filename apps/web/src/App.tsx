@@ -1,5 +1,5 @@
 import { Suspense, lazy, type ComponentType } from "react"
-import { LIGHTSITE_THEME_CSS } from "@lightsite/design-tokens"
+import { HANDOUT_THEME_CSS } from "@handout/design-tokens"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { ThemeProvider } from "next-themes"
 import {
@@ -12,9 +12,9 @@ import {
   useLocation,
 } from "@tanstack/react-router"
 
-import { createLightsiteQueryClient } from "@/lib/api/query-client"
+import { createHandoutQueryClient } from "@/lib/api/query-client"
 
-const queryClient = createLightsiteQueryClient()
+const queryClient = createHandoutQueryClient()
 
 const MarketingPage = lazyWithReload(() =>
   import("@/features/marketing/marketing-page").then((module) => ({
@@ -102,7 +102,7 @@ const PublicSitePage = lazyWithReload(() =>
   }))
 )
 
-const dynamicImportReloadKey = "lightsite:dynamic-import-reload"
+const dynamicImportReloadKey = "handout:dynamic-import-reload"
 
 // React.lazy is intentionally prop-agnostic at this boundary.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -288,7 +288,7 @@ declare module "@tanstack/react-router" {
 export default function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-      <style data-lightsite-theme-tokens>{LIGHTSITE_THEME_CSS}</style>
+      <style data-handout-theme-tokens>{HANDOUT_THEME_CSS}</style>
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
       </QueryClientProvider>

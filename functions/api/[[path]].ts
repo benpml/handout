@@ -4,14 +4,14 @@ type PagesFunctionContext = {
     path?: string | string[]
   }
   env?: {
-    LIGHTSITE_API_ORIGIN?: string
+    HANDOUT_API_ORIGIN?: string
   }
 }
 
-const DEFAULT_API_ORIGIN = "https://lightsite-api.onrender.com"
+const DEFAULT_API_ORIGIN = "https://api.handout.link"
 
 export async function onRequest(context: PagesFunctionContext) {
-  const upstreamOrigin = context.env?.LIGHTSITE_API_ORIGIN || DEFAULT_API_ORIGIN
+  const upstreamOrigin = context.env?.HANDOUT_API_ORIGIN || DEFAULT_API_ORIGIN
   const requestUrl = new URL(context.request.url)
   const path = Array.isArray(context.params.path)
     ? context.params.path.join("/")

@@ -1,4 +1,4 @@
-import { LIGHTSITE_TEXT_LIMITS } from "@lightsite/domain";
+import { HANDOUT_TEXT_LIMITS } from "@handout/domain";
 import {
   siteContentPageSchema,
   siteContentSchema,
@@ -12,7 +12,7 @@ import {
   type SiteSidebarButton,
   type SiteSidebarLink,
   type SiteVariableDefinition,
-} from "@lightsite/site-document";
+} from "@handout/site-document";
 import { z } from "zod";
 
 export {
@@ -44,7 +44,7 @@ export type ApiErrorResponse = z.infer<typeof apiErrorResponseSchema>;
 export const extensionAuthAuthorizeRequestSchema = z.object({
   codeChallenge: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
   redirectUri: z.string().url().refine(
-    (value) => /^https:\/\/[a-p]{32}\.chromiumapp\.org\/lightsite$/.test(value),
+    (value) => /^https:\/\/[a-p]{32}\.chromiumapp\.org\/handout$/.test(value),
     { message: "Invalid Chrome extension redirect URI." },
   ),
 });
@@ -93,7 +93,7 @@ export const siteContentResponseSchema = siteContentPayloadSchema.extend({
 export const updateSiteContentRequestSchema = z.object({
   expectedDraftRevision: z.number().int().positive().optional(),
   draftContent: siteContentSchema,
-  changeSummary: z.string().trim().max(LIGHTSITE_TEXT_LIMITS.changeSummary).optional(),
+  changeSummary: z.string().trim().max(HANDOUT_TEXT_LIMITS.changeSummary).optional(),
 });
 
 export const validateSiteContentRequestSchema = z.object({
@@ -127,7 +127,7 @@ export const listSitesResponseSchema = z.object({
 });
 
 export const createSiteRequestSchema = z.object({
-  name: z.string().trim().min(1).max(LIGHTSITE_TEXT_LIMITS.siteName).default("Untitled Lightsite"),
+  name: z.string().trim().min(1).max(HANDOUT_TEXT_LIMITS.siteName).default("Untitled Handout"),
   slug: z.string().trim().max(96).optional(),
 });
 
@@ -149,7 +149,7 @@ export const updateSiteContentResponseSchema = z.object({
 });
 
 export const updateSiteRequestSchema = z.object({
-  name: z.string().trim().min(1).max(LIGHTSITE_TEXT_LIMITS.siteName).optional(),
+  name: z.string().trim().min(1).max(HANDOUT_TEXT_LIMITS.siteName).optional(),
   slug: z.string().trim().max(96).optional(),
   visibility: siteVisibilitySchema.optional(),
 }).refine(
@@ -244,13 +244,13 @@ export const listSiteVariantsResponseSchema = z.object({
 });
 
 const upsertSiteVariantInputSchema = z.object({
-  id: z.string().trim().min(1).max(LIGHTSITE_TEXT_LIMITS.variableName).optional(),
+  id: z.string().trim().min(1).max(HANDOUT_TEXT_LIMITS.variableName).optional(),
   slug: z.string().trim().min(1).max(96),
-  name: z.string().trim().min(1).max(LIGHTSITE_TEXT_LIMITS.variableName),
-  recipientName: z.string().trim().min(1).max(LIGHTSITE_TEXT_LIMITS.recipientName).nullable().optional(),
-  recipientCompany: z.string().trim().min(1).max(LIGHTSITE_TEXT_LIMITS.recipientCompany).nullable().optional(),
+  name: z.string().trim().min(1).max(HANDOUT_TEXT_LIMITS.variableName),
+  recipientName: z.string().trim().min(1).max(HANDOUT_TEXT_LIMITS.recipientName).nullable().optional(),
+  recipientCompany: z.string().trim().min(1).max(HANDOUT_TEXT_LIMITS.recipientCompany).nullable().optional(),
   variableValues: z.record(
-    z.string().max(LIGHTSITE_TEXT_LIMITS.variableName),
+    z.string().max(HANDOUT_TEXT_LIMITS.variableName),
     boundedUnknownSchema,
   ).default({}),
 });
@@ -370,9 +370,9 @@ export const workspaceSlugAvailabilityResponseSchema = z.object({
 });
 
 export const createWorkspaceRequestSchema = z.object({
-  name: z.string().trim().min(1).max(LIGHTSITE_TEXT_LIMITS.workspaceName),
+  name: z.string().trim().min(1).max(HANDOUT_TEXT_LIMITS.workspaceName),
   slug: z.string().trim().max(64).optional(),
-  website: z.string().trim().min(1).max(LIGHTSITE_TEXT_LIMITS.url),
+  website: z.string().trim().min(1).max(HANDOUT_TEXT_LIMITS.url),
   logoAssetId: z.uuid().optional(),
 });
 
@@ -443,7 +443,7 @@ export type BootstrapWorkspaceSwitcherItem = z.infer<typeof bootstrapWorkspaceSw
 export type AppBootstrapResponse = z.infer<typeof appBootstrapResponseSchema>;
 
 export const completeAccountSetupRequestSchema = z.object({
-  displayName: z.string().trim().min(1).max(LIGHTSITE_TEXT_LIMITS.accountDisplayName),
+  displayName: z.string().trim().min(1).max(HANDOUT_TEXT_LIMITS.accountDisplayName),
 });
 
 export const setActiveWorkspaceRequestSchema = z.object({
@@ -456,7 +456,7 @@ export type SetActiveWorkspaceRequest = z.input<typeof setActiveWorkspaceRequest
 export const workspaceLogoPreviewThemeSchema = z.enum(["light", "dark"]);
 
 export const workspaceLogoPreviewQuerySchema = z.object({
-  website: z.string().trim().min(1).max(LIGHTSITE_TEXT_LIMITS.url),
+  website: z.string().trim().min(1).max(HANDOUT_TEXT_LIMITS.url),
   size: z.coerce.number().int().min(32).max(512).default(128),
   theme: workspaceLogoPreviewThemeSchema.default("light"),
 });
@@ -484,10 +484,10 @@ function validateUnknownStringLimits(
   path: Array<string | number> = [],
 ) {
   if (typeof value === "string") {
-    if (value.length > LIGHTSITE_TEXT_LIMITS.blockText) {
+    if (value.length > HANDOUT_TEXT_LIMITS.blockText) {
       context.addIssue({
         code: "custom",
-        message: `Text must be ${LIGHTSITE_TEXT_LIMITS.blockText.toLocaleString("en-US")} characters or fewer.`,
+        message: `Text must be ${HANDOUT_TEXT_LIMITS.blockText.toLocaleString("en-US")} characters or fewer.`,
         path,
       });
     }

@@ -1,4 +1,4 @@
-import { clampTextToLimit } from "@lightsite/domain"
+import { clampTextToLimit } from "@handout/domain"
 import {
   createDefaultSiteContent,
   defaultSiteSidebar,
@@ -8,7 +8,7 @@ import {
   type SiteSidebarButton,
   type SiteSidebarLink,
   type TiptapNode,
-} from "@lightsite/site-document"
+} from "@handout/site-document"
 
 import { normalizeButtonHref } from "./lib/button-link"
 import { createAddedPageEmptyContent } from "./tiptap/schema"

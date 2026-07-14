@@ -35,9 +35,9 @@ It does not run a read-only editor on public pages. That would ship editing mach
 
 ## 3. Canonical data model
 
-`@lightsite/design-tokens` owns semantic light/dark/system values, the Geist font face, and the public-site mobile breakpoint. It emits `LIGHTSITE_THEME_CSS`; no consumer restates token values.
+`@handout/design-tokens` owns semantic light/dark/system values, the Geist font face, and the public-site mobile breakpoint. It emits `HANDOUT_THEME_CSS`; no consumer restates token values.
 
-`@lightsite/site-document` owns the Tiptap extensions, schema, types, defaults, normalization, sidebar model, icon catalog, metadata extraction, rendering, and canonical recipient stylesheet.
+`@handout/site-document` owns the Tiptap extensions, schema, types, defaults, normalization, sidebar model, icon catalog, metadata extraction, rendering, and canonical recipient stylesheet.
 
 `SiteContent` schema version 3 contains:
 
@@ -57,7 +57,7 @@ The public payload schema version is independent from the site-document schema. 
 
 `apps/web/src/features/editor/editor-page.tsx` loads and saves canonical `SiteContent` directly. Page switching changes the active Tiptap document; it does not create a parallel page-builder model.
 
-Editor mode uses React node views for editing controls and injects `SITE_DOCUMENT_CSS` from `@lightsite/site-document`. Preview mode renders `renderPublicSitePreviewHtml(...)` in a sandboxed iframe. Editor-only selection, drag, upload, and menu affordances remain in the web app stylesheet; typography, colors, spacing, cards, media, tables, and other recipient-visible presentation belong only to the canonical stylesheet.
+Editor mode uses React node views for editing controls and injects `SITE_DOCUMENT_CSS` from `@handout/site-document`. Preview mode renders `renderPublicSitePreviewHtml(...)` in a sandboxed iframe. Editor-only selection, drag, upload, and menu affordances remain in the web app stylesheet; typography, colors, spacing, cards, media, tables, and other recipient-visible presentation belong only to the canonical stylesheet.
 
 ### Shared renderer
 
@@ -78,7 +78,7 @@ Editor mode uses React node views for editing controls and injects `SITE_DOCUMEN
 
 Publishing snapshots canonical `SiteContent` without transformation. The public repository returns that immutable content and metadata. The API HTML route validates the public payload and calls the shared renderer.
 
-The API serves the versioned site runtime, `/fonts/*`, and shared public assets before the public-site fallback. It also serves title logos through `/api/public/site-logo/:workspaceSlug/:siteSlug/:kind`. That endpoint resolves the published site (and optional recipient variant) before looking up a workspace or recipient domain, so it cannot be used as an arbitrary-domain logo proxy. The public worker reserves and caches asset paths. Runtime bytes must never change behind an existing immutable versioned URL; behavior changes require a new path such as the current `/site-runtime.v3.js`.
+The API serves the versioned site runtime, `/fonts/*`, and shared public assets before the public-site fallback. It also serves title logos through `/api/public/site-logo/:workspaceSlug/:siteSlug/:kind`. That endpoint resolves the published site (and optional recipient variant) before looking up a workspace or recipient domain, so it cannot be used as an arbitrary-domain logo proxy. The public worker reserves and caches asset paths. Runtime bytes must never change behind an existing immutable versioned URL; behavior changes require a new path such as the current `/site-runtime.v4.js`.
 
 ### Web public fallback
 
@@ -108,7 +108,7 @@ Draft title logos use the authenticated same-origin logo-preview endpoint. Logo 
 5. Validate the public payload.
 6. Call the same `renderPublicSiteHtml` with tracking enabled. Direct public documents load the runtime from its immutable external asset; application-hosted `srcDoc` documents embed the same runtime bytes.
 
-Published title logos use the public-site-bound logo endpoint. Workspace domains come from published workspace context; recipient domains come from the same resolved variable values used by the document. A missing workspace logo falls back to the Lightsite mark, while a missing recipient logo is omitted.
+Published title logos use the public-site-bound logo endpoint. Workspace domains come from published workspace context; recipient domains come from the same resolved variable values used by the document. A missing workspace logo falls back to the Handout mark, while a missing recipient logo is omitted.
 
 No step converts Tiptap content to an intermediate block model.
 
@@ -116,11 +116,11 @@ No step converts Tiptap content to an intermediate block model.
 
 The renderer emits stable attributes on user-action elements:
 
-- `data-ls-track`: `button`, `link`, or `tab`.
-- `data-ls-element-id`: persisted node/sidebar ID when present, otherwise a deterministic fallback.
-- `data-ls-element-kind`: semantic source such as `button`, `image_card`, `sidebar_link`, `sidebar_button`, or `tab`.
-- `data-ls-element-label`: visible user-facing label.
-- `data-ls-element-href`: sanitized URL with credentials, query, and fragment removed.
+- `data-handout-track`: `button`, `link`, or `tab`.
+- `data-handout-element-id`: persisted node/sidebar ID when present, otherwise a deterministic fallback.
+- `data-handout-element-kind`: semantic source such as `button`, `image_card`, `sidebar_link`, `sidebar_button`, or `tab`.
+- `data-handout-element-label`: visible user-facing label.
+- `data-handout-element-href`: sanitized URL with credentials, query, and fragment removed.
 
 Tracked surfaces include Tiptap links, button blocks, image-card CTAs, sidebar links/buttons, and tab switches. The tracking script is loaded only when a signed tracking bootstrap is present and tracking is enabled. Preview never starts a tracking session.
 
@@ -158,7 +158,7 @@ Media uploads must graduate to an asset service/object store that returns immuta
 - Invalid public payloads fail closed and render the generic unavailable page.
 - Public repository failures return a no-store 503 unavailable page.
 - Missing or hidden pages never create broken tab targets.
-- Missing workspace logos fall back to the Lightsite logo; missing recipient logos remove only their own tile and leave title layout intact.
+- Missing workspace logos fall back to the Handout logo; missing recipient logos remove only their own tile and leave title layout intact.
 - Empty visible content renders a deterministic empty state.
 - JavaScript failure leaves the initial page and all static content readable.
 
@@ -176,7 +176,7 @@ To add a Tiptap extension:
 
 Do not add an adapter that flattens the node into a generic block. Do not persist rendered HTML as the source of truth. Do not make React attrs own editable text.
 
-Do not add token values or recipient-visible site styles to `apps/web/src/index.css`. That file may contain Tailwind token aliases, editor chrome, and editing affordances only. Token values go in `@lightsite/design-tokens`; site presentation goes in `packages/site-document/src/styles.ts`; icon choices go in `packages/site-document/src/site-icons.ts` and regenerate through `pnpm --filter @lightsite/site-document generate:icons`.
+Do not add token values or recipient-visible site styles to `apps/web/src/index.css`. That file may contain Tailwind token aliases, editor chrome, and editing affordances only. Token values go in `@handout/design-tokens`; site presentation goes in `packages/site-document/src/styles.ts`; icon choices go in `packages/site-document/src/site-icons.ts` and regenerate through `pnpm --filter @handout/site-document generate:icons`.
 
 ## 11. Verification gates
 

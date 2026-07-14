@@ -13,8 +13,8 @@ import {
 } from "@tabler/icons-react"
 import { Link, useLocation } from "@tanstack/react-router"
 import { useTheme } from "next-themes"
-import type { SiteListItem } from "@lightsite/contracts"
-import type { AppBootstrapResponse } from "@lightsite/contracts"
+import type { SiteListItem } from "@handout/contracts"
+import type { AppBootstrapResponse } from "@handout/contracts"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -78,13 +78,13 @@ export function AppShell({ bootstrap, children }: AppShellProps) {
       <Sidebar collapsible="offcanvas" className="shrink-0 group-data-[side=left]:border-r-0">
         <SidebarHeader>
           <div className="flex h-8 w-full items-center gap-2 px-1.5">
-            <Link to="/sites" className="flex min-w-0 flex-1 items-center" aria-label="Lightsite">
+            <Link to="/sites" className="flex min-w-0 flex-1 items-center" aria-label="Handout">
               <span
                 aria-hidden="true"
-                className="h-[17px] w-[83px] bg-foreground"
+                className="h-[17px] w-[85px] bg-foreground"
                 style={{
-                  WebkitMask: "url('/lightsite-logo.svg') center / contain no-repeat",
-                  mask: "url('/lightsite-logo.svg') center / contain no-repeat",
+                  WebkitMask: "url('/handout-logo.svg') center / contain no-repeat",
+                  mask: "url('/handout-logo.svg') center / contain no-repeat",
                 }}
               />
             </Link>
@@ -188,13 +188,13 @@ export function AppShell({ bootstrap, children }: AppShellProps) {
         >
           <div className="flex h-9 shrink-0 items-center gap-2 rounded-xl border bg-background px-2.5 md:hidden">
             <SidebarTrigger className="-ml-1" />
-            <Link to="/sites" className="flex min-w-0 flex-1 items-center" aria-label="Lightsite">
+            <Link to="/sites" className="flex min-w-0 flex-1 items-center" aria-label="Handout">
               <span
                 aria-hidden="true"
-                className="h-[17px] w-[83px] bg-foreground"
+                className="h-[17px] w-[85px] bg-foreground"
                 style={{
-                  WebkitMask: "url('/lightsite-logo.svg') center / contain no-repeat",
-                  mask: "url('/lightsite-logo.svg') center / contain no-repeat",
+                  WebkitMask: "url('/handout-logo.svg') center / contain no-repeat",
+                  mask: "url('/handout-logo.svg') center / contain no-repeat",
                 }}
               />
             </Link>

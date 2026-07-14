@@ -1,6 +1,6 @@
 I would like to build the following application. 
 
-Sales one-pager builder called Lightsite
+Sales one-pager builder called Handout
 
 Purpose: A place where sales teams can easily build and edit sales onepager sites to send to prospects who ask for more information. 
 
@@ -37,7 +37,7 @@ Each row should have:
     - Share (If published)
         - This lets you share the public link with others (usually prospects). 
         - This should pull up the sharing modal. 
-        - The sharing modal should have a default link for the site. This should be lightsite.app/{workspace_username}/{site-slug}
+        - The sharing modal should have a default link for the site. This should be handout.app/{workspace_username}/{site-slug}
         - The user should also be able to see and create and delete custom variants links so they can customize variables per recipient and track specific people/accounts who open the site. 
     - Variants
         - This should pull up the variants modal for the site. 

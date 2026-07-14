@@ -1,50 +1,50 @@
-# Lightsite for Gmail — Product and Engineering Specification
+# Handout for Gmail — Product and Engineering Specification
 
 Status: implementation baseline  
-Owner: Lightsite  
+Owner: Handout
 Surface: Chrome extension, Gmail compose
 
 ## 1. Product outcome
 
-Lightsite for Gmail lets a seller create or reuse a personalized Lightsite without leaving the email they are writing. The extension should make the common path—recipient detected, site selected, link created, rich card inserted—possible in seconds while preserving the full recipient and variable model already used by the Lightsite app.
+Handout for Gmail lets a seller create or reuse a personalized Handout without leaving the email they are writing. The extension should make the common path—recipient detected, site selected, link created, rich card inserted—possible in seconds while preserving the full recipient and variable model already used by the Handout app.
 
-The extension is a client of the existing Lightsite site and variant APIs. It must not introduce a Gmail-only recipient model, duplicate site content, or fork the visual system.
+The extension is a client of the existing Handout site and variant APIs. It must not introduce a Gmail-only recipient model, duplicate site content, or fork the visual system.
 
 ## 2. Success criteria
 
-- A Lightsite action appears in every Gmail compose toolbar, including multiple simultaneous compose windows and pop-out compose windows.
+- A Handout action appears in every Gmail compose toolbar, including multiple simultaneous compose windows and pop-out compose windows.
 - The action never obscures Gmail controls, steals compose keystrokes, or changes Gmail styling.
 - The current primary `To` recipient is detected automatically. Name and website/domain are suggested without overwriting user-entered values; company remains blank for the seller to enter.
 - A seller can search active sites by name, choose a site, create a recipient or reuse an existing recipient, complete all variables used by that site, and insert content into the correct compose body.
 - The completion screen supports Preview, Insert link, and Insert email card.
 - Sign-in works without relying on third-party cookies. The session survives browser restarts and can be revoked by signing out.
 - Network, auth, permission, unpublished-site, stale-compose, and Gmail-DOM failures produce clear recovery actions and never lose the seller's draft values.
-- The extension uses the same Lightsite tokens, fonts, shadcn primitives, field conventions, icons, and recipient terminology as the web app.
+- The extension uses the same Handout tokens, fonts, shadcn primitives, field conventions, icons, and recipient terminology as the web app.
 
 ## 3. Primary user flow
 
 ### 3.1 Entry
 
 1. The seller opens or replies from a Gmail compose.
-2. A compact Lightsite icon button appears beside Gmail's compose actions with tooltip `Share a Lightsite`.
-3. Selecting it opens a 384px-wide panel anchored above the compose toolbar. The panel is rendered in an extension-owned iframe so Gmail CSS and Lightsite CSS cannot affect one another.
+2. A compact Handout icon button appears beside Gmail's compose actions with tooltip `Share a Handout`.
+3. Selecting it opens a 384px-wide panel anchored above the compose toolbar. The panel is rendered in an extension-owned iframe so Gmail CSS and Handout CSS cannot affect one another.
 4. The panel receives a short-lived compose context containing the compose instance identifier and the current primary recipient. It never receives the email body.
 
 ### 3.2 Authentication
 
 - Signed in: load the active workspace and sites immediately.
-- Signed out: show one `Continue with Lightsite` action. It opens the normal Lightsite web app through `chrome.identity.launchWebAuthFlow` and reuses the user's existing first-party Lightsite session.
-- If the web session is absent, Lightsite shows its normal sign-in page and returns to the extension connection automatically after authentication.
+- Signed out: show one `Continue with Handout` action. It opens the normal Handout web app through `chrome.identity.launchWebAuthFlow` and reuses the user's existing first-party Handout session.
+- If the web session is absent, Handout shows its normal sign-in page and returns to the extension connection automatically after authentication.
 - The handoff uses a 90-second encrypted authorization code bound to a background-generated PKCE verifier. The bearer session token is returned only from the code exchange and never appears in a URL.
-- The token is stored only in `chrome.storage.local`, sent only to the configured Lightsite API origin, and removed on sign-out or an unrecoverable 401.
+- The token is stored only in `chrome.storage.local`, sent only to the configured Handout API origin, and removed on sign-out or an unrecoverable 401.
 - The extension never reads browser cookies, Gmail messages, contacts, or Google account tokens.
-- Google/Apple sign-in can be added to the Lightsite web app independently; the extension inherits any web-app sign-in method without adding provider-specific logic.
+- Google/Apple sign-in can be added to the Handout web app independently; the extension inherits any web-app sign-in method without adding provider-specific logic.
 
 ### 3.3 Choose site
 
 - Search is focused on open and filters locally as the user types.
 - Results show site name, publish state, last update, and recipient count.
-- Published sites are selectable. Draft and archived sites explain why they cannot be sent and offer `Open in Lightsite` where applicable.
+- Published sites are selectable. Draft and archived sites explain why they cannot be sent and offer `Open in Handout` where applicable.
 - The most recently used sites are ordered first using a versioned local preference; remaining sites use updated time.
 - Empty states distinguish no sites, no published sites, and no search results.
 
@@ -70,7 +70,7 @@ Past recipient behavior:
 - Search filters name, company, website, and link slug.
 - Recipients show a logo when a website is available and an initial fallback otherwise.
 - Selecting an existing recipient goes directly to completion; an `Edit details` affordance exposes identity and variable fields before insertion.
-- Matching uses exact normalized recipient email only when Lightsite eventually stores email. V1 must not pretend an email match exists because the current recipient model intentionally does not store email.
+- Matching uses exact normalized recipient email only when Handout eventually stores email. V1 must not pretend an email match exists because the current recipient model intentionally does not store email.
 
 ### 3.5 Complete and insert
 
@@ -128,17 +128,17 @@ Outputs:
 - Gmail content script (isolated world, no remote code)
 - Background service worker (API/auth broker and token owner)
 - Extension panel HTML/React bundle
-- Static Lightsite icons
+- Static Handout icons
 
 ### 6.2 Content script responsibilities
 
 - Observe Gmail for compose roots and toolbar changes using one debounced `MutationObserver`.
-- Add exactly one Lightsite button per compose root and clean orphaned state when compose roots disappear.
+- Add exactly one Handout button per compose root and clean orphaned state when compose roots disappear.
 - Extract only recipient email/display name and compose metadata needed for targeting.
 - Mount/unmount the iframe panel.
 - Validate `postMessage` source and extension origin.
 - Insert sanitized, extension-generated HTML into the correct contenteditable compose body while preserving selection and emitting `input` so Gmail records the draft change.
-- Never call the Lightsite API or hold auth tokens.
+- Never call the Handout API or hold auth tokens.
 
 ### 6.3 Panel responsibilities
 
@@ -151,7 +151,7 @@ Outputs:
 ### 6.4 Background responsibilities
 
 - Own the Better Auth bearer token and configured API/web origins.
-- Attach Authorization only for allowlisted Lightsite origins.
+- Attach Authorization only for allowlisted Handout origins.
 - Provide typed API request, web-app connection, sign-out, open-tab, and session-state operations.
 - Deduplicate concurrent bootstrap/site requests and apply bounded retries only to safe GET requests.
 - Translate server failures into stable extension error codes.
@@ -165,7 +165,7 @@ Outputs:
 - `POST /api/sites/:siteId/variants/batch`: create/update recipient.
 - `DELETE /api/sites/:siteId/variants/:variantId`: not exposed in the extension V1 completion flow.
 
-Site URI remains `{workspaceSlug}/{siteSlug}`. Recipient URL remains `https://lightsite.io/{workspaceSlug}/{siteSlug}/{variantSlug}`.
+Site URI remains `{workspaceSlug}/{siteSlug}`. Recipient URL remains `https://handout.link/{workspaceSlug}/{siteSlug}/{variantSlug}`.
 
 ## 7. Typed contracts
 
@@ -199,7 +199,7 @@ Only extension-generated insertion payloads are accepted. Arbitrary HTML from th
 - The observer is idempotent. Duplicate compose scans cannot create duplicate buttons or panels.
 - Every async state is cancel-safe when the panel closes or the selected site changes.
 - 401: clear token, show reconnect, preserve non-secret draft values in memory.
-- 403: show the server permission/plan message and a Lightsite deep link.
+- 403: show the server permission/plan message and a Handout deep link.
 - 404 site/variant: return to the prior list with `This item is no longer available`.
 - Offline/network: retain form state, show Retry, and never create twice after an ambiguous write. Creation uses a client-generated stable variant ID.
 - Unpublished site: selectable actions remain disabled with a direct explanation.
@@ -208,12 +208,12 @@ Only extension-generated insertion payloads are accepted. Arbitrary HTML from th
 
 ## 9. Security and privacy
 
-- Minimum permissions: `identity` for the first-party auth handoff, `storage` for the bearer session, plus host access for Gmail and configured Lightsite origins. No `cookies`, `scripting`, Gmail API, history, or broad web access unless a future feature proves it is required.
-- Content Security Policy allows only extension scripts/assets and Lightsite API/image origins required by the panel.
+- Minimum permissions: `identity` for the first-party auth handoff, `storage` for the bearer session, plus host access for Gmail and configured Handout origins. No `cookies`, `scripting`, Gmail API, history, or broad web access unless a future feature proves it is required.
+- Content Security Policy allows only extension scripts/assets and Handout API/image origins required by the panel.
 - The bearer token is never sent through `postMessage`, logged, rendered, or placed in page storage.
-- Passwords and provider credentials never enter the extension. Authentication happens only in the first-party Lightsite web app.
+- Passwords and provider credentials never enter the extension. Authentication happens only in the first-party Handout web app.
 - Gmail message body, subject, thread history, and attachments are not read or transmitted.
-- Recipient context is sent to Lightsite only when the seller creates/updates a recipient.
+- Recipient context is sent to Handout only when the seller creates/updates a recipient.
 - Generated HTML escapes every recipient/site-derived string and uses an allowlisted template.
 
 ## 10. Accessibility
@@ -258,8 +258,8 @@ Release is blocked by any uncaught console error, duplicate button, wrong-compos
 
 ## 12. Developer and release workflow
 
-- `pnpm --filter @lightsite/web build:extension` produces `apps/web/dist-extension`.
-- `pnpm --filter @lightsite/web test:extension` runs focused extension tests.
+- `pnpm --filter @handout/web build:extension` produces `apps/web/dist-extension`.
+- `pnpm --filter @handout/web test:extension` runs focused extension tests.
 - Local builds target `http://localhost:3011` and `http://localhost:5173`; production builds require explicit API, web, and public-site origins.
 - `apps/web/dist-extension` is the Chrome `Load unpacked` directory and is never hand-edited.
 - Store assets, privacy disclosure, permission rationale, versioning, signing, and staged rollout must be completed before public Chrome Web Store distribution.

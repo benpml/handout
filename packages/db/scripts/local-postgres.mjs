@@ -36,7 +36,7 @@ switch (command) {
     createDatabase();
     break;
   default:
-    console.error("Usage: pnpm --filter @lightsite/db db:local <setup|start|stop|status|createdb>");
+    console.error("Usage: pnpm --filter @handout/db db:local <setup|start|stop|status|createdb>");
     process.exit(1);
 }
 
@@ -72,8 +72,8 @@ function statusPostgres() {
 
 function createDatabase() {
   ensurePostgresBinaries();
-  const databaseUrl = new URL(process.env.DATABASE_URL ?? "postgres://postgres:postgres@localhost:5432/lightsite");
-  const database = databaseUrl.pathname.slice(1) || "lightsite";
+  const databaseUrl = new URL(process.env.DATABASE_URL ?? "postgres://postgres:postgres@localhost:5432/handout");
+  const database = databaseUrl.pathname.slice(1) || "handout";
   const user = databaseUrl.username || "postgres";
   const host = databaseUrl.hostname || "localhost";
   const port = databaseUrl.port || getPort();

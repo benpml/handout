@@ -1,7 +1,7 @@
 import { useDeferredValue, useMemo, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, useNavigate } from "@tanstack/react-router"
-import { LIGHTSITE_TEXT_LIMITS } from "@lightsite/domain"
+import { HANDOUT_TEXT_LIMITS } from "@handout/domain"
 import {
   IconCirclePlus,
   IconCopy,
@@ -14,7 +14,7 @@ import {
   IconTrash,
   IconWorldLongitude,
 } from "@tabler/icons-react"
-import type { SiteListItem } from "@lightsite/contracts"
+import type { SiteListItem } from "@handout/contracts"
 import { useTheme } from "next-themes"
 import { toast } from "sonner"
 
@@ -115,7 +115,7 @@ export function SitesPage() {
             <IconSearch />
           </InputGroupAddon>
           <InputGroupInput
-            maxLength={LIGHTSITE_TEXT_LIMITS.searchQuery}
+            maxLength={HANDOUT_TEXT_LIMITS.searchQuery}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search sites"

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createPublicSiteService } from "./service";
 import type { PublicSiteLookupInput, PublicSiteRepository } from "./repository";
 import { createEncryptedTrackingV2ContextTokenService } from "../tracking/v2/context-token";
+import { createDefaultSiteContent, PUBLIC_SITE_PAYLOAD_SCHEMA_VERSION } from "@handout/site-document";
 
 function createRecordingRepository(record: { payload: unknown } | null) {
   const calls: PublicSiteLookupInput[] = [];
@@ -94,7 +95,37 @@ describe("public site service", () => {
       },
     );
     const payload = {
-      schemaVersion: 1,
+      schemaVersion: PUBLIC_SITE_PAYLOAD_SCHEMA_VERSION,
+      workspace: {
+        id: "11111111-1111-4111-8111-111111111111",
+        slug: "acme",
+        name: "Acme",
+        websiteDomain: "acme.com",
+        logoUrl: null,
+      },
+      site: {
+        id: "22222222-2222-4222-8222-222222222222",
+        slug: "rollout-brief",
+        name: "Rollout brief",
+        publishedVersionId: "33333333-3333-4333-8333-333333333333",
+        publishedAt: "2026-07-09T12:00:00.000Z",
+      },
+      metadata: {
+        title: "Rollout brief",
+        description: "A focused plan.",
+        ogImageUrl: null,
+        robots: "noindex,nofollow",
+      },
+      content: createDefaultSiteContent("Rollout brief"),
+      selectedVariant: {
+        id: "44444444-4444-4444-8444-444444444444",
+        slug: "mira",
+        name: "Mira",
+        recipientName: "Mira",
+        recipientCompany: "Acme",
+        revisionNumber: 3,
+        variableValues: {},
+      },
       tracking: {
         version: 2,
         workspaceId: "11111111-1111-4111-8111-111111111111",
@@ -102,11 +133,24 @@ describe("public site service", () => {
         publishedVersionId: "33333333-3333-4333-8333-333333333333",
         recipientId: "44444444-4444-4444-8444-444444444444",
         recipientRevision: 3,
-        trackingMode: "events_and_recording",
+        trackingMode: "events",
       },
     };
     const { repository } = createRecordingRepository({ payload });
-    const service = createPublicSiteService(repository, { trackingV2ContextTokens });
+    const service = createPublicSiteService(repository, {
+      trackingV2ContextTokens,
+      trackingV2Service: {
+        preparePublicContext: async () => ({
+          workspaceId: "11111111-1111-4111-8111-111111111111",
+          siteId: "22222222-2222-4222-8222-222222222222",
+          publishedVersionId: "33333333-3333-4333-8333-333333333333",
+          manifestId: "55555555-5555-4555-8555-555555555555",
+          recipientId: "44444444-4444-4444-8444-444444444444",
+          recipientRevision: 3,
+          trackingMode: "events",
+        }),
+      },
+    });
     const result = await service.resolve({
       workspaceSlug: "acme",
       siteSlug: "rollout-brief",
@@ -118,7 +162,7 @@ describe("public site service", () => {
       payload: {
         trackingV2: {
           version: 2,
-          trackingMode: "events_and_recording",
+          trackingMode: "events",
           contextToken: expect.any(String),
           issuedAt: "2026-07-09T12:00:00.000Z",
           expiresAt: "2026-07-10T12:00:00.000Z",
@@ -136,9 +180,10 @@ describe("public site service", () => {
       workspaceId: "11111111-1111-4111-8111-111111111111",
       siteId: "22222222-2222-4222-8222-222222222222",
       publishedVersionId: "33333333-3333-4333-8333-333333333333",
+      manifestId: "55555555-5555-4555-8555-555555555555",
       recipientId: "44444444-4444-4444-8444-444444444444",
       recipientRevision: 3,
-      trackingMode: "events_and_recording",
+      trackingMode: "events",
     });
   });
 });

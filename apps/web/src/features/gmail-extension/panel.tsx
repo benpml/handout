@@ -7,8 +7,8 @@ import type {
   SiteListItem,
   SiteVariableDefinition,
   SiteVariant,
-} from "@lightsite/contracts"
-import { LIGHTSITE_TEXT_LIMITS } from "@lightsite/domain"
+} from "@handout/contracts"
+import { HANDOUT_TEXT_LIMITS } from "@handout/domain"
 import {
   IconArrowLeft,
   IconCheck,
@@ -61,7 +61,7 @@ import {
   type RecipientDraft,
 } from "./model"
 
-const PUBLIC_ORIGIN = (import.meta.env.VITE_EXTENSION_PUBLIC_ORIGIN || "https://lightsite.io").replace(/\/$/, "")
+const PUBLIC_ORIGIN = (import.meta.env.VITE_EXTENSION_PUBLIC_ORIGIN || "https://handout.link").replace(/\/$/, "")
 const PREVIEW_ORIGIN = (import.meta.env.VITE_EXTENSION_PREVIEW_ORIGIN || PUBLIC_ORIGIN).replace(/\/$/, "")
 type Step = "sites" | "recipient" | "share"
 type AuthState = "checking" | "connected" | "disconnected"
@@ -88,7 +88,7 @@ export function GmailExtensionPanel() {
     window.addEventListener("message", onMessage)
     postToHost({
       protocolVersion: EXTENSION_PROTOCOL_VERSION,
-      source: "lightsite-extension-panel",
+      source: "handout-extension-panel",
       type: "panel-ready",
     })
     return () => window.removeEventListener("message", onMessage)
@@ -206,11 +206,11 @@ export function GmailExtensionPanel() {
         onSignOut={authState === "connected" ? signOut : undefined}
       />
       {authState === "checking" ? <PanelLoading /> : null}
-      {authState === "disconnected" ? <ConnectLightsite onConnected={() => void loadWorkspace()} /> : null}
+      {authState === "disconnected" ? <ConnectHandout onConnected={() => void loadWorkspace()} /> : null}
       {authState === "connected" && error && step === "sites" ? (
         <div className="p-4">
           <Alert variant="destructive">
-            <AlertTitle>Lightsite could not load</AlertTitle>
+            <AlertTitle>Handout could not load</AlertTitle>
             <AlertDescription className="flex flex-col gap-3">
               <span>{error}</span>
               <Button size="sm" variant="outline" onClick={() => void loadWorkspace()}>Try again</Button>
@@ -219,7 +219,7 @@ export function GmailExtensionPanel() {
         </div>
       ) : null}
       {authState === "connected" && !error && step === "sites" ? (
-        <SitePicker sites={sites} workspaceName={workspace?.name ?? "Lightsite"} onSelect={selectSite} />
+        <SitePicker sites={sites} workspaceName={workspace?.name ?? "Handout"} onSelect={selectSite} />
       ) : null}
       {authState === "connected" && step === "recipient" && selectedSite ? (
         <RecipientPicker
@@ -275,7 +275,7 @@ function PanelHeader({
       {canGoBack ? (
         <Button aria-label="Back" size="icon-field" variant="ghost" onClick={onBack}><IconArrowLeft /></Button>
       ) : (
-        <img alt="Lightsite" className="h-[17px] w-[83px] dark:invert" src="/lightsite-logo.svg" />
+        <img alt="Handout" className="h-[17px] w-[85px] dark:invert" src="/handout-logo.svg" />
       )}
       <div className="min-w-0 flex-1" />
       {onSignOut ? (
@@ -286,7 +286,7 @@ function PanelHeader({
   )
 }
 
-function ConnectLightsite({ onConnected }: { onConnected: () => void }) {
+function ConnectHandout({ onConnected }: { onConnected: () => void }) {
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -303,9 +303,9 @@ function ConnectLightsite({ onConnected }: { onConnected: () => void }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col justify-center p-6">
       <div className="mb-6 flex flex-col gap-1 text-center">
-        <h1 className="text-lg font-semibold">Connect Lightsite</h1>
+        <h1 className="text-lg font-semibold">Connect Handout</h1>
         <p className="text-sm text-muted-foreground">
-          Continue in Lightsite, then come straight back to this email.
+          Continue in Handout, then come straight back to this email.
         </p>
       </div>
       <FieldGroup>
@@ -320,10 +320,10 @@ function ConnectLightsite({ onConnected }: { onConnected: () => void }) {
           ) : (
             <IconExternalLink data-icon="inline-start" />
           )}
-          Continue with Lightsite
+          Continue with Handout
         </Button>
         <p className="text-center text-xs text-muted-foreground">
-          Uses your existing Lightsite session. No password is shared with Gmail.
+          Uses your existing Handout session. No password is shared with Gmail.
         </p>
       </FieldGroup>
     </div>
@@ -448,7 +448,7 @@ function NewRecipientForm({ context, recipients, site, variables, onCreated }: {
     }
     const created = response.data.variants[0]
     if (!created) {
-      setError("Lightsite did not return the new recipient. Try again.")
+      setError("Handout did not return the new recipient. Try again.")
       return
     }
     onCreated(created)
@@ -466,8 +466,8 @@ function NewRecipientForm({ context, recipients, site, variables, onCreated }: {
           ) : null}
           <FieldGroup className="gap-4 pb-4">
             <div className="grid grid-cols-2 gap-3">
-              <Field><FieldLabel htmlFor={nameId}>Name</FieldLabel><Input autoFocus id={nameId} maxLength={LIGHTSITE_TEXT_LIMITS.recipientName} value={draft.name} onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))} /></Field>
-              <Field><FieldLabel htmlFor={companyId}>Company</FieldLabel><Input id={companyId} maxLength={LIGHTSITE_TEXT_LIMITS.recipientCompany} value={draft.company} onChange={(event) => setDraft((current) => ({ ...current, company: event.target.value }))} /></Field>
+              <Field><FieldLabel htmlFor={nameId}>Name</FieldLabel><Input autoFocus id={nameId} maxLength={HANDOUT_TEXT_LIMITS.recipientName} value={draft.name} onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))} /></Field>
+              <Field><FieldLabel htmlFor={companyId}>Company</FieldLabel><Input id={companyId} maxLength={HANDOUT_TEXT_LIMITS.recipientCompany} value={draft.company} onChange={(event) => setDraft((current) => ({ ...current, company: event.target.value }))} /></Field>
             </div>
             <Field><FieldLabel htmlFor={websiteId}>Website</FieldLabel><Input id={websiteId} inputMode="url" placeholder="example.com" value={draft.website} onChange={(event) => setDraft((current) => ({ ...current, website: event.target.value }))} /></Field>
             {customVariables.map((variable) => (
@@ -538,7 +538,7 @@ function ShareComplete({ composeId, recipient, site, workspaceSlug }: {
     const onMessage = (event: MessageEvent) => {
       if (event.origin !== "https://mail.google.com" || !isGmailHostMessage(event.data) || event.data.type !== "insert-result") return
       setInserting(null)
-      if (!event.data.ok) setError(event.data.message || "Lightsite could not be inserted.")
+      if (!event.data.ok) setError(event.data.message || "Handout could not be inserted.")
     }
     window.addEventListener("message", onMessage)
     return () => window.removeEventListener("message", onMessage)
@@ -556,7 +556,7 @@ function ShareComplete({ composeId, recipient, site, workspaceSlug }: {
       : createEmailLink({ recipientName, siteName: site.name, url })
     postToHost({
       protocolVersion: EXTENSION_PROTOCOL_VERSION,
-      source: "lightsite-extension-panel",
+      source: "handout-extension-panel",
       type: "insert",
       composeId,
       format,
@@ -652,7 +652,7 @@ function SearchInput({ autoFocus, placeholder, query, onQueryChange }: { autoFoc
   )
 }
 
-function PanelLoading({ label = "Loading Lightsite" }: { label?: string }) {
+function PanelLoading({ label = "Loading Handout" }: { label?: string }) {
   return <div className="flex min-h-0 flex-1 flex-col gap-3 p-4" aria-label={label}><Skeleton className="h-8 w-2/3" /><Skeleton className="h-9 w-full" /><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /></div>
 }
 
@@ -664,7 +664,7 @@ async function sendBackground<T = unknown>(message: BackgroundRequest): Promise<
   try {
     return await chrome.runtime.sendMessage(message) as BackgroundResponse<T>
   } catch {
-    return { ok: false, error: { code: "extension.unavailable", message: "The Lightsite extension needs to be reloaded." } }
+    return { ok: false, error: { code: "extension.unavailable", message: "The Handout extension needs to be reloaded." } }
   }
 }
 
@@ -673,5 +673,5 @@ function postToHost(message: ExtensionPanelMessage) {
 }
 
 function closePanel() {
-  postToHost({ protocolVersion: EXTENSION_PROTOCOL_VERSION, source: "lightsite-extension-panel", type: "close-panel" })
+  postToHost({ protocolVersion: EXTENSION_PROTOCOL_VERSION, source: "handout-extension-panel", type: "close-panel" })
 }

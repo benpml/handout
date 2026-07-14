@@ -15,7 +15,7 @@ import type {
   TrackingV2EventFeedItem,
   TrackingV2EventType,
   TrackingV2SessionSummary,
-} from "@lightsite/tracking-schema"
+} from "@handout/tracking-schema"
 
 import { RecipientAvatar } from "@/components/common/recipient-avatar"
 import { Button } from "@/components/ui/button"
@@ -41,6 +41,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useActiveWorkspace } from "@/features/app-bootstrap/app-bootstrap-hooks"
 import { getApiErrorMessage } from "@/lib/api/errors"
 import { queryKeys } from "@/lib/api/query-keys"
+import { cn } from "@/lib/utils"
 
 import {
   getTrackingV2Session,
@@ -48,8 +49,8 @@ import {
   listTrackingV2Events,
 } from "./api"
 import { dedupeTrackingV2Events } from "./model"
-import { TrackingRecordingReplay } from "./recording-replay"
 import { TrackingDetailsDrawer } from "./tracking-details-drawer"
+import { TrackingRecordingReplay } from "./recording-replay"
 import {
   toEventDrawerData,
   toSessionDrawerData,
@@ -277,9 +278,13 @@ export function TrackingPage() {
           void sessionEventsQuery.refetch()
         }}
         open={selectedSessionId !== null || selectedEvent !== null}
-        replay={selectedSession
-          ? <TrackingRecordingReplay session={selectedSession} variant="drawer" workspaceId={activeWorkspace.id} />
-          : undefined}
+        recordingReplay={selectedSession && selectedSession.recording.status !== "disabled" ? (
+          <TrackingRecordingReplay
+            session={selectedSession}
+            variant="drawer"
+            workspaceId={activeWorkspace.id}
+          />
+        ) : undefined}
         session={selectedSession ? toSessionDrawerData(selectedSession) : null}
       />
     </div>
@@ -349,7 +354,7 @@ function EventsTable({
                 </div>
               </TableCell>
               <TableCell className="pl-0! pr-4!">
-                <span className="block truncate">{formatEventDetails(event)}</span>
+                <EventDetailsValue event={event} />
               </TableCell>
               <TableCell className="truncate pl-0! pr-3! text-right text-tertiary-foreground">
                 {formatRelativeTime(event.occurredAt)}
@@ -366,6 +371,16 @@ function EventsTable({
         </div>
       ) : null}
     </div>
+  )
+}
+
+function EventDetailsValue({ event }: { event: TrackingV2EventFeedItem }) {
+  const details = formatEventDetails(event)
+
+  return (
+    <span className={cn("block truncate", details === "-" && "text-muted-foreground")}>
+      {details}
+    </span>
   )
 }
 
@@ -437,8 +452,10 @@ function SessionsTable({
                   onOpenSession(session.id)
                 }}
               >
-                <IconPlayerPlay data-icon="inline-start" />
-                Watch
+                {session.recording.available
+                  ? <IconPlayerPlay data-icon="inline-start" />
+                  : <IconEye data-icon="inline-start" />}
+                {session.recording.available ? "Watch" : "View"}
               </Button>
             </TableCell>
           </TableRow>
@@ -558,11 +575,11 @@ function formatEventDetails(event: TrackingV2EventFeedItem) {
     return `“${event.tab.label}”`
   }
 
-  if (event.webhook?.url) {
-    return event.webhook.url
+  if (event.webhook?.endpointHost) {
+    return event.webhook.endpointHost
   }
 
-  return "—"
+  return "-"
 }
 
 function formatDurationMs(milliseconds: number) {

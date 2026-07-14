@@ -1,7 +1,7 @@
 import type { JSONContent } from "@tiptap/core"
-import { siteDocumentUniqueIdNodeTypes } from "@lightsite/site-document"
+import { siteDocumentUniqueIdNodeTypes } from "@handout/site-document"
 
-export type LightsiteNextBlockType =
+export type HandoutNextBlockType =
   | "paragraph"
   | "heading1"
   | "heading2"
@@ -27,7 +27,7 @@ export type LightsiteNextBlockType =
   | "table"
   | "divider"
 
-export type LightsiteVariableOption = {
+export type HandoutVariableOption = {
   id: string
   name: string
   slug: string
@@ -36,7 +36,7 @@ export type LightsiteVariableOption = {
   defaultValue?: string
 }
 
-export type LightsiteVariableValueMap = Record<string, Record<string, string>>
+export type HandoutVariableValueMap = Record<string, Record<string, string>>
 
 export const editorUniqueIdNodeTypes = [...siteDocumentUniqueIdNodeTypes]
 

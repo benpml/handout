@@ -1,1 +1,1 @@
-export { normalizePublishedSitePayload } from "@lightsite/content-schema";
+export { normalizePublishedSitePayload } from "@handout/content-schema";

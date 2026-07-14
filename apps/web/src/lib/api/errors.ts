@@ -1,4 +1,4 @@
-import type { ApiErrorIssue } from "@lightsite/contracts"
+import type { ApiErrorIssue } from "@handout/contracts"
 
 export class ApiClientError extends Error {
   readonly code: string

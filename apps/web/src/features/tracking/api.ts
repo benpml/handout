@@ -1,17 +1,19 @@
 import {
+  trackingV2EventsResponseSchema,
+  trackingV2CreateInternalIpRangeRequestSchema,
+  trackingV2InternalIpRangesResponseSchema,
   trackingV2RecordingChunkSchema,
   trackingV2RecordingManifestResponseSchema,
-  trackingV2EventsResponseSchema,
   trackingV2SiteTrackingSettingsResponseSchema,
   trackingV2SessionResponseSchema,
   trackingV2SessionsResponseSchema,
   trackingV2UpdateSiteSettingsRequestSchema,
   type TrackingV2EventSource,
+  type TrackingV2CreateInternalIpRangeRequest,
   type TrackingV2EventType,
-  type TrackingV2SessionRecordingStatusFilter,
   type TrackingV2SessionState,
   type TrackingV2UpdateSiteSettingsRequest,
-} from "@lightsite/tracking-schema"
+} from "@handout/tracking-schema"
 
 import { apiRequest } from "@/lib/api/client"
 
@@ -33,7 +35,6 @@ export type TrackingV2EventFilters = TrackingV2BaseFilters & {
 export type TrackingV2SessionFilters = TrackingV2BaseFilters & {
   cursor?: string
   limit?: number
-  recordingStatus?: TrackingV2SessionRecordingStatusFilter
   state?: TrackingV2SessionState
 }
 
@@ -135,6 +136,30 @@ export function updateTrackingV2SiteSettings(
     method: "PUT",
     body: trackingV2UpdateSiteSettingsRequestSchema.parse(input),
     responseSchema: trackingV2SiteTrackingSettingsResponseSchema,
+  })
+}
+
+export function listTrackingV2InternalIpRanges(workspaceId: string, signal?: AbortSignal) {
+  return apiRequest(`/api/workspaces/${workspaceId}/tracking/v2/internal-ip-ranges`, {
+    responseSchema: trackingV2InternalIpRangesResponseSchema,
+    signal,
+  })
+}
+
+export function createTrackingV2InternalIpRange(
+  workspaceId: string,
+  input: TrackingV2CreateInternalIpRangeRequest,
+) {
+  return apiRequest(`/api/workspaces/${workspaceId}/tracking/v2/internal-ip-ranges`, {
+    method: "POST",
+    body: trackingV2CreateInternalIpRangeRequestSchema.parse(input),
+    responseSchema: trackingV2InternalIpRangesResponseSchema,
+  })
+}
+
+export function deleteTrackingV2InternalIpRange(workspaceId: string, rangeId: string) {
+  return apiRequest(`/api/workspaces/${workspaceId}/tracking/v2/internal-ip-ranges/${encodeURIComponent(rangeId)}`, {
+    method: "DELETE",
   })
 }
 

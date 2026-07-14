@@ -110,7 +110,7 @@ const shadSemanticTokens: TokenRow[] = [
   semantic("success", "#ADDDC0", "#ADDDC0", "Success status dot for published state."),
 ]
 
-const lightsiteTokens: TokenRow[] = [
+const handoutTokens: TokenRow[] = [
   semantic("page-background", "background", "background", "Compatibility alias only. Background and page background are now the same."),
   semantic("tertiary-foreground", "neutral-600", "neutral-300", "Third-level labels, icons, sidebar secondary rows."),
   semantic("muted-faint", "neutral-400", "neutral-600", "Fainter block placeholder text."),
@@ -138,7 +138,7 @@ const legacyAliases: TokenRow[] = [
   semantic("editing-background", "selection-background", "selection-background", "Compatibility alias. Prefer selection-background."),
   semantic("editing-foreground", "neutral-300", "neutral-700", "Legacy passive editor affordance color. Avoid new use."),
   semantic("editing-foreground-hover", "neutral-500", "neutral-500", "Legacy editor hover affordance color. Prefer foreground/tertiary semantics."),
-  semantic("lightsite-editor-*", "canonical aliases", "canonical aliases", "Compatibility aliases only. New CSS should use shadcn + selection + variable tokens directly."),
+  semantic("handout-editor-*", "canonical aliases", "canonical aliases", "Compatibility aliases only. New CSS should use shadcn + selection + variable tokens directly."),
 ]
 
 const primitiveInventory = [
@@ -201,7 +201,7 @@ const primitiveInventory = [
 const sharedInventory = [
   "AppShell",
   "InternalRouteFrame",
-  "LightsitePageFooter",
+  "HandoutPageFooter",
   "PageHeader",
   "StatusBadge",
 ]
@@ -307,9 +307,9 @@ export function DesignSystemAuditPage() {
                 <IconPalette data-icon="inline-start" />
                 System sheet
               </Badge>
-              <h1 className="text-2xl font-semibold tracking-normal">Lightsite design system audit</h1>
+              <h1 className="text-2xl font-semibold tracking-normal">Handout design system audit</h1>
               <p className="text-sm leading-6 text-muted-foreground">
-                A visual inventory of the base neutral system, shadcn semantic tokens, Lightsite additions,
+                A visual inventory of the base neutral system, shadcn semantic tokens, Handout additions,
                 main app patterns, and editor elements. This page intentionally renders everything through
                 the same tokens so drift is easy to spot.
               </p>
@@ -331,7 +331,7 @@ export function DesignSystemAuditPage() {
           <div className="grid gap-3 md:grid-cols-4">
             <Stat label="Solid neutrals" value="11" detail="One canonical neutral scale" />
             <Stat label="Alpha neutrals" value="9" detail="All based on #808080" />
-            <Stat label="Lightsite additions" value="11" detail="Selection + variables + status + extra text" />
+            <Stat label="Handout additions" value="11" detail="Selection + variables + status + extra text" />
             <Stat label="Editor color families" value="2" detail="Selection and variables only" />
           </div>
         </header>
@@ -352,7 +352,7 @@ export function DesignSystemAuditPage() {
             <SectionTitle icon={IconBrandTabler} title="Semantic Tokens" description="shadcn primitives continue to use the standard semantic contract. Those semantics now inherit from the base neutral scale." />
             <TokenTable rows={shadSemanticTokens} title="shadcn semantic tokens" />
             <TokenTable rows={sidebarTokens} title="shadcn sidebar tokens" />
-            <TokenTable rows={lightsiteTokens} title="Lightsite semantic additions" />
+            <TokenTable rows={handoutTokens} title="Handout semantic additions" />
           </TabsContent>
 
           <TabsContent value="components" className="flex flex-col gap-6">
@@ -762,7 +762,7 @@ function AppShellPreview() {
   return (
     <div className="grid h-48 grid-cols-[88px_minmax(0,1fr)] overflow-hidden rounded-xl border bg-background">
       <aside className="border-r bg-sidebar p-2 text-sidebar-foreground">
-        <img src="/lightsite-logo.svg" alt="" className="h-[17px] w-[83px]" />
+        <img src="/handout-logo.svg" alt="" className="h-[17px] w-[85px]" />
         <div className="mt-4 grid gap-1">
           <div className="h-7 rounded-lg bg-sidebar-accent" />
           <div className="h-7 rounded-lg bg-transparent ring-1 ring-sidebar-border" />
@@ -840,7 +840,7 @@ function SettingsPreview() {
         <CardDescription>Logo, slug, website, and team settings.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-3">
-        <Input defaultValue="lightsite" />
+        <Input defaultValue="handout" />
         <Button size="compact" className="w-fit">Save changes</Button>
       </CardContent>
     </Card>
@@ -850,7 +850,7 @@ function SettingsPreview() {
 function AuthPreview() {
   return (
     <div className="rounded-xl border bg-card p-4">
-      <img src="/lightsite-logo.svg" alt="" className="h-[17px] w-[83px]" />
+      <img src="/handout-logo.svg" alt="" className="h-[17px] w-[85px]" />
       <div className="mt-5 text-base font-semibold">Set up your workspace</div>
       <div className="mt-1 text-sm text-muted-foreground">Use your work email to continue.</div>
       <Input className="mt-4" placeholder="you@company.com" />

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { LIGHTSITE_TEXT_LIMITS } from "@lightsite/domain"
+import { HANDOUT_TEXT_LIMITS } from "@handout/domain"
 import {
   IconDotsVertical,
   IconMailForward,
@@ -231,7 +231,7 @@ function InviteUserDialog() {
               <FieldLabel htmlFor="invite-email">Work email</FieldLabel>
               <Input
                 id="invite-email"
-                maxLength={LIGHTSITE_TEXT_LIMITS.email}
+                maxLength={HANDOUT_TEXT_LIMITS.email}
                 placeholder="name@company.com"
                 type="email"
               />

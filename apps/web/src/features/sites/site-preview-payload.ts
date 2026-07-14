@@ -3,8 +3,8 @@ import {
   PUBLIC_SITE_PAYLOAD_SCHEMA_VERSION,
   type PublishedSitePayload,
   type SiteContent,
-} from "@lightsite/site-document"
-import type { SiteListItem } from "@lightsite/contracts"
+} from "@handout/site-document"
+import type { SiteListItem } from "@handout/contracts"
 
 type CreateSitePreviewPayloadInput = {
   content: SiteContent

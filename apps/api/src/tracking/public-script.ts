@@ -3,10 +3,10 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { Router } from "express";
 import {
+  TRACKING_V2_ACTIVITY_WINDOW_MS,
   TRACKING_V2_EVENTS_ENDPOINT,
   TRACKING_V2_HEARTBEAT_INTERVAL_MS,
   TRACKING_V2_IDLE_TIMEOUT_MS,
-  TRACKING_V2_ACTIVITY_WINDOW_MS,
   TRACKING_V2_MAX_BATCH_EVENTS,
   TRACKING_V2_MAX_REQUEUED_EVENTS,
   TRACKING_V2_MAX_SESSION_DURATION_MS,
@@ -19,50 +19,43 @@ import {
   TRACKING_V2_SESSION_END_ENDPOINT,
   TRACKING_V2_SESSION_HEARTBEAT_ENDPOINT,
   TRACKING_V2_SESSION_START_ENDPOINT,
-} from "@lightsite/tracking-schema";
+} from "@handout/tracking-schema";
 
 export const PUBLIC_TRACKING_SCRIPT_CACHE_CONTROL = "public, max-age=31536000, immutable";
 
 export function createPublicTrackingScriptRouter() {
   const router = Router();
-
   router.get(TRACKING_V2_SCRIPT_ENDPOINT, (_request, response) => {
     response
       .status(200)
-      .setHeader("cache-control", PUBLIC_TRACKING_SCRIPT_CACHE_CONTROL);
-    response.setHeader("x-content-type-options", "nosniff");
+      .setHeader("cache-control", PUBLIC_TRACKING_SCRIPT_CACHE_CONTROL)
+      .setHeader("x-content-type-options", "nosniff");
     response.type("application/javascript").send(PUBLIC_TRACKING_V2_SCRIPT);
   });
-
   router.get(TRACKING_V2_RECORDER_SCRIPT_ENDPOINT, (_request, response) => {
     response
       .status(200)
-      .setHeader("cache-control", PUBLIC_TRACKING_SCRIPT_CACHE_CONTROL);
-    response.setHeader("x-content-type-options", "nosniff");
+      .setHeader("cache-control", PUBLIC_TRACKING_SCRIPT_CACHE_CONTROL)
+      .setHeader("x-content-type-options", "nosniff");
     response.type("application/javascript").send(PUBLIC_TRACKING_V2_RECORDER_SCRIPT);
   });
-
   router.get(TRACKING_V2_RRWEB_RECORD_SCRIPT_ENDPOINT, (_request, response) => {
     response
       .status(200)
-      .setHeader("cache-control", PUBLIC_TRACKING_SCRIPT_CACHE_CONTROL);
-    response.setHeader("x-content-type-options", "nosniff");
+      .setHeader("cache-control", PUBLIC_TRACKING_SCRIPT_CACHE_CONTROL)
+      .setHeader("x-content-type-options", "nosniff");
     response.type("application/javascript").send(getPublicTrackingV2RrwebRecordScript());
   });
-
   return router;
 }
 
 let rrwebRecordScript: string | null = null;
 
 export function getPublicTrackingV2RrwebRecordScript() {
-  if (rrwebRecordScript !== null) {
-    return rrwebRecordScript;
-  }
-
+  if (rrwebRecordScript !== null) return rrwebRecordScript;
   const require = createRequire(import.meta.url);
-  const rrwebRecordCjsPath = require.resolve("@rrweb/record");
-  rrwebRecordScript = readFileSync(join(dirname(rrwebRecordCjsPath), "record.js"), "utf8");
+  const entrypoint = require.resolve("@rrweb/record");
+  rrwebRecordScript = readFileSync(join(dirname(entrypoint), "record.js"), "utf8");
   return rrwebRecordScript;
 }
 
@@ -70,25 +63,29 @@ export const PUBLIC_TRACKING_V2_SCRIPT = `
 ;(() => {
   "use strict";
 
-  const script =
-    document.currentScript ||
-    document.querySelector("script[data-lightsite-tracking-v2]");
+  const script = document.currentScript || document.querySelector("script[data-handout-tracking-v2]");
   if (!script) return;
 
   let bootstrap;
   try {
-    bootstrap = JSON.parse(script.dataset.lightsiteTrackingV2 || "null");
+    bootstrap = JSON.parse(script.dataset.handoutTrackingV2 || "null");
   } catch {
     return;
   }
+  if (!bootstrap || (bootstrap.trackingMode !== "events" && bootstrap.trackingMode !== "events_and_replay") || !bootstrap.contextToken) return;
 
-  if (!bootstrap || !bootstrap.contextToken || bootstrap.trackingMode === "off") return;
+  let replayConsent;
+  try {
+    replayConsent = JSON.parse(script.dataset.handoutReplayConsent || "null");
+  } catch {
+    replayConsent = null;
+  }
 
   const config = {
     eventsEndpoint: "${TRACKING_V2_EVENTS_ENDPOINT}",
     heartbeatEndpoint: "${TRACKING_V2_SESSION_HEARTBEAT_ENDPOINT}",
     maxBatchEvents: ${TRACKING_V2_MAX_BATCH_EVENTS},
-    maxRequeuedEvents: ${TRACKING_V2_MAX_REQUEUED_EVENTS},
+    maxQueuedEvents: ${TRACKING_V2_MAX_REQUEUED_EVENTS},
     recorderScriptEndpoint: "${TRACKING_V2_RECORDER_SCRIPT_ENDPOINT}",
     rrwebRecordScriptEndpoint: "${TRACKING_V2_RRWEB_RECORD_SCRIPT_ENDPOINT}",
     scriptVersion: "${TRACKING_V2_SCRIPT_VERSION}",
@@ -101,35 +98,32 @@ export const PUBLIC_TRACKING_V2_SCRIPT = `
     activeMs: 0,
     ended: false,
     eventToken: null,
+    flushTimerId: null,
     heartbeatIntervalId: null,
     heartbeatIntervalMs: ${TRACKING_V2_HEARTBEAT_INTERVAL_MS},
     hiddenAt: null,
+    hiddenTimerId: null,
     idleTimeoutMs: ${TRACKING_V2_IDLE_TIMEOUT_MS},
     activityWindowMs: ${TRACKING_V2_ACTIVITY_WINDOW_MS},
     lastActivityAt: Date.now(),
     lastVisibleAt: document.visibilityState === "visible" ? Date.now() : null,
     maxSessionDurationMs: ${TRACKING_V2_MAX_SESSION_DURATION_MS},
     maxSessionTimerId: null,
-    maxScrollDepthPercent: calculateScrollDepth(),
     queue: [],
+    requestId: createId("request"),
     recorderStop: null,
-    scrollFrameId: null,
     sequence: 0,
     sessionId: null,
     startedAt: Date.now()
   };
 
-  let idSequence = 0;
-
-  startSession().catch(() => {});
+  void startSession();
 
   async function startSession() {
-    const startedAt = new Date().toISOString();
+    const initialPageId = getCurrentPageId();
+    if (!initialPageId) return;
     const controller = typeof AbortController === "function" ? new AbortController() : null;
-    const timeoutId = controller
-      ? window.setTimeout(() => controller.abort(), config.startTimeoutMs)
-      : null;
-
+    const timeoutId = controller ? window.setTimeout(() => controller.abort(), config.startTimeoutMs) : null;
     let response;
     try {
       response = await fetch(config.sessionStartEndpoint, {
@@ -137,25 +131,20 @@ export const PUBLIC_TRACKING_V2_SCRIPT = `
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           contextToken: bootstrap.contextToken,
-          startedAt,
-          page: getPageSnapshot(),
-          viewport: getViewportSnapshot(),
-          device: {
-            deviceId: getDeviceId(),
-            timezone: getTimezone(),
-            locale: navigator.language || null,
-            userAgent: navigator.userAgent || null
-          }
+          requestId: state.requestId,
+          startedAt: new Date(state.startedAt).toISOString(),
+          initialPageId,
+          ...(validReplayConsent(replayConsent) ? { replayConsent } : {})
         }),
-        keepalive: false,
+        credentials: "omit",
         signal: controller ? controller.signal : undefined
       });
+    } catch {
+      return;
     } finally {
       if (timeoutId !== null) window.clearTimeout(timeoutId);
     }
-
-    if (!response || !response.ok) return;
-
+    if (!response.ok) return;
     const body = await response.json().catch(() => null);
     if (!body || body.accepted !== true || !body.sessionId || !body.eventToken) return;
 
@@ -164,249 +153,216 @@ export const PUBLIC_TRACKING_V2_SCRIPT = `
     state.heartbeatIntervalMs = positiveInteger(body.heartbeatIntervalMs, state.heartbeatIntervalMs);
     state.idleTimeoutMs = positiveInteger(body.idleTimeoutMs, state.idleTimeoutMs);
     state.maxSessionDurationMs = positiveInteger(body.maxSessionDurationMs, state.maxSessionDurationMs);
-
     installListeners();
     startRecorder(body.recording);
-    enqueue({
-      eventId: createBrowserId("event"),
-      type: "site_visit",
-      occurredAt: new Date().toISOString(),
-      sequence: nextSequence(),
-      page: getPageSnapshot(),
-      viewport: getViewportSnapshot()
-    });
-    flushEvents();
   }
 
   function startRecorder(recording) {
-    if (
-      bootstrap.trackingMode !== "events_and_recording" ||
-      !recording ||
-      recording.enabled !== true ||
-      !recording.recordingId ||
-      !recording.uploadToken
-    ) {
-      return;
-    }
-
-    import(config.recorderScriptEndpoint)
-      .then((module) => {
-        if (module && typeof module.startLightsiteRecording === "function") {
-          state.recorderStop = module.startLightsiteRecording({
-            ...recording,
-            rrwebRecordScriptEndpoint: config.rrwebRecordScriptEndpoint,
-            sessionId: state.sessionId
-          });
-        }
-      })
-      .catch(() => {});
+    if (bootstrap.trackingMode !== "events_and_replay" || !recording || recording.enabled !== true) return;
+    import(config.recorderScriptEndpoint).then((module) => {
+      if (state.ended || !module || typeof module.startHandoutRecording !== "function") return;
+      state.recorderStop = module.startHandoutRecording({
+        ...recording,
+        rrwebRecordScriptEndpoint: config.rrwebRecordScriptEndpoint,
+        sessionId: state.sessionId
+      });
+    }).catch(() => {});
   }
 
   function installListeners() {
-    state.heartbeatIntervalId = window.setInterval(onHeartbeatInterval, state.heartbeatIntervalMs);
+    state.heartbeatIntervalId = window.setInterval(onHeartbeat, state.heartbeatIntervalMs);
     state.maxSessionTimerId = window.setTimeout(() => endSession("max_duration"), state.maxSessionDurationMs);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("pointermove", markActivity, { passive: true });
-    window.addEventListener("keydown", markActivity);
-    window.addEventListener("pagehide", onPageHide);
+    document.addEventListener("click", onClick, true);
+    document.addEventListener("keydown", markActivity, { passive: true });
+    document.addEventListener("pointerdown", markActivity, { passive: true });
     document.addEventListener("visibilitychange", onVisibilityChange);
-    document.addEventListener("click", onClick);
-    onScroll();
+    window.addEventListener("handout:tracking-consent-withdrawn", onConsentWithdrawn);
+    window.addEventListener("pagehide", onPageHide);
   }
 
   function onClick(event) {
     markActivity();
-
     const target = event.target instanceof Element
-      ? event.target.closest("[data-ls-track]")
+      ? event.target.closest('[data-handout-track="button"],[data-handout-track="link"],[data-handout-track="tab"]')
       : null;
     if (!target) return;
 
-    const trackType = target.dataset.lsTrack;
-    if (trackType !== "button" && trackType !== "link" && trackType !== "tab") return;
-
-    const element = getTrackedElement(target, trackType);
-    if (!element) return;
-
+    const trackType = target.getAttribute("data-handout-track");
+    const occurredAt = new Date().toISOString();
     if (trackType === "tab") {
+      const fromPageId = getCurrentPageId();
+      const toPageId = validId(target.getAttribute("data-handout-page-id"));
+      if (!fromPageId || !toPageId || fromPageId === toPageId) return;
       enqueue({
-        eventId: createBrowserId("event"),
+        eventId: createId("event"),
         type: "tab_switch",
-        occurredAt: new Date().toISOString(),
+        occurredAt,
         sequence: nextSequence(),
-        element,
-        page: getPageSnapshot(),
-        viewport: getViewportSnapshot()
+        fromPageId,
+        toPageId,
+        trigger: event.detail === 0 ? "keyboard" : "click"
       });
-      flushEvents();
+      scheduleFlush();
       return;
     }
 
+    const elementId = validId(target.getAttribute("data-handout-element-id"));
+    const pageId = getCurrentPageId();
+    if (!elementId || !pageId) return;
     enqueue({
-      eventId: createBrowserId("event"),
+      eventId: createId("event"),
       type: trackType === "link" ? "link_click" : "button_click",
-      occurredAt: new Date().toISOString(),
+      occurredAt,
       sequence: nextSequence(),
-      element,
-      page: getPageSnapshot(),
-      viewport: getViewportSnapshot()
+      elementId,
+      pageId
     });
-
-    if (element.href) flushEvents();
+    flushEvents(true);
   }
 
-  function onScroll() {
-    markActivity();
-    if (state.scrollFrameId !== null) return;
-    state.scrollFrameId = window.requestAnimationFrame(() => {
-      state.scrollFrameId = null;
-      state.maxScrollDepthPercent = Math.max(state.maxScrollDepthPercent, calculateScrollDepth());
-    });
-  }
-
-  function onHeartbeatInterval() {
-    if (Date.now() - state.lastActivityAt >= state.idleTimeoutMs) {
+  function onHeartbeat() {
+    if (state.ended || document.visibilityState !== "visible") return;
+    const currentTime = Date.now();
+    if (currentTime - state.lastActivityAt >= state.idleTimeoutMs) {
       endSession("idle_timeout");
       return;
     }
-
-    sendHeartbeat();
-    flushEvents();
+    accrueVisibleTime(currentTime);
+    sendJson(config.heartbeatEndpoint, {
+      sessionId: state.sessionId,
+      eventToken: state.eventToken,
+      occurredAt: new Date(currentTime).toISOString(),
+      activeMs: Math.round(state.activeMs)
+    }, false);
+    flushEvents(false);
   }
 
   function onVisibilityChange() {
+    const currentTime = Date.now();
     if (document.visibilityState === "hidden") {
-      sendHeartbeat();
-      flushEvents();
+      accrueVisibleTime(currentTime);
       state.lastVisibleAt = null;
-      state.hiddenAt = Date.now();
+      state.hiddenAt = currentTime;
+      flushEvents(true);
+      sendHeartbeatBeacon(currentTime);
+      state.hiddenTimerId = window.setTimeout(() => endSession("visibility_timeout"), 60000);
       return;
     }
-
-    state.hiddenAt = null;
-    markActivity();
-    if (state.lastVisibleAt === null) {
-      state.lastVisibleAt = Date.now();
+    if (state.hiddenTimerId !== null) {
+      window.clearTimeout(state.hiddenTimerId);
+      state.hiddenTimerId = null;
     }
+    state.hiddenAt = null;
+    state.lastVisibleAt = currentTime;
+    markActivity();
   }
 
   function onPageHide() {
     endSession("pagehide");
   }
 
-  function markActivity() {
-    const now = Date.now();
-    accrueVisibleTime(now);
-    state.lastActivityAt = now;
+  function onConsentWithdrawn() {
+    if (typeof state.recorderStop === "function") state.recorderStop("consent_withdrawn");
+    state.recorderStop = null;
+    endSession("unknown");
   }
 
-  function sendHeartbeat() {
-    if (!state.sessionId || !state.eventToken || state.ended) return;
+  function markActivity() {
+    const currentTime = Date.now();
+    accrueVisibleTime(currentTime);
+    state.lastActivityAt = currentTime;
+  }
 
-    accrueVisibleTime(Date.now());
-    sendLifecycle(config.heartbeatEndpoint, {
+  function accrueVisibleTime(currentTime) {
+    if (state.lastVisibleAt === null || currentTime <= state.lastVisibleAt) return;
+    const activeUntil = Math.min(currentTime, state.lastActivityAt + state.activityWindowMs);
+    if (activeUntil > state.lastVisibleAt) state.activeMs += activeUntil - state.lastVisibleAt;
+    state.lastVisibleAt = currentTime;
+  }
+
+  function sendHeartbeatBeacon(currentTime) {
+    if (!state.sessionId || !state.eventToken || state.ended) return;
+    sendJson(config.heartbeatEndpoint, {
       sessionId: state.sessionId,
       eventToken: state.eventToken,
-      occurredAt: new Date().toISOString(),
-      activeMs: state.activeMs,
-      maxScrollDepthPercent: state.maxScrollDepthPercent,
-      page: getPageSnapshot()
-    });
+      occurredAt: new Date(currentTime).toISOString(),
+      activeMs: Math.round(state.activeMs)
+    }, true);
   }
 
   function endSession(reason) {
     if (!state.sessionId || !state.eventToken || state.ended) return;
-
     state.ended = true;
     const endedAt = state.hiddenAt || Date.now();
     accrueVisibleTime(endedAt);
-    if (state.heartbeatIntervalId !== null) {
-      window.clearInterval(state.heartbeatIntervalId);
-      state.heartbeatIntervalId = null;
-    }
-    if (state.scrollFrameId !== null) {
-      window.cancelAnimationFrame(state.scrollFrameId);
-      state.scrollFrameId = null;
-    }
-    if (state.maxSessionTimerId !== null) {
-      window.clearTimeout(state.maxSessionTimerId);
-      state.maxSessionTimerId = null;
-    }
+    clearTimers();
+    window.removeEventListener("handout:tracking-consent-withdrawn", onConsentWithdrawn);
     if (typeof state.recorderStop === "function") {
-      state.recorderStop();
+      state.recorderStop(reason === "pagehide" ? "pagehide" : reason === "max_duration" ? "duration_cap" : "hidden_timeout");
       state.recorderStop = null;
     }
-
-    flushEvents();
-    sendLifecycle(config.sessionEndEndpoint, {
+    flushEvents(true);
+    sendJson(config.sessionEndEndpoint, {
       sessionId: state.sessionId,
       eventToken: state.eventToken,
       occurredAt: new Date(endedAt).toISOString(),
       reason,
-      activeMs: state.activeMs
-    });
+      activeMs: Math.round(state.activeMs)
+    }, true);
   }
 
-  function accrueVisibleTime(now) {
-    if (state.lastVisibleAt === null) return;
-    if (now <= state.lastVisibleAt) return;
-
-    const graceEndsAt = state.startedAt + state.activityWindowMs;
-    const activityEndsAt = state.lastActivityAt + state.activityWindowMs;
-    const activeUntil = Math.min(now, Math.max(graceEndsAt, activityEndsAt));
-    if (activeUntil > state.lastVisibleAt) {
-      state.activeMs += activeUntil - state.lastVisibleAt;
+  function clearTimers() {
+    for (const key of ["flushTimerId", "heartbeatIntervalId", "hiddenTimerId", "maxSessionTimerId"]) {
+      if (state[key] !== null) window.clearTimeout(state[key]);
+      state[key] = null;
     }
-    state.lastVisibleAt = now;
   }
 
   function enqueue(event) {
     if (!state.sessionId || !state.eventToken || state.ended) return;
-
     state.queue.push(event);
-    if (state.queue.length >= config.maxBatchEvents) flushEvents();
+    if (state.queue.length > config.maxQueuedEvents) state.queue.shift();
+    if (state.queue.length >= config.maxBatchEvents) flushEvents(false);
   }
 
-  function flushEvents() {
-    if (!state.sessionId || !state.eventToken || state.queue.length === 0) return;
+  function scheduleFlush() {
+    if (state.flushTimerId !== null) return;
+    state.flushTimerId = window.setTimeout(() => {
+      state.flushTimerId = null;
+      flushEvents(false);
+    }, 2000);
+  }
 
+  function flushEvents(preferBeacon) {
+    if (!state.sessionId || !state.eventToken || state.queue.length === 0) return;
     while (state.queue.length > 0) {
-      const batch = {
-        batchId: createBrowserId("batch"),
+      const events = state.queue.splice(0, config.maxBatchEvents);
+      const sent = sendJson(config.eventsEndpoint, {
+        batchId: createId("batch"),
         sessionId: state.sessionId,
         eventToken: state.eventToken,
         scriptVersion: config.scriptVersion,
         sentAt: new Date().toISOString(),
-        events: state.queue.splice(0, config.maxBatchEvents)
-      };
-
-      if (!sendJson(config.eventsEndpoint, batch, true)) {
-        state.queue.unshift(...batch.events);
-        state.queue.splice(config.maxRequeuedEvents);
+        events
+      }, preferBeacon);
+      if (!sent) {
+        state.queue.unshift(...events);
+        if (state.queue.length > config.maxQueuedEvents) state.queue.splice(0, state.queue.length - config.maxQueuedEvents);
         return;
       }
     }
   }
 
-  function sendLifecycle(endpoint, body) {
-    sendJson(endpoint, body, true);
-  }
-
   function sendJson(endpoint, body, preferBeacon) {
     try {
       const text = JSON.stringify(body);
-
-      if (preferBeacon && navigator.sendBeacon) {
-        if (navigator.sendBeacon(endpoint, new Blob([text], { type: "application/json" }))) {
-          return true;
-        }
-      }
-
-      fetch(endpoint, {
+      if (preferBeacon && navigator.sendBeacon && navigator.sendBeacon(endpoint, new Blob([text], { type: "application/json" }))) return true;
+      void fetch(endpoint, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: text,
-        keepalive: true
+        credentials: "omit",
+        keepalive: preferBeacon
       }).catch(() => {});
       return true;
     } catch {
@@ -414,254 +370,109 @@ export const PUBLIC_TRACKING_V2_SCRIPT = `
     }
   }
 
-  function getTrackedElement(target, trackType) {
-    const anchor = target instanceof HTMLAnchorElement ? target : target.closest("a");
-    const href = trackType === "tab"
-      ? null
-      : sanitizeUrl(target.dataset.lsElementHref || (anchor && anchor.href));
-    const id = truncateId(target.dataset.lsElementId || target.id || createBrowserId("element"));
-    const label = truncateLabel(target.dataset.lsElementLabel || target.textContent || "Untitled element");
-    let kind = target.dataset.lsElementKind || trackType;
-
-    if (trackType === "link") {
-      kind = kind === "sidebar_link" ? "sidebar_link" : "link";
-      if (!href) return null;
-    } else if (trackType === "tab") {
-      kind = "tab";
-    } else if (!isButtonKind(kind)) {
-      kind = "button";
-    }
-
-    const element = {
-      kind,
-      id,
-      label
-    };
-
-    const blockId = truncateOptionalId(target.dataset.lsBlockId);
-    if (blockId) element.blockId = blockId;
-    if (href) element.href = href;
-
-    return element;
+  function getCurrentPageId() {
+    const panel = document.querySelector("[data-handout-page-panel]:not([hidden])");
+    return panel ? validId(panel.getAttribute("data-handout-page-id")) : null;
   }
 
-  function isButtonKind(kind) {
-    return kind === "button" ||
-      kind === "sidebar_button" ||
-      kind === "image_card" ||
-      kind === "calendar" ||
-      kind === "unknown";
+  function validId(value) {
+    return typeof value === "string" && value.length >= 8 && value.length <= 160 && /^[A-Za-z0-9:_-]+$/.test(value)
+      ? value
+      : null;
   }
 
-  function getPageSnapshot() {
-    return {
-      path: getPagePath(),
-      title: truncateLabel(document.title || "Untitled page"),
-      referrerHost: getReferrerHost(document.referrer)
-    };
-  }
-
-  function getViewportSnapshot() {
-    return {
-      width: Math.max(1, Math.round(window.innerWidth || 1)),
-      height: Math.max(1, Math.round(window.innerHeight || 1))
-    };
-  }
-
-  function getPagePath() {
-    const path = window.location && window.location.pathname ? window.location.pathname : "/";
-    return path.length > 2048 ? "/" : path;
-  }
-
-  function getReferrerHost(value) {
-    if (!value) return null;
-
-    try {
-      const host = new URL(value).hostname.toLowerCase();
-      return host.length > 253 ? null : host;
-    } catch {
-      return null;
-    }
-  }
-
-  function sanitizeUrl(value) {
-    if (!value) return null;
-
-    try {
-      const url = new URL(value, window.location.href);
-      if (url.protocol !== "http:" && url.protocol !== "https:") return null;
-      url.username = "";
-      url.password = "";
-      url.hash = "";
-      url.search = "";
-      const sanitized = url.toString();
-      return sanitized.length > 2000 ? null : sanitized;
-    } catch {
-      return null;
-    }
-  }
-
-  function getDeviceId() {
-    const key = "lightsite.tracking.v2.deviceId";
-    try {
-      const existing = window.localStorage.getItem(key);
-      if (existing && existing.length >= 8 && existing.length <= 160) return existing;
-
-      const next = createBrowserId("device");
-      window.localStorage.setItem(key, next);
-      return next;
-    } catch {
-      return createBrowserId("device");
-    }
-  }
-
-  function getTimezone() {
-    try {
-      return Intl.DateTimeFormat().resolvedOptions().timeZone || null;
-    } catch {
-      return null;
-    }
-  }
-
-  function calculateScrollDepth() {
-    const height = document.documentElement.scrollHeight || 0;
-    const scrollable = height - window.innerHeight;
-    if (scrollable <= 0) return 100;
-    return Math.min(100, Math.round(((window.scrollY + window.innerHeight) / height) * 100));
-  }
-
-  function createBrowserId(prefix) {
-    const cryptoSource = globalThis.crypto;
-    if (cryptoSource && typeof cryptoSource.randomUUID === "function") {
-      return prefix + "_" + cryptoSource.randomUUID();
-    }
-
-    idSequence += 1;
-    return prefix + "_" + Date.now().toString(36) + "_" + idSequence.toString(36) + "_" + Math.random().toString(36).slice(2, 10);
+  function createId(prefix) {
+    if (globalThis.crypto && typeof globalThis.crypto.randomUUID === "function") return prefix + "_" + globalThis.crypto.randomUUID();
+    const bytes = new Uint8Array(16);
+    if (globalThis.crypto && typeof globalThis.crypto.getRandomValues === "function") globalThis.crypto.getRandomValues(bytes);
+    else for (let index = 0; index < bytes.length; index += 1) bytes[index] = Math.floor(Math.random() * 256);
+    return prefix + "_" + Array.from(bytes, (value) => value.toString(16).padStart(2, "0")).join("");
   }
 
   function nextSequence() {
-    const next = state.sequence;
+    const sequence = state.sequence;
     state.sequence += 1;
-    return next;
-  }
-
-  function truncateId(value) {
-    const text = String(value || "").trim().replace(/[^A-Za-z0-9:_-]/g, "_");
-    return (text || createBrowserId("element")).slice(0, 160);
-  }
-
-  function truncateOptionalId(value) {
-    const text = String(value || "").trim();
-    return text ? truncateId(text) : null;
-  }
-
-  function truncateLabel(value) {
-    const text = String(value || "").replace(/\\s+/g, " ").trim() || "Untitled element";
-    return text.slice(0, 180);
+    return sequence;
   }
 
   function positiveInteger(value, fallback) {
     return Number.isInteger(value) && value > 0 ? value : fallback;
   }
+
+  function validReplayConsent(value) {
+    return value && value.noticeVersion === 1 &&
+      (value.source === "prompt" || value.source === "remembered") &&
+      typeof value.grantedAt === "string";
+  }
 })();
-`;
+`.trim();
 
 export const PUBLIC_TRACKING_V2_RECORDER_SCRIPT = `
-export function startLightsiteRecording(config) {
+export function startHandoutRecording(config) {
   "use strict";
 
-  if (!config || !config.sessionId || !config.chunkEndpoint || !config.completeEndpoint || !config.uploadToken) return;
-  if (document.documentElement && document.documentElement.dataset.lsRecordingStarted === "true") return;
-  if (document.documentElement) document.documentElement.dataset.lsRecordingStarted = "true";
+  if (!config || !config.sessionId || !config.chunkEndpoint || !config.completeEndpoint || !config.uploadToken) return null;
+  const root = document.documentElement;
+  if (root && root.dataset.handoutRecordingStarted === "true") return null;
+  if (root) root.dataset.handoutRecordingStarted = "true";
 
-  const RRWEB_INCREMENTAL_SOURCE_INPUT = 5;
-  const MAX_SANITIZE_DEPTH = 32;
+  const INPUT_SOURCE = 5;
   const MASKED_VALUE = "[masked]";
-  const STYLE_URL_PATTERN = new RegExp("url\\\\(([^)]*)\\\\)", "gi");
-  const urlAttributeNames = {
-    action: true,
-    background: true,
-    href: true,
-    poster: true,
-    src: true,
-    srcset: true,
-    "xlink:href": true
-  };
-  const sensitiveValueNames = {
-    currentvalue: true,
-    placeholder: true,
-    value: true
-  };
-
+  const MAX_DEPTH = 32;
+  const URL_KEYS = new Set(["action", "background", "data", "href", "poster", "src", "srcset", "xlink:href"]);
+  const VALUE_KEYS = new Set(["currentvalue", "placeholder", "value"]);
   const state = {
-    completed: false,
-    completionSent: false,
+    stopped: false,
     eventCount: 0,
-    events: [],
-    flushIntervalId: null,
-    lastUploadedSequence: null,
+    pendingEvents: [],
+    uploads: [],
+    draining: null,
     sequence: 0,
+    lastUploadedSequence: null,
+    totalBytes: 0,
+    uploadFailureReason: null,
     stopRecorder: null,
-    stopTimerId: null,
-    uploadFailed: false,
-    uploadPromise: null,
-    uploadQueue: [],
-    uploadedAndQueuedBytes: 0
+    flushTimer: null,
+    durationTimer: null
   };
 
-  start().catch(() => stop("error"));
-  return () => stop("ended");
+  void start().catch(() => stop("error"));
+  return (reason) => stop(validStopReason(reason) ? reason : "pagehide");
 
   async function start() {
-    const record = await loadRrwebRecord();
-    if (state.completed || typeof record !== "function") return;
-
-    state.flushIntervalId = window.setInterval(() => flush(false), getPositiveInteger(config.flushIntervalMs, 5000));
-    state.stopTimerId = window.setTimeout(() => stop("duration_cap"), getPositiveInteger(config.maxDurationMs, 600000));
+    const module = await import(config.rrwebRecordScriptEndpoint);
+    if (state.stopped || !module || typeof module.record !== "function") return;
+    state.flushTimer = window.setInterval(() => {
+      if (!flush(false)) stop("size_cap");
+    }, positiveInteger(config.flushIntervalMs, 5000));
+    state.durationTimer = window.setTimeout(() => stop("duration_cap"), positiveInteger(config.maxDurationMs, 600000));
     window.addEventListener("pagehide", onPageHide);
     document.addEventListener("visibilitychange", onVisibilityChange);
 
-    const stopRecorder = record({
+    const stopRecorder = module.record({
       emit: recordEvent,
-      blockClass: "rr-block",
-      blockSelector: "script,[data-ls-recording-block]",
-      checkoutEveryNms: 60000,
+      blockSelector: "script,iframe,[data-handout-recording-block]",
+      checkoutEveryNms: 120000,
       collectFonts: false,
       errorHandler: () => stop("error"),
-      ignoreClass: "rr-ignore",
       inlineImages: false,
       inlineStylesheet: true,
       maskAllInputs: true,
       maskInputOptions: {
-        color: false,
-        date: true,
-        datetime: true,
-        "datetime-local": true,
-        email: true,
-        month: true,
-        number: true,
-        password: true,
-        range: false,
-        search: true,
-        select: true,
-        tel: true,
-        text: true,
-        textarea: true,
-        time: true,
-        url: true,
-        week: true
+        color: false, date: true, datetime: true, "datetime-local": true,
+        email: true, month: true, number: true, password: true, range: false,
+        search: true, select: true, tel: true, text: true, textarea: true,
+        time: true, url: true, week: true
       },
-      maskTextClass: "rr-mask",
-      maskTextSelector: "[data-ls-recording-mask]",
+      maskTextSelector: "[data-handout-recording-mask]",
       recordCanvas: false,
       recordCrossOriginIframes: false,
       sampling: {
         input: "last",
-        media: 800,
+        media: 1000,
         mouseInteraction: true,
         mousemove: 100,
-        scroll: 100
+        scroll: 150
       },
       slimDOMOptions: {
         comment: true,
@@ -673,391 +484,216 @@ export function startLightsiteRecording(config) {
         script: true
       }
     });
-
-    if (typeof stopRecorder === "function") {
-      state.stopRecorder = stopRecorder;
-    }
-  }
-
-  async function loadRrwebRecord() {
-    if (!config.rrwebRecordScriptEndpoint) return null;
-
-    const module = await import(config.rrwebRecordScriptEndpoint);
-    return module && typeof module.record === "function" ? module.record : null;
-  }
-
-  function onPageHide() {
-    stop("ended");
-  }
-
-  function onVisibilityChange() {
-    if (document.visibilityState === "hidden") flush(false);
+    if (typeof stopRecorder === "function") state.stopRecorder = stopRecorder;
   }
 
   function recordEvent(rawEvent, isCheckout) {
-    const maxEvents = getPositiveInteger(config.maxEvents, 20000);
-    if (state.completed || state.eventCount >= maxEvents) return;
-
-    const event = sanitizeRecordingEvent(rawEvent);
+    if (state.stopped) return;
+    const maxEvents = positiveInteger(config.maxEvents, 20000);
+    if (state.eventCount >= maxEvents) return stop("event_cap");
+    const event = sanitizeValue(rawEvent, "", 0, new WeakSet(), false);
     if (!isRrwebEvent(event)) return;
-
-    state.events.push(event);
+    state.pendingEvents.push(event);
     state.eventCount += 1;
-
-    if (state.eventCount >= maxEvents) {
-      stop("event_cap");
+    if (state.eventCount >= maxEvents) return stop("event_cap");
+    if (isCheckout || state.pendingEvents.length >= positiveInteger(config.maxEventsPerChunk, 500)) {
+      if (!flush(false)) stop("size_cap");
       return;
     }
-
-    if (isCheckout) {
-      flush(false);
-      return;
+    if (state.pendingEvents.length % 25 === 0 && jsonBytes(buildChunk(state.pendingEvents, state.sequence)) >= positiveInteger(config.targetChunkBytes, 98304)) {
+      if (!flush(false)) stop("size_cap");
     }
-    flushIfNeeded();
   }
 
-  function flushIfNeeded() {
-    if (state.events.length >= getPositiveInteger(config.maxEventsPerChunk, 500)) {
-      flush(false);
-      return;
-    }
+  function flush(forUnload) {
+    if (state.pendingEvents.length === 0) return true;
+    const configuredMax = positiveInteger(config.maxChunkBytes, 524288);
+    const chunkLimit = forUnload ? Math.min(configuredMax, ${TRACKING_V2_RECORDING_KEEPALIVE_MAX_BYTES}) : configuredMax;
+    const eventLimit = positiveInteger(config.maxEventsPerChunk, 500);
+    const recordingLimit = positiveInteger(config.maxBytes, 5242880);
 
-    try {
-      const size = new Blob([JSON.stringify(buildChunkBody(state.events, state.sequence))]).size;
-      if (size >= getPositiveInteger(config.targetChunkBytes, 98304)) flush(false);
-    } catch {}
-  }
-
-  function flush(useKeepalive) {
-    if (state.events.length === 0) return true;
-
-    const maxChunkBytes = getPositiveInteger(config.maxChunkBytes, 524288);
-    const maxEventsPerChunk = getPositiveInteger(config.maxEventsPerChunk, 500);
-    const maxRecordingBytes = getPositiveInteger(config.maxBytes, 5242880);
-
-    while (state.events.length > 0) {
-      let events = state.events.splice(0, maxEventsPerChunk);
-      const sequence = state.sequence;
-      let body = buildChunkBody(events, sequence);
-
-      while (events.length > 1 && getJsonSize(body) > maxChunkBytes) {
-        const deferred = events.pop();
-        if (deferred) state.events.unshift(deferred);
-        body = buildChunkBody(events, sequence);
+    while (state.pendingEvents.length > 0) {
+      const events = state.pendingEvents.splice(0, eventLimit);
+      while (events.length > 1 && jsonBytes(buildChunk(events, state.sequence)) > chunkLimit) {
+        state.pendingEvents.unshift(events.pop());
       }
-
-      const text = JSON.stringify(body);
-      const byteLength = getTextSize(text);
-      if (byteLength > maxChunkBytes || state.uploadedAndQueuedBytes + byteLength > maxRecordingBytes) {
-        state.events.length = 0;
-        if (!state.completed) stop("size_cap");
+      const text = JSON.stringify(buildChunk(events, state.sequence));
+      const byteLength = textBytes(text);
+      if (byteLength > chunkLimit || state.totalBytes + byteLength > recordingLimit) {
+        state.pendingEvents.length = 0;
         return false;
       }
-
-      state.uploadQueue.push({
+      state.uploads.push({
         byteLength,
-        sequence,
+        sequence: state.sequence,
         text,
-        useKeepalive: Boolean(useKeepalive) && byteLength <= ${TRACKING_V2_RECORDING_KEEPALIVE_MAX_BYTES}
+        keepalive: Boolean(forUnload)
       });
-      state.uploadedAndQueuedBytes += byteLength;
+      state.totalBytes += byteLength;
       state.sequence += 1;
-
-      if (!useKeepalive) break;
+      if (!forUnload) break;
     }
-
-    drainUploadQueue();
+    void drainUploads();
     return true;
   }
 
-  function drainUploadQueue() {
-    if (state.uploadPromise) return state.uploadPromise;
-
-    state.uploadPromise = (async () => {
-      while (state.uploadQueue.length > 0 && !state.uploadFailed) {
-        const upload = state.uploadQueue[0];
-        const uploaded = await uploadWithRetry(upload);
-        if (!uploaded) {
-          state.uploadFailed = true;
-          state.uploadQueue.length = 0;
+  function drainUploads() {
+    if (state.draining) return state.draining;
+    state.draining = (async () => {
+      while (state.uploads.length > 0 && !state.uploadFailureReason) {
+        const upload = state.uploads[0];
+        const result = await uploadChunk(upload, upload.keepalive ? 1 : 3);
+        if (!result.ok) {
+          state.uploadFailureReason = result.reason;
           break;
         }
-
         state.lastUploadedSequence = upload.sequence;
-        state.uploadQueue.shift();
+        state.uploads.shift();
       }
-    })().finally(() => {
-      state.uploadPromise = null;
-    });
-
-    return state.uploadPromise;
+    })().finally(() => { state.draining = null; });
+    return state.draining;
   }
 
-  async function uploadWithRetry(upload) {
-    const attempts = upload.useKeepalive ? 1 : 3;
-
+  async function uploadChunk(upload, attempts) {
     for (let attempt = 0; attempt < attempts; attempt += 1) {
       try {
         const response = await fetch(config.chunkEndpoint, {
           method: "POST",
-          headers: {
-            authorization: "Bearer " + config.uploadToken,
-            "content-type": "application/json"
-          },
+          headers: { authorization: "Bearer " + config.uploadToken, "content-type": "application/json" },
           body: upload.text,
-          keepalive: upload.useKeepalive
+          credentials: "omit",
+          keepalive: upload.keepalive && upload.byteLength <= ${TRACKING_V2_RECORDING_KEEPALIVE_MAX_BYTES}
         });
-        if (response.ok) return true;
+        if (response.ok) return { ok: true, reason: null };
+        if (response.status === 429) return { ok: false, reason: "daily_cap" };
+        if (response.status === 413) return { ok: false, reason: "size_cap" };
+        if (response.status >= 400 && response.status < 500) return { ok: false, reason: "error" };
       } catch {}
-
-      if (attempt + 1 < attempts) {
-        await delay(250 * Math.pow(2, attempt));
-      }
+      if (attempt + 1 < attempts) await delay(250 * Math.pow(2, attempt));
     }
-
-    return false;
+    return { ok: false, reason: "error" };
   }
 
   function stop(reason) {
-    if (state.completed) return;
-    state.completed = true;
-
+    if (state.stopped) return;
+    state.stopped = true;
     if (typeof state.stopRecorder === "function") {
-      try {
-        state.stopRecorder();
-      } catch {}
+      try { state.stopRecorder(); } catch {}
       state.stopRecorder = null;
     }
-    if (state.flushIntervalId !== null) window.clearInterval(state.flushIntervalId);
-    if (state.stopTimerId !== null) window.clearTimeout(state.stopTimerId);
+    if (state.flushTimer !== null) window.clearInterval(state.flushTimer);
+    if (state.durationTimer !== null) window.clearTimeout(state.durationTimer);
     window.removeEventListener("pagehide", onPageHide);
     document.removeEventListener("visibilitychange", onVisibilityChange);
-    const unloading = reason === "ended" || reason === "hidden_timeout";
-    flush(unloading);
 
+    const unloading = reason === "pagehide" || reason === "hidden_timeout";
+    if (!flush(unloading) && reason !== "event_cap") reason = "size_cap";
     if (unloading) {
-      startUnloadUploads();
-      sendCompletion(reason, state.sequence === 0 ? null : state.sequence - 1, false);
-      finalizeAfterUploads(reason);
+      for (const upload of state.uploads) {
+        if (upload.byteLength > ${TRACKING_V2_RECORDING_KEEPALIVE_MAX_BYTES}) continue;
+        void fetch(config.chunkEndpoint, {
+          method: "POST",
+          headers: { authorization: "Bearer " + config.uploadToken, "content-type": "application/json" },
+          body: upload.text,
+          credentials: "omit",
+          keepalive: true
+        }).catch(() => {});
+      }
+      sendCompletion(reason, state.sequence === 0 ? null : state.sequence - 1);
       return;
     }
-
-    finalizeAfterUploads(reason);
+    void finalize(reason);
   }
 
-  async function finalizeAfterUploads(reason) {
-    await drainUploadQueue();
-    const finalReason = state.uploadFailed ? "error" : reason;
-    const finalSequence = state.uploadFailed
+  async function finalize(reason) {
+    await drainUploads();
+    const finalReason = state.uploadFailureReason || reason;
+    const finalSequence = state.uploadFailureReason
       ? state.lastUploadedSequence
       : state.sequence === 0 ? null : state.sequence - 1;
     sendCompletion(finalReason, finalSequence);
   }
 
-  function startUnloadUploads() {
-    for (const upload of state.uploadQueue) {
-      fetch(config.chunkEndpoint, {
-        method: "POST",
-        headers: {
-          authorization: "Bearer " + config.uploadToken,
-          "content-type": "application/json"
-        },
-        body: upload.text,
-        keepalive: upload.byteLength <= ${TRACKING_V2_RECORDING_KEEPALIVE_MAX_BYTES}
-      }).catch(() => {});
-    }
-  }
-
-  function sendCompletion(reason, finalSequence, dedupe) {
-    const shouldDedupe = dedupe !== false;
-    if (state.completionSent) return;
-    if (shouldDedupe) state.completionSent = true;
-
-    fetch(config.completeEndpoint, {
+  function sendCompletion(reason, finalSequence) {
+    void fetch(config.completeEndpoint, {
       method: "POST",
-      headers: {
-        authorization: "Bearer " + config.uploadToken,
-        "content-type": "application/json"
-      },
+      headers: { authorization: "Bearer " + config.uploadToken, "content-type": "application/json" },
       body: JSON.stringify({
         schemaVersion: ${TRACKING_V2_RECORDING_SCHEMA_VERSION},
         sessionId: config.sessionId,
         finalSequence,
         endedAt: new Date().toISOString(),
-        stopReason: reason
+        stopReason: validStopReason(reason) ? reason : "error"
       }),
+      credentials: "omit",
       keepalive: true
     }).catch(() => {});
   }
 
-  function buildChunkBody(events, sequence) {
-    return {
-      schemaVersion: ${TRACKING_V2_RECORDING_SCHEMA_VERSION},
-      sessionId: config.sessionId,
-      sequence,
-      events,
-      compressed: false
-    };
+  function onPageHide() { stop("pagehide"); }
+  function onVisibilityChange() { if (document.visibilityState === "hidden" && !flush(true)) stop("size_cap"); }
+  function buildChunk(events, sequence) {
+    return { schemaVersion: ${TRACKING_V2_RECORDING_SCHEMA_VERSION}, sessionId: config.sessionId, sequence, events };
   }
-
-  function sanitizeRecordingEvent(event) {
-    return sanitizeValue(event, "", 0, new WeakSet(), false);
+  function validStopReason(value) {
+    return ["pagehide", "consent_withdrawn", "hidden_timeout", "duration_cap", "size_cap", "event_cap", "daily_cap", "error"].includes(value);
   }
-
-  function sanitizeValue(value, key, depth, seen, isInputEvent) {
-    if (depth > MAX_SANITIZE_DEPTH) return null;
-    if (value === null || value === undefined) return value;
-    if (typeof value === "number" || typeof value === "boolean") return value;
+  function isRrwebEvent(value) {
+    return value && typeof value === "object" && Number.isInteger(value.type) && value.type >= 0 && value.type <= 7 && Number.isInteger(value.timestamp) && value.timestamp > 0;
+  }
+  function sanitizeValue(value, key, depth, seen, inputEvent) {
+    if (depth > MAX_DEPTH) return null;
+    if (value === null || value === undefined || typeof value === "number" || typeof value === "boolean") return value;
+    const normalizedKey = String(key).toLowerCase();
     if (typeof value === "string") {
-      const normalizedKey = key.toLowerCase();
-      if (sensitiveValueNames[normalizedKey] || (isInputEvent && normalizedKey === "text")) {
-        return MASKED_VALUE;
-      }
-      if (urlAttributeNames[normalizedKey]) {
-        return normalizedKey === "srcset" ? null : sanitizeUrl(value);
-      }
+      if (VALUE_KEYS.has(normalizedKey) || (inputEvent && normalizedKey === "text")) return MASKED_VALUE;
+      if (URL_KEYS.has(normalizedKey)) return normalizedKey === "srcset" || normalizedKey === "href" || normalizedKey === "action" ? null : sanitizeUrl(value);
       if (normalizedKey === "style") return sanitizeStyle(value);
       return value;
     }
-    if (isBrowserToolingNode(value)) return null;
+    if (typeof value !== "object" || seen.has(value) || isBrowserToolingNode(value)) return null;
+    seen.add(value);
+    const nextInputEvent = inputEvent || value.source === INPUT_SOURCE;
     if (Array.isArray(value)) {
       const output = [];
-      for (const item of value) {
-        if (isBrowserToolingNode(item)) continue;
-        output.push(sanitizeValue(item, key, depth + 1, seen, isInputEvent));
+      for (const entry of value) {
+        if (isBrowserToolingNode(entry)) continue;
+        const sanitized = sanitizeValue(entry, key, depth + 1, seen, nextInputEvent);
+        if (normalizedKey === "childnodes" && sanitized === null) continue;
+        output.push(sanitized);
       }
+      seen.delete(value);
       return output;
     }
-    if (typeof value !== "object") return null;
-    if (seen.has(value)) return null;
-    seen.add(value);
-
-    const inputEvent = isInputEvent || value.source === RRWEB_INCREMENTAL_SOURCE_INPUT;
     const output = {};
-
-    for (const propertyName in value) {
-      const normalizedKey = propertyName.toLowerCase();
-      const propertyValue = value[propertyName];
-
-      if (normalizedKey === "attributes" && propertyValue && typeof propertyValue === "object" && !Array.isArray(propertyValue)) {
-        output[propertyName] = sanitizeAttributes(propertyValue, depth + 1, seen);
-        continue;
-      }
-
-      if (urlAttributeNames[normalizedKey]) {
-        if (normalizedKey === "srcset") continue;
-        const sanitized = sanitizeUrl(propertyValue);
-        if (sanitized) output[propertyName] = sanitized;
-        continue;
-      }
-
-      if (sensitiveValueNames[normalizedKey] || (inputEvent && normalizedKey === "text")) {
-        output[propertyName] = MASKED_VALUE;
-        continue;
-      }
-
-      output[propertyName] = sanitizeValue(propertyValue, propertyName, depth + 1, seen, inputEvent);
+    for (const property of Object.keys(value)) {
+      const sanitized = sanitizeValue(value[property], property, depth + 1, seen, nextInputEvent);
+      if (sanitized !== null || value[property] === null) output[property] = sanitized;
     }
-
     seen.delete(value);
     return output;
   }
-
-  function isBrowserToolingNode(value) {
-    if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-    const node = value.node && typeof value.node === "object" ? value.node : value;
-    const attributes = node.attributes;
-    return Boolean(attributes && attributes.id === "codex-browser-sidebar-comments-root");
-  }
-
-  function sanitizeAttributes(attributes, depth, seen) {
-    const output = {};
-
-    for (const attributeName in attributes) {
-      const normalizedName = attributeName.toLowerCase();
-      const value = attributes[attributeName];
-
-      if (urlAttributeNames[normalizedName]) {
-        if (normalizedName === "srcset") continue;
-        const sanitized = sanitizeUrl(value);
-        if (sanitized) output[attributeName] = sanitized;
-        continue;
-      }
-
-      if (normalizedName === "data") {
-        const sanitized = sanitizeUrl(value);
-        if (sanitized) output[attributeName] = sanitized;
-        continue;
-      }
-
-      if (sensitiveValueNames[normalizedName]) {
-        output[attributeName] = MASKED_VALUE;
-        continue;
-      }
-
-      output[attributeName] = normalizedName === "style"
-        ? sanitizeStyle(String(value || ""))
-        : sanitizeValue(value, attributeName, depth + 1, seen, false);
-    }
-
-    return output;
-  }
-
-  function sanitizeStyle(value) {
-    return String(value || "").replace(STYLE_URL_PATTERN, (_match, rawUrl) => {
-      const cleaned = sanitizeUrl(String(rawUrl || "").trim().replace(/^['"]|['"]$/g, ""));
-      return cleaned ? "url(" + JSON.stringify(cleaned) + ")" : "url(about:blank)";
-    });
-  }
-
   function sanitizeUrl(value) {
-    if (!value) return null;
-
     try {
       const url = new URL(value, window.location.href);
       if (url.protocol !== "http:" && url.protocol !== "https:") return null;
-      if (url.pathname.startsWith("/api/public/tracking/v2/og/")) {
-        return url.origin + "/lightsite-logo.svg";
-      }
-      url.username = "";
-      url.password = "";
-      url.hash = "";
-      url.search = "";
+      url.username = ""; url.password = ""; url.search = ""; url.hash = "";
       return url.toString();
-    } catch {
-      return null;
-    }
+    } catch { return null; }
   }
-
-  function isRrwebEvent(value) {
-    return value &&
-      typeof value === "object" &&
-      Number.isFinite(value.type) &&
-      Number.isFinite(value.timestamp);
+  function sanitizeStyle(value) {
+    return String(value || "").replace(/url\\(([^)]*)\\)/gi, (_match, raw) => {
+      const cleaned = sanitizeUrl(String(raw || "").trim().replace(/^['"]|['"]$/g, ""));
+      return cleaned ? "url(" + JSON.stringify(cleaned) + ")" : "url(about:blank)";
+    });
   }
-
-  function getJsonSize(value) {
-    try {
-      return new Blob([JSON.stringify(value)]).size;
-    } catch {
-      return Number.MAX_SAFE_INTEGER;
-    }
+  function isBrowserToolingNode(value) {
+    const node = value && typeof value.node === "object" ? value.node : value;
+    return Boolean(node && node.attributes && node.attributes.id === "codex-browser-sidebar-comments-root");
   }
-
-  function getTextSize(value) {
-    try {
-      return new Blob([value]).size;
-    } catch {
-      return Number.MAX_SAFE_INTEGER;
-    }
-  }
-
-  function delay(milliseconds) {
-    return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
-  }
-
-  function getPositiveInteger(value, fallback) {
-    return Number.isInteger(value) && value > 0 ? value : fallback;
-  }
+  function jsonBytes(value) { try { return textBytes(JSON.stringify(value)); } catch { return Number.MAX_SAFE_INTEGER; } }
+  function textBytes(value) { try { return new Blob([value]).size; } catch { return Number.MAX_SAFE_INTEGER; } }
+  function delay(milliseconds) { return new Promise((resolve) => window.setTimeout(resolve, milliseconds)); }
+  function positiveInteger(value, fallback) { return Number.isInteger(value) && value > 0 ? value : fallback; }
 }
-`;
+`.trim();

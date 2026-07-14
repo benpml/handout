@@ -1,8 +1,8 @@
 import {
   normalizeWebsiteDomain,
   type WebsiteValidationResult,
-} from "@lightsite/domain";
-import type { WorkspaceLogoPreviewTheme } from "@lightsite/contracts";
+} from "@handout/domain";
+import type { WorkspaceLogoPreviewTheme } from "@handout/contracts";
 
 export type WorkspaceLogoPreviewInput = {
   website: string;

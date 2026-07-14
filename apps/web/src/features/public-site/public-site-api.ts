@@ -1,4 +1,4 @@
-import type { PublicSiteResponse } from "@lightsite/contracts"
+import type { PublicSiteResponse } from "@handout/contracts"
 
 import { normalizePublishedSitePayload } from "./public-payload-adapter"
 import type { PublishedSitePayload } from "./types"

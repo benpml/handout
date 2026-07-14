@@ -7,8 +7,8 @@
     "types": ["node"],
     "baseUrl": ".",
     "paths": {
-      "@lightsite/config": ["../config/src/index.ts"],
-      "@lightsite/site-document": ["../site-document/src/index.ts"]
+      "@handout/config": ["../config/src/index.ts"],
+      "@handout/site-document": ["../site-document/src/index.ts"]
     },
     "ignoreDeprecations": "6.0"
   },

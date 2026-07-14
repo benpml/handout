@@ -1,5 +1,5 @@
 {
-  "name": "@lightsite/db",
+  "name": "@handout/db",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -18,8 +18,9 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@lightsite/config": "workspace:*",
-    "@lightsite/site-document": "workspace:*",
+    "@handout/config": "workspace:*",
+    "@handout/site-document": "workspace:*",
+    "@handout/tracking-schema": "workspace:*",
     "drizzle-orm": "^0.45.1",
     "postgres": "^3.4.7"
   },

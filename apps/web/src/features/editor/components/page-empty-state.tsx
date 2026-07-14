@@ -86,7 +86,7 @@ export function EditorPageEmptyState({ editor, kind }: EditorPageEmptyStateProps
           ? anchorRect.left - canvasRect.left + canvasElement.scrollLeft
           : fallbackLeft + canvasElement.scrollLeft
       const isHiddenParagraphScaffold =
-        anchorElement.matches("p.lightsite-editor-placeholder-hidden.is-editor-empty") &&
+        anchorElement.matches("p.handout-editor-placeholder-hidden.is-editor-empty") &&
         anchorRect.height <= 1
       const anchorTop =
         anchorRect.top >= canvasRect.top
@@ -101,14 +101,14 @@ export function EditorPageEmptyState({ editor, kind }: EditorPageEmptyStateProps
         : anchorBottom + 32
 
       emptyStateElement.style.setProperty(
-        "--lightsite-empty-top",
+        "--handout-empty-top",
         `${emptyStateTop}px`
       )
       emptyStateElement.style.setProperty(
-        "--lightsite-empty-left",
+        "--handout-empty-left",
         `${anchorLeft}px`
       )
-      emptyStateElement.style.setProperty("--lightsite-empty-width", `${anchorWidth}px`)
+      emptyStateElement.style.setProperty("--handout-empty-width", `${anchorWidth}px`)
     }
 
     updatePosition()
@@ -129,7 +129,7 @@ export function EditorPageEmptyState({ editor, kind }: EditorPageEmptyStateProps
   return (
     <div
       ref={emptyStateRef}
-      className="lightsite-editor-page-empty-state"
+      className="handout-editor-page-empty-state"
       data-empty-state-kind={kind}
       onMouseDown={(event) => {
         if (
@@ -143,9 +143,9 @@ export function EditorPageEmptyState({ editor, kind }: EditorPageEmptyStateProps
         focusEditorEmptyStateStart(editor)
       }}
     >
-      <div className="lightsite-editor-page-empty-state-inner">
-        <section className="lightsite-editor-page-empty-state-instructions">
-          <p className="lightsite-editor-page-empty-state-heading">Sites work like a doc.</p>
+      <div className="handout-editor-page-empty-state-inner">
+        <section className="handout-editor-page-empty-state-instructions">
+          <p className="handout-editor-page-empty-state-heading">Sites work like a doc.</p>
           <ul>
             <li>
               Press <strong>/</strong> to insert blocks.
@@ -159,12 +159,12 @@ export function EditorPageEmptyState({ editor, kind }: EditorPageEmptyStateProps
           </ul>
         </section>
 
-        <section className="lightsite-editor-page-empty-state-section">
-          <p className="lightsite-editor-page-empty-state-heading">Start from a template:</p>
-          <div className="lightsite-editor-page-empty-state-items">
+        <section className="handout-editor-page-empty-state-section">
+          <p className="handout-editor-page-empty-state-heading">Start from a template:</p>
+          <div className="handout-editor-page-empty-state-items">
             {starterTemplates.map((template) => (
               <button
-                className="lightsite-editor-page-empty-state-item"
+                className="handout-editor-page-empty-state-item"
                 key={template.id}
                 type="button"
                 onClick={() => insertEditorEmptyStateTemplate(editor, template.id, kind)}
@@ -176,11 +176,11 @@ export function EditorPageEmptyState({ editor, kind }: EditorPageEmptyStateProps
           </div>
         </section>
 
-        <section className="lightsite-editor-page-empty-state-section">
-          <p className="lightsite-editor-page-empty-state-heading">Start from scratch:</p>
-          <div className="lightsite-editor-page-empty-state-items">
+        <section className="handout-editor-page-empty-state-section">
+          <p className="handout-editor-page-empty-state-heading">Start from scratch:</p>
+          <div className="handout-editor-page-empty-state-items">
             <button
-              className="lightsite-editor-page-empty-state-item"
+              className="handout-editor-page-empty-state-item"
               type="button"
               onClick={() => insertEditorEmptyStateParagraph(editor, kind)}
             >

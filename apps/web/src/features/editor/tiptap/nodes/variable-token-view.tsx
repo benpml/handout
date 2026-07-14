@@ -1,6 +1,6 @@
 import { NodeViewWrapper } from "@tiptap/react"
 import type { NodeViewProps } from "@tiptap/react"
-import { LIGHTSITE_TEXT_LIMITS } from "@lightsite/domain"
+import { HANDOUT_TEXT_LIMITS } from "@handout/domain"
 import { IconBraces, IconTrash } from "@tabler/icons-react"
 import { useCallback, useEffect, useId, useRef, useState } from "react"
 import type React from "react"
@@ -8,7 +8,7 @@ import type React from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { findLightsiteVariable } from "../variable-state"
+import { findHandoutVariable } from "../variable-state"
 
 type VariableDraft = {
   defaultValue: string
@@ -26,7 +26,7 @@ export function VariableTokenView({ deleteNode, editor, node }: NodeViewProps) {
   const defaultValueId = useId()
   const descriptionId = useId()
 
-  const variable = findLightsiteVariable(editor, variableId)
+  const variable = findHandoutVariable(editor, variableId)
   const [draft, setDraft] = useState<VariableDraft>(() =>
     createDraft(variable?.name ?? fallbackName, variable?.description, variable?.defaultValue)
   )
@@ -77,7 +77,7 @@ export function VariableTokenView({ deleteNode, editor, node }: NodeViewProps) {
       return
     }
 
-    editor.commands.setLightsiteVariableDefinition(variable.id, {
+    editor.commands.setHandoutVariableDefinition(variable.id, {
       defaultValue: draft.defaultValue,
       description: draft.description,
       name,
@@ -116,12 +116,12 @@ export function VariableTokenView({ deleteNode, editor, node }: NodeViewProps) {
     <NodeViewWrapper
       as="span"
       ref={wrapperRef}
-      className="lightsite-editor-variable-wrapper"
+      className="handout-editor-variable-wrapper"
       contentEditable={false}
-      data-lightsite-variable-wrapper=""
+      data-handout-variable-wrapper=""
     >
       <button
-        className="lightsite-editor-variable-token"
+        className="handout-editor-variable-token"
         data-missing={variable ? "false" : "true"}
         type="button"
         onClick={openPopover}
@@ -131,7 +131,7 @@ export function VariableTokenView({ deleteNode, editor, node }: NodeViewProps) {
       </button>
       {open ? (
         <span
-          className="lightsite-editor-variable-popover"
+          className="handout-editor-variable-popover"
           role="dialog"
           aria-label={`${displayName} variable`}
           onMouseDown={(event) => {
@@ -141,13 +141,13 @@ export function VariableTokenView({ deleteNode, editor, node }: NodeViewProps) {
         >
           {variable ? (
             <>
-              <span className="lightsite-editor-variable-popover-header">
-                <span className="lightsite-editor-variable-popover-title">
+              <span className="handout-editor-variable-popover-header">
+                <span className="handout-editor-variable-popover-title">
                   <IconBraces aria-hidden />
                   Edit variable
                 </span>
                 <button
-                  className="lightsite-editor-variable-popover-delete"
+                  className="handout-editor-variable-popover-delete"
                   type="button"
                   onClick={removeReference}
                 >
@@ -158,8 +158,8 @@ export function VariableTokenView({ deleteNode, editor, node }: NodeViewProps) {
               <VariableField id={nameId} label="Name">
                 <Input
                   id={nameId}
-                  className="lightsite-editor-variable-control"
-                  maxLength={LIGHTSITE_TEXT_LIMITS.variableName}
+                  className="handout-editor-variable-control"
+                  maxLength={HANDOUT_TEXT_LIMITS.variableName}
                   value={draft.name}
                   onChange={(event) => updateDraft("name", event.target.value)}
                   onClick={(event) => event.currentTarget.focus()}
@@ -168,8 +168,8 @@ export function VariableTokenView({ deleteNode, editor, node }: NodeViewProps) {
               <VariableField id={defaultValueId} label="Default value">
                 <Input
                   id={defaultValueId}
-                  className="lightsite-editor-variable-control"
-                  maxLength={LIGHTSITE_TEXT_LIMITS.variableDefaultValue}
+                  className="handout-editor-variable-control"
+                  maxLength={HANDOUT_TEXT_LIMITS.variableDefaultValue}
                   placeholder="Optional fallback for preview/share"
                   value={draft.defaultValue}
                   onChange={(event) => updateDraft("defaultValue", event.target.value)}
@@ -179,20 +179,20 @@ export function VariableTokenView({ deleteNode, editor, node }: NodeViewProps) {
               <VariableField id={descriptionId} label="Description">
                 <Textarea
                   id={descriptionId}
-                  className="lightsite-editor-variable-control min-h-20 resize-none"
-                  maxLength={LIGHTSITE_TEXT_LIMITS.variableDescription}
+                  className="handout-editor-variable-control min-h-20 resize-none"
+                  maxLength={HANDOUT_TEXT_LIMITS.variableDescription}
                   placeholder="Helps AI and teammates understand what should go here."
                   value={draft.description}
                   onChange={(event) => updateDraft("description", event.target.value)}
                   onClick={(event) => event.currentTarget.focus()}
                 />
               </VariableField>
-              <span className="lightsite-editor-variable-popover-actions">
+              <span className="handout-editor-variable-popover-actions">
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="lightsite-editor-variable-cancel"
+                  className="handout-editor-variable-cancel"
                   onClick={() => setOpen(false)}
                 >
                   Cancel
@@ -204,11 +204,11 @@ export function VariableTokenView({ deleteNode, editor, node }: NodeViewProps) {
             </>
           ) : (
             <>
-              <span className="lightsite-editor-variable-popover-title">Missing variable</span>
-              <span className="lightsite-editor-variable-popover-note">
+              <span className="handout-editor-variable-popover-title">Missing variable</span>
+              <span className="handout-editor-variable-popover-note">
                 This placeholder no longer has a variable definition.
               </span>
-              <span className="lightsite-editor-variable-popover-actions">
+              <span className="handout-editor-variable-popover-actions">
                 <Button type="button" variant="outline" size="sm" onClick={removeReference}>
                   Remove reference
                 </Button>
@@ -231,7 +231,7 @@ function VariableField({
   label: string
 }) {
   return (
-    <div className="lightsite-editor-variable-field">
+    <div className="handout-editor-variable-field">
       <label htmlFor={id}>{label}</label>
       {children}
     </div>

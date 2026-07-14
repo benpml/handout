@@ -1,16 +1,16 @@
 import request from "supertest";
 import { describe, expect, it } from "vitest";
 import {
-  LIGHTSITE_COLLECTION_LIMITS,
-  LIGHTSITE_TEXT_LIMITS,
-} from "@lightsite/domain";
+  HANDOUT_COLLECTION_LIMITS,
+  HANDOUT_TEXT_LIMITS,
+} from "@handout/domain";
 import {
   createDefaultSiteContent,
   PUBLIC_SITE_PAYLOAD_SCHEMA_VERSION,
   type PublishedSitePayload,
   type SiteContent,
   type TiptapNode,
-} from "@lightsite/site-document";
+} from "@handout/site-document";
 import { createApp } from "./app";
 import type { CurrentActor } from "./auth/current-actor";
 import { DEV_AUTH_BYPASS_HEADER } from "./auth/dev-auth";
@@ -71,7 +71,7 @@ function createTestApp(input: {
     publicSites:
       input.publicSites ??
       createPublicSiteService(createUnavailablePublicSiteRepository()),
-    publicSiteOrigin: input.publicSiteOrigin ?? "https://pages.lightsite.test",
+    publicSiteOrigin: input.publicSiteOrigin ?? "https://pages.handout.test",
     sites: createSiteService(createMemorySiteRepository(
       input.sites,
       input.siteVersions,
@@ -262,7 +262,7 @@ function buildPublicHtmlPayload(): PublishedSitePayload {
       key: "primary_cta_url",
       label: "Primary CTA URL",
       type: "url",
-      defaultValue: "https://cal.com/lightsite/implementation-review",
+      defaultValue: "https://cal.com/handout/implementation-review",
     },
   )
   content.pages[0]!.document = {
@@ -340,12 +340,12 @@ function buildPublicHtmlPayload(): PublishedSitePayload {
       publishedVersionId: "33333333-3333-4333-8333-333333333333",
       recipientId: "44444444-4444-4444-8444-444444444444",
       recipientRevision: 3,
-      trackingMode: "events_and_recording",
+      trackingMode: "events",
     },
   };
 }
 
-describe("Lightsite API", () => {
+describe("Handout API", () => {
   it("reports health", async () => {
     const app = createTestApp();
     const response = await request(app)
@@ -355,7 +355,7 @@ describe("Lightsite API", () => {
 
     expect(response.body).toEqual({
       ok: true,
-      service: "lightsite-api",
+      service: "handout-api",
       requestId: "test-request-id",
     });
     expect(response.headers["x-request-id"]).toBe("test-request-id");
@@ -371,16 +371,16 @@ describe("Lightsite API", () => {
 
     expect(response.body).toMatchObject({
       user: {
-        id: "dev_user_lightsite",
-        email: "dev@lightsite.app",
-        name: "Lightsite Dev",
+        id: "dev_user_handout",
+        email: "dev@handout.app",
+        name: "Handout Dev",
         accountSetupComplete: true,
         internalAccess: true,
       },
       activeWorkspace: {
         id: "00000000-0000-4000-8000-000000000101",
-        slug: "lightsite-dev",
-        name: "Lightsite Dev",
+        slug: "handout-dev",
+        name: "Handout Dev",
         role: "admin",
       },
       onboarding: {
@@ -414,7 +414,7 @@ describe("Lightsite API", () => {
 
     expect(bootstrapResponse.body.activeWorkspace).toMatchObject({
       id: "00000000-0000-4000-8000-000000000101",
-      slug: "lightsite-dev",
+      slug: "handout-dev",
     });
 
     const sitesResponse = await request(app)
@@ -870,7 +870,7 @@ describe("Lightsite API", () => {
     });
     const site = buildMemorySite({
       workspaceId: workspace.id,
-      createdByUserId: "lightsite_agent",
+      createdByUserId: "handout_agent",
       name: "Agent managed site",
       slug: "agent-managed-site",
     });
@@ -879,18 +879,18 @@ describe("Lightsite API", () => {
       sites: [site],
     });
     const previousEnv = {
-      LIGHTSITE_AGENT_API_TOKEN: process.env.LIGHTSITE_AGENT_API_TOKEN,
-      LIGHTSITE_AGENT_WORKSPACE_ID: process.env.LIGHTSITE_AGENT_WORKSPACE_ID,
-      LIGHTSITE_AGENT_WORKSPACE_PLAN: process.env.LIGHTSITE_AGENT_WORKSPACE_PLAN,
-      LIGHTSITE_AGENT_WORKSPACE_ROLE: process.env.LIGHTSITE_AGENT_WORKSPACE_ROLE,
-      LIGHTSITE_AGENT_USER_ID: process.env.LIGHTSITE_AGENT_USER_ID,
+      HANDOUT_AGENT_API_TOKEN: process.env.HANDOUT_AGENT_API_TOKEN,
+      HANDOUT_AGENT_WORKSPACE_ID: process.env.HANDOUT_AGENT_WORKSPACE_ID,
+      HANDOUT_AGENT_WORKSPACE_PLAN: process.env.HANDOUT_AGENT_WORKSPACE_PLAN,
+      HANDOUT_AGENT_WORKSPACE_ROLE: process.env.HANDOUT_AGENT_WORKSPACE_ROLE,
+      HANDOUT_AGENT_USER_ID: process.env.HANDOUT_AGENT_USER_ID,
     };
 
-    process.env.LIGHTSITE_AGENT_API_TOKEN = "agent-test-token";
-    process.env.LIGHTSITE_AGENT_WORKSPACE_ID = workspace.id;
-    process.env.LIGHTSITE_AGENT_WORKSPACE_PLAN = "pro";
-    process.env.LIGHTSITE_AGENT_WORKSPACE_ROLE = "admin";
-    process.env.LIGHTSITE_AGENT_USER_ID = "lightsite_agent";
+    process.env.HANDOUT_AGENT_API_TOKEN = "agent-test-token";
+    process.env.HANDOUT_AGENT_WORKSPACE_ID = workspace.id;
+    process.env.HANDOUT_AGENT_WORKSPACE_PLAN = "pro";
+    process.env.HANDOUT_AGENT_WORKSPACE_ROLE = "admin";
+    process.env.HANDOUT_AGENT_USER_ID = "handout_agent";
 
     try {
       const sitesResponse = await request(app)
@@ -928,12 +928,12 @@ describe("Lightsite API", () => {
       actor: null,
     });
     const previousEnv = {
-      LIGHTSITE_AGENT_API_TOKEN: process.env.LIGHTSITE_AGENT_API_TOKEN,
-      LIGHTSITE_AGENT_WORKSPACE_ID: process.env.LIGHTSITE_AGENT_WORKSPACE_ID,
+      HANDOUT_AGENT_API_TOKEN: process.env.HANDOUT_AGENT_API_TOKEN,
+      HANDOUT_AGENT_WORKSPACE_ID: process.env.HANDOUT_AGENT_WORKSPACE_ID,
     };
 
-    process.env.LIGHTSITE_AGENT_API_TOKEN = "correct-agent-token";
-    process.env.LIGHTSITE_AGENT_WORKSPACE_ID = workspace.id;
+    process.env.HANDOUT_AGENT_API_TOKEN = "correct-agent-token";
+    process.env.HANDOUT_AGENT_WORKSPACE_ID = workspace.id;
 
     try {
       const response = await request(app)
@@ -1225,7 +1225,7 @@ describe("Lightsite API", () => {
             type: "doc",
             content: [{
               type: "paragraph",
-              content: [{ type: "text", text: "x".repeat(LIGHTSITE_TEXT_LIMITS.blockText + 1) }],
+              content: [{ type: "text", text: "x".repeat(HANDOUT_TEXT_LIMITS.blockText + 1) }],
             }],
           },
         }),
@@ -1253,7 +1253,7 @@ describe("Lightsite API", () => {
           document: {
             type: "doc",
             content: Array.from(
-              { length: LIGHTSITE_COLLECTION_LIMITS.blocksPerTab + 1 },
+              { length: HANDOUT_COLLECTION_LIMITS.blocksPerTab + 1 },
               (_, index) => ({
                 type: "paragraph",
                 attrs: { id: `block-${index}` },
@@ -2137,7 +2137,7 @@ describe("Lightsite API", () => {
     expect(response.headers["content-security-policy"]).toContain("font-src 'self'");
     expect(response.headers["content-security-policy"]).toContain("frame-src https:");
     expect(response.text).toContain("<title>Rollout brief for Acme</title>");
-    expect(response.text).toContain('content="https://pages.lightsite.test/acme/rollout-brief/mira"');
+    expect(response.text).toContain('content="https://pages.handout.test/acme/rollout-brief/mira"');
     expect(response.text).toContain("A focused rollout plan for Acme");
     expect(response.text).toContain(
       'src="/api/public/site-logo/acme/rollout-brief/workspace?theme=dark&amp;variant=mira"',
@@ -2146,9 +2146,9 @@ describe("Lightsite API", () => {
       'src="/api/public/site-logo/acme/rollout-brief/recipient?theme=dark&amp;variant=mira"',
     );
     expect(response.text).toContain("Book implementation review");
-    expect(response.text).toContain('data-ls-element-id="cta-primary"');
-    expect(response.text).toContain('data-ls-element-label="Book implementation review"');
-    expect(response.text).not.toContain("data-lightsite-tracking-v2=");
+    expect(response.text).toContain('data-handout-element-id="cta-primary"');
+    expect(response.text).not.toContain("data-handout-element-label");
+    expect(response.text).not.toContain("data-handout-tracking-v2=");
     expect(response.text).not.toContain("/track/2026-06-14.v1/script.js");
   });
 
@@ -2250,7 +2250,7 @@ describe("Lightsite API", () => {
   it("serves public renderer assets before the public HTML fallback", async () => {
     const app = createTestApp();
     const response = await request(app)
-      .get("/lightsite-logo.svg")
+      .get("/handout-logo.svg")
       .expect(200);
     const body = response.text ?? response.body.toString("utf8");
 
@@ -2260,12 +2260,12 @@ describe("Lightsite API", () => {
     expect(body).not.toContain("This page is unavailable");
 
     const runtimeResponse = await request(app)
-      .get("/site-runtime.v3.js")
+      .get("/site-runtime.v4.js")
       .expect(200);
 
     expect(runtimeResponse.headers["content-type"]).toContain("application/javascript");
     expect(runtimeResponse.headers["cache-control"]).toContain("immutable");
-    expect(runtimeResponse.text).toContain("data-ls-page-target");
+    expect(runtimeResponse.text).toContain("data-handout-page-target");
 
     const fontResponse = await request(app)
       .get("/fonts/geist-latin-wght-normal.woff2")
@@ -2283,7 +2283,7 @@ describe("Lightsite API", () => {
 
     expect(response.headers["content-type"]).toContain("text/html");
     expect(response.headers["cache-control"]).toBe("public, max-age=15, stale-while-revalidate=15");
-    expect(response.text).toContain("<title>Page unavailable | Lightsite</title>");
+    expect(response.text).toContain("<title>Page unavailable | Handout</title>");
     expect(response.text).toContain('content="noindex,nofollow"');
     expect(response.text).toContain("This page is unavailable");
   });

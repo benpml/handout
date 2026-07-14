@@ -3,7 +3,7 @@ import {
   createDefaultSiteContent,
   PUBLIC_SITE_PAYLOAD_SCHEMA_VERSION,
   type PublishedSitePayload,
-} from "@lightsite/site-document";
+} from "@handout/site-document";
 
 import {
   CURRENT_PUBLIC_PAYLOAD_SCHEMA_VERSION,

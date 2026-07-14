@@ -1,6 +1,6 @@
 export const SITE_MOBILE_BREAKPOINT_PX = 760 as const
 
-export const lightsiteFoundationTokens = {
+export const handoutFoundationTokens = {
   "neutral-950": "#0a0a0a",
   "neutral-900": "#191919",
   "neutral-800": "#252525",
@@ -35,7 +35,7 @@ export const lightsiteFoundationTokens = {
   "border-width": "1px",
 } as const
 
-export const lightsiteLightTokens = {
+export const handoutLightTokens = {
   background: "#ffffff",
   foreground: "var(--neutral-950)",
   card: "var(--neutral-50)",
@@ -116,8 +116,8 @@ export const lightsiteLightTokens = {
   "sidebar-ring": "var(--ring)",
 } as const
 
-export const lightsiteDarkTokens = {
-  ...lightsiteLightTokens,
+export const handoutDarkTokens = {
+  ...handoutLightTokens,
   background: "var(--neutral-900)",
   foreground: "var(--neutral-100)",
   card: "var(--neutral-800)",
@@ -235,11 +235,11 @@ export function normalizeEditorHighlightColor(value: unknown) {
   return `var(--${colorName}-background)`
 }
 
-export const LIGHTSITE_THEME_CSS = [
+export const HANDOUT_THEME_CSS = [
   '@font-face{font-family:"Geist Variable";font-style:normal;font-display:swap;font-weight:100 900;src:url("/fonts/geist-latin-wght-normal.woff2") format("woff2")}',
-  cssRule(":root,.light", { ...lightsiteFoundationTokens, ...lightsiteLightTokens }, "light"),
-  cssRule(".dark", lightsiteDarkTokens, "dark"),
-  `@media(prefers-color-scheme:dark){${cssRule(".system", lightsiteDarkTokens, "dark")}}`,
+  cssRule(":root,.light", { ...handoutFoundationTokens, ...handoutLightTokens }, "light"),
+  cssRule(".dark", handoutDarkTokens, "dark"),
+  `@media(prefers-color-scheme:dark){${cssRule(".system", handoutDarkTokens, "dark")}}`,
 ].join("")
 
 function cssRule(

@@ -1,31 +1,31 @@
 import { Extension } from "@tiptap/core"
 import { NodeSelection } from "@tiptap/pm/state"
 
-import type { LightsiteGifSelection } from "../giphy"
+import type { HandoutGifSelection } from "../giphy"
 
-export type LightsiteNextGifPickerTarget = {
+export type HandoutNextGifPickerTarget = {
   pos: number
 }
 
 type GifPickerStorage = {
-  openPicker: (target: LightsiteNextGifPickerTarget) => void
-  subscribe: (listener: (target: LightsiteNextGifPickerTarget) => void) => () => void
+  openPicker: (target: HandoutNextGifPickerTarget) => void
+  subscribe: (listener: (target: HandoutNextGifPickerTarget) => void) => () => void
 }
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
-    lightsiteNextGifPicker: {
-      openLightsiteNextGifPicker: (pos?: number) => ReturnType
-      setLightsiteNextGif: (pos: number, selection: LightsiteGifSelection) => ReturnType
+    handoutNextGifPicker: {
+      openHandoutNextGifPicker: (pos?: number) => ReturnType
+      setHandoutNextGif: (pos: number, selection: HandoutGifSelection) => ReturnType
     }
   }
 }
 
-export const LightsiteNextGifPicker = Extension.create<Record<string, never>, GifPickerStorage>({
-  name: "lightsiteNextGifPicker",
+export const HandoutNextGifPicker = Extension.create<Record<string, never>, GifPickerStorage>({
+  name: "handoutNextGifPicker",
 
   addStorage() {
-    const listeners = new Set<(target: LightsiteNextGifPickerTarget) => void>()
+    const listeners = new Set<(target: HandoutNextGifPickerTarget) => void>()
 
     return {
       openPicker: (target) => {
@@ -43,7 +43,7 @@ export const LightsiteNextGifPicker = Extension.create<Record<string, never>, Gi
 
   addCommands() {
     return {
-      openLightsiteNextGifPicker:
+      openHandoutNextGifPicker:
         (pos) =>
         ({ state, dispatch }) => {
           const target = resolveGifTarget(state, pos)
@@ -63,7 +63,7 @@ export const LightsiteNextGifPicker = Extension.create<Record<string, never>, Gi
 
           return true
         },
-      setLightsiteNextGif:
+      setHandoutNextGif:
         (pos, selection) =>
         ({ state, dispatch }) => {
           const node = state.doc.nodeAt(pos)

@@ -1,40 +1,6 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
-import { and, eq, gt, inArray, isNull, or, sql } from "drizzle-orm";
-import {
-  trackingInternalIpRanges,
-  trackingSuppressionMarkers,
-} from "@lightsite/db/schema";
-import type { Database } from "@lightsite/db";
-import type { TrackingV2SuppressionMarkerType } from "@lightsite/tracking-schema";
-
-export type TrackingSuppressionMarkerCandidate = {
-  markerType: TrackingV2SuppressionMarkerType;
-  value: string;
-};
-
-export type TrackingSuppressionMarkerHashInput = TrackingSuppressionMarkerCandidate & {
-  workspaceId: string;
-};
-
-export type TrackingSuppressionMarkerUpsert = {
-  workspaceId: string;
-  userId: string | null;
-  markerType: TrackingV2SuppressionMarkerType;
-  markerHash: string;
-  label: string | null;
-  seenAt: Date;
-  expiresAt: Date | null;
-};
-
-export type TrackingSuppressionMarkerRecord = {
-  id: string;
-  workspaceId: string;
-  userId: string | null;
-  markerType: TrackingV2SuppressionMarkerType;
-  markerHash: string;
-  label: string | null;
-  expiresAt: Date | null;
-};
+import { and, asc, eq, sql } from "drizzle-orm";
+import type { Database } from "@handout/db";
+import { trackingInternalIpRanges } from "@handout/db/schema";
 
 export type TrackingInternalIpRangeMatch = {
   id: string;
@@ -43,129 +9,49 @@ export type TrackingInternalIpRangeMatch = {
   ipRange: string;
 };
 
+export type TrackingInternalIpRangeRecord = TrackingInternalIpRangeMatch & {
+  enabled: boolean;
+  createdAt: Date;
+};
+
 export interface TrackingSuppressionRepository {
-  upsertMarker(input: TrackingSuppressionMarkerUpsert): Promise<void>;
-  findActiveMarkers(input: {
-    workspaceId: string;
-    markerHashes: string[];
-    at: Date;
-  }): Promise<TrackingSuppressionMarkerRecord[]>;
   findMatchingInternalIpRange(input: {
     workspaceId: string;
     ipAddress: string;
   }): Promise<TrackingInternalIpRangeMatch | null>;
+  listInternalIpRanges(workspaceId: string): Promise<TrackingInternalIpRangeRecord[]>;
+  upsertInternalIpRange(input: {
+    workspaceId: string;
+    userId: string;
+    label: string;
+    ipRange: string;
+    now: Date;
+  }): Promise<TrackingInternalIpRangeRecord>;
+  deleteInternalIpRange(input: { workspaceId: string; id: string }): Promise<boolean>;
 }
-
-export type TrackingSuppressionServiceOptions = {
-  repository: TrackingSuppressionRepository;
-  hashSecret: string;
-  now?: () => Date;
-  allowIpMarkerSuppression?: boolean;
-};
-
-export type RecordWorkspaceUserTrackingMarkersInput = {
-  workspaceId: string;
-  userId: string;
-  email: string | null;
-  ipAddress: string | null;
-  deviceId: string | null;
-  seenAt?: Date;
-  expiresAt?: Date | null;
-};
-
-export type TrackingSuppressionDecisionInput = {
-  workspaceId: string;
-  userId?: string | null;
-  email?: string | null;
-  ipAddress?: string | null;
-  deviceId?: string | null;
-  at?: Date;
-};
-
-export type TrackingSuppressionDecision = {
-  suppressed: boolean;
-  reason: "internal_ip_range" | "suppression_marker" | null;
-  matchedMarkerTypes: TrackingV2SuppressionMarkerType[];
-  internalIpRange: TrackingInternalIpRangeMatch | null;
-};
 
 export interface TrackingSuppressionService {
-  recordWorkspaceUserMarkers(input: RecordWorkspaceUserTrackingMarkersInput): Promise<{
-    markerCount: number;
+  evaluateRecipientVisit(input: {
+    workspaceId: string;
+    ipAddress: string | null;
+  }): Promise<{
+    suppressed: boolean;
+    reason: "internal_ip_range" | null;
+    internalIpRange: TrackingInternalIpRangeMatch | null;
   }>;
-  evaluateRecipientVisit(input: TrackingSuppressionDecisionInput): Promise<TrackingSuppressionDecision>;
+  listInternalIpRanges(workspaceId: string): Promise<TrackingInternalIpRangeRecord[]>;
+  upsertInternalIpRange(input: {
+    workspaceId: string;
+    userId: string;
+    label: string;
+    ipRange: string;
+    now: Date;
+  }): Promise<TrackingInternalIpRangeRecord>;
+  deleteInternalIpRange(input: { workspaceId: string; id: string }): Promise<boolean>;
 }
 
-const SUPPRESSING_MARKER_TYPES = new Set<TrackingV2SuppressionMarkerType>([
-  "device_id",
-  "user_id",
-  "email_domain",
-]);
-
-export function createDbTrackingSuppressionRepository(
-  database: Database,
-): TrackingSuppressionRepository {
+export function createDbTrackingSuppressionRepository(database: Database): TrackingSuppressionRepository {
   return {
-    async upsertMarker(input) {
-      await database
-        .insert(trackingSuppressionMarkers)
-        .values({
-          workspaceId: input.workspaceId,
-          userId: input.userId,
-          markerType: input.markerType,
-          markerHash: input.markerHash,
-          label: input.label,
-          firstSeenAt: input.seenAt,
-          lastSeenAt: input.seenAt,
-          expiresAt: input.expiresAt,
-          updatedAt: input.seenAt,
-        })
-        .onConflictDoUpdate({
-          target: [
-            trackingSuppressionMarkers.workspaceId,
-            trackingSuppressionMarkers.markerType,
-            trackingSuppressionMarkers.markerHash,
-          ],
-          set: {
-            userId: sql`coalesce(excluded.user_id, ${trackingSuppressionMarkers.userId})`,
-            label: sql`coalesce(excluded.label, ${trackingSuppressionMarkers.label})`,
-            lastSeenAt: input.seenAt,
-            expiresAt: sql`coalesce(excluded.expires_at, ${trackingSuppressionMarkers.expiresAt})`,
-            updatedAt: input.seenAt,
-          },
-        });
-    },
-
-    async findActiveMarkers(input) {
-      if (input.markerHashes.length === 0) {
-        return [];
-      }
-
-      const rows = await database
-        .select({
-          id: trackingSuppressionMarkers.id,
-          workspaceId: trackingSuppressionMarkers.workspaceId,
-          userId: trackingSuppressionMarkers.userId,
-          markerType: trackingSuppressionMarkers.markerType,
-          markerHash: trackingSuppressionMarkers.markerHash,
-          label: trackingSuppressionMarkers.label,
-          expiresAt: trackingSuppressionMarkers.expiresAt,
-        })
-        .from(trackingSuppressionMarkers)
-        .where(
-          and(
-            eq(trackingSuppressionMarkers.workspaceId, input.workspaceId),
-            inArray(trackingSuppressionMarkers.markerHash, input.markerHashes),
-            or(
-              isNull(trackingSuppressionMarkers.expiresAt),
-              gt(trackingSuppressionMarkers.expiresAt, input.at),
-            ),
-          ),
-        );
-
-      return rows;
-    },
-
     async findMatchingInternalIpRange(input) {
       const [row] = await database
         .select({
@@ -175,233 +61,123 @@ export function createDbTrackingSuppressionRepository(
           ipRange: trackingInternalIpRanges.ipRange,
         })
         .from(trackingInternalIpRanges)
-        .where(
-          and(
-            eq(trackingInternalIpRanges.workspaceId, input.workspaceId),
-            eq(trackingInternalIpRanges.enabled, true),
-            sql`${input.ipAddress}::inet <<= ${trackingInternalIpRanges.ipRange}`,
-          ),
-        )
+        .where(and(
+          eq(trackingInternalIpRanges.workspaceId, input.workspaceId),
+          eq(trackingInternalIpRanges.enabled, true),
+          sql`${input.ipAddress}::inet <<= ${trackingInternalIpRanges.ipRange}`,
+        ))
         .limit(1);
-
       return row ?? null;
     },
+    async listInternalIpRanges(workspaceId) {
+      return database.select({
+        id: trackingInternalIpRanges.id,
+        workspaceId: trackingInternalIpRanges.workspaceId,
+        label: trackingInternalIpRanges.label,
+        ipRange: trackingInternalIpRanges.ipRange,
+        enabled: trackingInternalIpRanges.enabled,
+        createdAt: trackingInternalIpRanges.createdAt,
+      }).from(trackingInternalIpRanges)
+        .where(eq(trackingInternalIpRanges.workspaceId, workspaceId))
+        .orderBy(asc(trackingInternalIpRanges.createdAt), asc(trackingInternalIpRanges.id));
+    },
+    async upsertInternalIpRange(input) {
+      const [record] = await database.insert(trackingInternalIpRanges).values({
+        workspaceId: input.workspaceId,
+        ipRange: input.ipRange,
+        label: input.label,
+        enabled: true,
+        createdByUserId: input.userId,
+        createdAt: input.now,
+        updatedAt: input.now,
+      }).onConflictDoUpdate({
+        target: [trackingInternalIpRanges.workspaceId, trackingInternalIpRanges.ipRange],
+        set: { label: input.label, enabled: true, updatedAt: input.now },
+      }).returning({
+        id: trackingInternalIpRanges.id,
+        workspaceId: trackingInternalIpRanges.workspaceId,
+        label: trackingInternalIpRanges.label,
+        ipRange: trackingInternalIpRanges.ipRange,
+        enabled: trackingInternalIpRanges.enabled,
+        createdAt: trackingInternalIpRanges.createdAt,
+      });
+      if (!record) throw new Error("Internal IP range upsert did not return a row.");
+      return record;
+    },
+    async deleteInternalIpRange(input) {
+      const deleted = await database.delete(trackingInternalIpRanges).where(and(
+        eq(trackingInternalIpRanges.workspaceId, input.workspaceId),
+        eq(trackingInternalIpRanges.id, input.id),
+      )).returning({ id: trackingInternalIpRanges.id });
+      return deleted.length === 1;
+    },
   };
 }
 
-export function createTrackingSuppressionService(
-  options: TrackingSuppressionServiceOptions,
-): TrackingSuppressionService {
-  assertHashSecret(options.hashSecret);
-
-  const now = options.now ?? (() => new Date());
-  const allowIpMarkerSuppression = options.allowIpMarkerSuppression ?? false;
-
+export function createTrackingSuppressionService(input: {
+  repository: TrackingSuppressionRepository;
+}): TrackingSuppressionService {
   return {
-    async recordWorkspaceUserMarkers(input) {
-      const seenAt = input.seenAt ?? now();
-      const markers = deriveSuppressionMarkerCandidates(input);
-
-      await Promise.all(
-        markers.map((marker) =>
-          options.repository.upsertMarker({
-            workspaceId: input.workspaceId,
-            userId: input.userId,
-            markerType: marker.markerType,
-            markerHash: hashTrackingSuppressionMarker({
-              workspaceId: input.workspaceId,
-              markerType: marker.markerType,
-              value: marker.value,
-              secret: options.hashSecret,
-            }),
-            label: getMarkerLabel(marker),
-            seenAt,
-            expiresAt: input.expiresAt ?? null,
-          }),
-        ),
-      );
-
-      return { markerCount: markers.length };
-    },
-
-    async evaluateRecipientVisit(input) {
-      const at = input.at ?? now();
-      const internalIpRange = input.ipAddress
-        ? await options.repository.findMatchingInternalIpRange({
-            workspaceId: input.workspaceId,
-            ipAddress: input.ipAddress,
+    async evaluateRecipientVisit(visit) {
+      const internalIpRange = visit.ipAddress
+        ? await input.repository.findMatchingInternalIpRange({
+            workspaceId: visit.workspaceId,
+            ipAddress: visit.ipAddress,
           })
         : null;
-
-      if (internalIpRange) {
-        return {
-          suppressed: true,
-          reason: "internal_ip_range",
-          matchedMarkerTypes: [],
-          internalIpRange,
-        };
-      }
-
-      const markerCandidates = deriveSuppressionMarkerCandidates({
-        userId: input.userId ?? null,
-        email: input.email ?? null,
-        ipAddress: input.ipAddress ?? null,
-        deviceId: input.deviceId ?? null,
-      });
-      const markerHashes = markerCandidates.map((marker) =>
-        hashTrackingSuppressionMarker({
-          workspaceId: input.workspaceId,
-          markerType: marker.markerType,
-          value: marker.value,
-          secret: options.hashSecret,
-        }),
-      );
-      const activeMarkers = await options.repository.findActiveMarkers({
-        workspaceId: input.workspaceId,
-        markerHashes,
-        at,
-      });
-      const matchedMarkerTypes = dedupeMarkerTypes(activeMarkers.map((marker) => marker.markerType));
-      const suppressingMarker = activeMarkers.find((marker) =>
-        marker.markerType === "ip_address"
-          ? allowIpMarkerSuppression
-          : SUPPRESSING_MARKER_TYPES.has(marker.markerType),
-      );
-
       return {
-        suppressed: Boolean(suppressingMarker),
-        reason: suppressingMarker ? "suppression_marker" : null,
-        matchedMarkerTypes,
-        internalIpRange: null,
+        suppressed: internalIpRange !== null,
+        reason: internalIpRange ? "internal_ip_range" : null,
+        internalIpRange,
       };
     },
+    listInternalIpRanges: (workspaceId) => input.repository.listInternalIpRanges(workspaceId),
+    upsertInternalIpRange: (range) => input.repository.upsertInternalIpRange(range),
+    deleteInternalIpRange: (range) => input.repository.deleteInternalIpRange(range),
   };
 }
 
-export function deriveSuppressionMarkerCandidates(input: {
-  userId?: string | null;
-  email?: string | null;
-  ipAddress?: string | null;
-  deviceId?: string | null;
-}): TrackingSuppressionMarkerCandidate[] {
-  const candidates: TrackingSuppressionMarkerCandidate[] = [];
-
-  addCandidate(candidates, "device_id", input.deviceId);
-  addCandidate(candidates, "user_id", input.userId);
-  addCandidate(candidates, "ip_address", input.ipAddress);
-
-  const emailDomain = extractEmailDomain(input.email);
-  if (emailDomain) {
-    candidates.push({
-      markerType: "email_domain",
-      value: emailDomain,
-    });
-  }
-
-  return candidates;
-}
-
-export function hashTrackingSuppressionMarker(input: TrackingSuppressionMarkerHashInput & {
-  secret: string;
-}): string {
-  assertHashSecret(input.secret);
-  const normalizedValue = normalizeSuppressionMarkerValue(input.markerType, input.value);
-  const payload = [
-    "tracking-suppression",
-    input.workspaceId,
-    input.markerType,
-    normalizedValue,
-  ].join(":");
-
-  return createHmac("sha256", input.secret).update(payload).digest("hex");
-}
-
-export function isTrackingSuppressionMarkerHashEqual(left: string, right: string): boolean {
-  const leftBuffer = Buffer.from(left, "hex");
-  const rightBuffer = Buffer.from(right, "hex");
-
-  if (leftBuffer.length !== rightBuffer.length) {
-    return false;
-  }
-
-  return timingSafeEqual(leftBuffer, rightBuffer);
-}
-
-export function normalizeSuppressionMarkerValue(
-  markerType: TrackingV2SuppressionMarkerType,
-  value: string,
-): string {
-  const trimmed = value.trim();
-
-  if (!trimmed) {
-    return "";
-  }
-
-  switch (markerType) {
-    case "email_domain":
-      return trimmed.toLowerCase();
-    case "ip_address":
-      return trimmed.toLowerCase();
-    case "device_id":
-      return trimmed;
-    case "user_id":
-      return trimmed;
-  }
-}
-
-function addCandidate(
-  candidates: TrackingSuppressionMarkerCandidate[],
-  markerType: TrackingV2SuppressionMarkerType,
-  value: string | null | undefined,
-) {
-  const normalizedValue = value ? normalizeSuppressionMarkerValue(markerType, value) : "";
-
-  if (!normalizedValue) {
-    return;
-  }
-
-  candidates.push({
-    markerType,
-    value: normalizedValue,
-  });
-}
-
-function extractEmailDomain(email: string | null | undefined): string | null {
-  const trimmed = email?.trim().toLowerCase();
-
-  if (!trimmed) {
-    return null;
-  }
-
-  const atIndex = trimmed.lastIndexOf("@");
-  if (atIndex <= 0 || atIndex === trimmed.length - 1) {
-    return null;
-  }
-
-  return trimmed.slice(atIndex + 1);
-}
-
-function getMarkerLabel(marker: TrackingSuppressionMarkerCandidate): string | null {
-  switch (marker.markerType) {
-    case "device_id":
-      return "Workspace user device";
-    case "user_id":
-      return "Workspace user account";
-    case "ip_address":
-      return "Workspace user IP";
-    case "email_domain":
-      return "Workspace email domain";
-  }
-}
-
-function dedupeMarkerTypes(
-  markerTypes: TrackingV2SuppressionMarkerType[],
-): TrackingV2SuppressionMarkerType[] {
-  return Array.from(new Set(markerTypes));
-}
-
-function assertHashSecret(secret: string) {
-  if (secret.length < 32) {
-    throw new Error("Tracking suppression hash secret must be at least 32 characters.");
-  }
+export function createMemoryTrackingSuppressionRepository(input: {
+  ranges?: TrackingInternalIpRangeMatch[];
+  matches?: (ipAddress: string, ipRange: string) => boolean;
+} = {}): TrackingSuppressionRepository {
+  const ranges: TrackingInternalIpRangeRecord[] = (input.ranges ?? []).map((range) => ({
+    ...range,
+    enabled: true,
+    createdAt: new Date(0),
+  }));
+  return {
+    async findMatchingInternalIpRange({ workspaceId, ipAddress }) {
+      return ranges.find((range) =>
+        range.workspaceId === workspaceId && (input.matches?.(ipAddress, range.ipRange) ?? ipAddress === range.ipRange)
+      ) ?? null;
+    },
+    async listInternalIpRanges(workspaceId) {
+      return ranges.filter((range) => range.workspaceId === workspaceId);
+    },
+    async upsertInternalIpRange(range) {
+      const existing = ranges.find((candidate) => candidate.workspaceId === range.workspaceId && candidate.ipRange === range.ipRange);
+      if (existing) {
+        existing.label = range.label;
+        existing.enabled = true;
+        return existing;
+      }
+      const record: TrackingInternalIpRangeRecord = {
+        id: `00000000-0000-4000-8000-${String(ranges.length + 1).padStart(12, "0")}`,
+        workspaceId: range.workspaceId,
+        label: range.label,
+        ipRange: range.ipRange,
+        enabled: true,
+        createdAt: range.now,
+      };
+      ranges.push(record);
+      return record;
+    },
+    async deleteInternalIpRange({ workspaceId, id }) {
+      const index = ranges.findIndex((range) => range.workspaceId === workspaceId && range.id === id);
+      if (index < 0) return false;
+      ranges.splice(index, 1);
+      return true;
+    },
+  };
 }

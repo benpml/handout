@@ -120,7 +120,7 @@ export function DesignSystemPage() {
                 {baseColorTokens.map((token) => (
                   <TableRow key={token.name}>
                     <TableCell><TokenName name={token.name} /></TableCell>
-                    <TableCell className="text-muted-foreground">—</TableCell>
+                    <TableCell className="text-muted-foreground">-</TableCell>
                     <TableCell><ColorValue hex={token.hex} /></TableCell>
                   </TableRow>
                 ))}
@@ -212,7 +212,7 @@ function TokenName({ name }: { name: string }) {
 
 function InheritedToken({ value }: { value: TokenModeValue }) {
   if (!value.inherits) {
-    return <span className="text-muted-foreground">—</span>
+    return <span className="text-muted-foreground">-</span>
   }
 
   return (

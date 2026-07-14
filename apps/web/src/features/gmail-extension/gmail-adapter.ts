@@ -6,7 +6,7 @@ const BODY_SELECTOR = [
 ].join(",")
 
 const COMPOSE_ROOT_SELECTORS = ["[role=dialog]", ".M9", ".ip.adB", "[role=region]"]
-const ACTION_MOUNT_MARKER = "data-lightsite-compose-action-mount"
+const ACTION_MOUNT_MARKER = "data-handout-compose-action-mount"
 let composeSequence = 0
 
 export type GmailCompose = {
@@ -151,11 +151,11 @@ function findComposeToolbar(root: HTMLElement, body: HTMLElement) {
 }
 
 function getComposeId(root: HTMLElement) {
-  const existing = root.dataset.lightsiteComposeId
+  const existing = root.dataset.handoutComposeId
   if (existing) return existing
   composeSequence += 1
-  const id = `lightsite-compose-${Date.now().toString(36)}-${composeSequence}`
-  root.dataset.lightsiteComposeId = id
+  const id = `handout-compose-${Date.now().toString(36)}-${composeSequence}`
+  root.dataset.handoutComposeId = id
   return id
 }
 

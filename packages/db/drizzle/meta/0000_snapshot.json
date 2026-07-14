@@ -1087,7 +1087,7 @@
           "type": "jsonb",
           "primaryKey": false,
           "notNull": true,
-          "default": "'{\"schemaVersion\":1,\"header\":{\"avatarMode\":\"single\",\"title\":\"Untitled Lightsite\"},\"settings\":{\"showTableOfContents\":true,\"allowSearchIndexing\":false},\"variables\":[],\"blocks\":[]}'::jsonb"
+          "default": "'{\"schemaVersion\":1,\"header\":{\"avatarMode\":\"single\",\"title\":\"Untitled Handout\"},\"settings\":{\"showTableOfContents\":true,\"allowSearchIndexing\":false},\"variables\":[],\"blocks\":[]}'::jsonb"
         },
         "draft_revision": {
           "name": "draft_revision",

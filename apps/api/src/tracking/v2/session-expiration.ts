@@ -1,4 +1,4 @@
-import { TRACKING_V2_SESSION_STALE_AFTER_MS } from "@lightsite/tracking-schema";
+import { TRACKING_V2_SESSION_STALE_AFTER_MS } from "@handout/tracking-schema";
 import type { TrackingV2Repository } from "./repository";
 
 export const TRACKING_V2_SESSION_EXPIRATION_INTERVAL_MS = 30_000;

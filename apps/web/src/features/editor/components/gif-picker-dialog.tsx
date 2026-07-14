@@ -1,6 +1,6 @@
 import { Grid } from "@giphy/react-components"
 import { IconSearch } from "@tabler/icons-react"
-import { LIGHTSITE_TEXT_LIMITS } from "@lightsite/domain"
+import { HANDOUT_TEXT_LIMITS } from "@handout/domain"
 import type { Editor } from "@tiptap/react"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
@@ -14,24 +14,24 @@ import {
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import {
-  createLightsiteGifSelection,
-  createLightsiteGiphyFetchGifs,
-  hasLightsiteGiphyApiKey,
-  lightsiteGiphyAttributionAssetPath,
-  lightsiteGiphyClient,
+  createHandoutGifSelection,
+  createHandoutGiphyFetchGifs,
+  hasHandoutGiphyApiKey,
+  handoutGiphyAttributionAssetPath,
+  handoutGiphyClient,
 } from "../tiptap/giphy"
-import type { LightsiteNextGifPickerTarget } from "../tiptap/extensions/gif-picker"
+import type { HandoutNextGifPickerTarget } from "../tiptap/extensions/gif-picker"
 
 type EditorGifPickerDialogProps = {
   editor: Editor
 }
 
 type GifPickerStorage = {
-  subscribe: (listener: (target: LightsiteNextGifPickerTarget) => void) => () => void
+  subscribe: (listener: (target: HandoutNextGifPickerTarget) => void) => () => void
 }
 
 export function EditorGifPickerDialog({ editor }: EditorGifPickerDialogProps) {
-  const [target, setTarget] = useState<LightsiteNextGifPickerTarget | null>(null)
+  const [target, setTarget] = useState<HandoutNextGifPickerTarget | null>(null)
   const [query, setQuery] = useState("")
   const [debouncedQuery, setDebouncedQuery] = useState("")
   const gridContainerRef = useRef<HTMLDivElement | null>(null)
@@ -47,8 +47,8 @@ export function EditorGifPickerDialog({ editor }: EditorGifPickerDialogProps) {
 
   useEffect(() => {
     const storage = (
-      editor.storage as unknown as { lightsiteNextGifPicker?: GifPickerStorage }
-    ).lightsiteNextGifPicker
+      editor.storage as unknown as { handoutNextGifPicker?: GifPickerStorage }
+    ).handoutNextGifPicker
 
     if (!storage) {
       return
@@ -101,11 +101,11 @@ export function EditorGifPickerDialog({ editor }: EditorGifPickerDialogProps) {
   }, [open])
 
   const fetchGifs = useMemo(() => {
-    if (!hasLightsiteGiphyApiKey) {
+    if (!hasHandoutGiphyApiKey) {
       return null
     }
 
-    return createLightsiteGiphyFetchGifs(debouncedQuery)
+    return createHandoutGiphyFetchGifs(debouncedQuery)
   }, [debouncedQuery])
 
   const columns = gridWidth >= 840 ? 4 : gridWidth >= 560 ? 3 : 2
@@ -122,9 +122,9 @@ export function EditorGifPickerDialog({ editor }: EditorGifPickerDialogProps) {
     >
       <DialogContent
         showCloseButton
-        className="lightsite-editor-gif-picker grid h-[min(720px,calc(100vh-2rem))] w-[calc(100vw-2rem)] max-w-[960px] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-[960px]"
+        className="handout-editor-gif-picker grid h-[min(720px,calc(100vh-2rem))] w-[calc(100vw-2rem)] max-w-[960px] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-[960px]"
       >
-        <DialogHeader className="lightsite-editor-gif-picker-header gap-3 px-4 pt-4 pb-3">
+        <DialogHeader className="handout-editor-gif-picker-header gap-3 px-4 pt-4 pb-3">
           <div className="flex flex-col gap-1">
             <DialogTitle>Select GIF</DialogTitle>
             <DialogDescription>Search GIPHY and choose a GIF for this block.</DialogDescription>
@@ -136,8 +136,8 @@ export function EditorGifPickerDialog({ editor }: EditorGifPickerDialogProps) {
             />
             <Input
               autoFocus
-              className="lightsite-editor-gif-picker-search h-10 pl-9"
-              maxLength={LIGHTSITE_TEXT_LIMITS.gifSearchQuery}
+              className="handout-editor-gif-picker-search h-10 pl-9"
+              maxLength={HANDOUT_TEXT_LIMITS.gifSearchQuery}
               placeholder="Search GIFs"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -145,8 +145,8 @@ export function EditorGifPickerDialog({ editor }: EditorGifPickerDialogProps) {
           </label>
         </DialogHeader>
 
-        <div ref={gridContainerRef} className="lightsite-editor-gif-picker-results min-h-0 overflow-y-auto px-4 py-4">
-          {fetchGifs && lightsiteGiphyClient ? (
+        <div ref={gridContainerRef} className="handout-editor-gif-picker-results min-h-0 overflow-y-auto px-4 py-4">
+          {fetchGifs && handoutGiphyClient ? (
             <Grid
               key={gridKey}
               columns={columns}
@@ -155,7 +155,7 @@ export function EditorGifPickerDialog({ editor }: EditorGifPickerDialogProps) {
               hideAttribution
               noLink
               noResultsMessage={
-                <div className="lightsite-editor-gif-picker-empty flex h-32 items-center justify-center rounded-xl border border-dashed text-sm">
+                <div className="handout-editor-gif-picker-empty flex h-32 items-center justify-center rounded-xl border border-dashed text-sm">
                   No GIFs found
                 </div>
               }
@@ -163,18 +163,18 @@ export function EditorGifPickerDialog({ editor }: EditorGifPickerDialogProps) {
               onGifClick={(gif, event) => {
                 event.preventDefault()
                 const activeTarget = target
-                const selection = createLightsiteGifSelection(gif)
+                const selection = createHandoutGifSelection(gif)
 
                 if (!activeTarget || !selection.src) {
                   return
                 }
 
-                editor.chain().focus().setLightsiteNextGif(activeTarget.pos, selection).run()
+                editor.chain().focus().setHandoutNextGif(activeTarget.pos, selection).run()
                 close()
               }}
             />
           ) : (
-            <div className="lightsite-editor-gif-picker-empty flex h-full min-h-[320px] items-center justify-center rounded-xl border border-dashed px-6 text-center text-sm">
+            <div className="handout-editor-gif-picker-empty flex h-full min-h-[320px] items-center justify-center rounded-xl border border-dashed px-6 text-center text-sm">
               Add VITE_GIPHY_API_KEY to enable GIF search in the editor.
             </div>
           )}
@@ -182,15 +182,15 @@ export function EditorGifPickerDialog({ editor }: EditorGifPickerDialogProps) {
 
         <div
           className={cn(
-            "lightsite-editor-gif-picker-footer flex h-11 items-center px-4",
-            hasLightsiteGiphyApiKey ? "justify-start" : "justify-end"
+            "handout-editor-gif-picker-footer flex h-11 items-center px-4",
+            hasHandoutGiphyApiKey ? "justify-start" : "justify-end"
           )}
         >
-          {hasLightsiteGiphyApiKey ? (
+          {hasHandoutGiphyApiKey ? (
             <img
               alt="Powered by GIPHY"
               className="h-5 w-auto object-contain"
-              src={lightsiteGiphyAttributionAssetPath}
+              src={handoutGiphyAttributionAssetPath}
             />
           ) : null}
         </div>

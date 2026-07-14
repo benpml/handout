@@ -38,6 +38,19 @@ export function errorMiddleware(
     return;
   }
 
+  if (isPayloadTooLargeError(error)) {
+    sendError(
+      response,
+      new AppError({
+        code: "request.too_large",
+        message: "Request body is too large.",
+        status: 413,
+      }),
+      requestId,
+    );
+    return;
+  }
+
   logger.error("Unhandled API error", { error, requestId });
 
   sendError(
@@ -58,4 +71,10 @@ function isJsonParseError(error: unknown) {
 
   const candidate = error as { status?: unknown; type?: unknown; body?: unknown };
   return candidate.status === 400 && candidate.type === "entity.parse.failed" && "body" in candidate;
+}
+
+function isPayloadTooLargeError(error: unknown) {
+  if (typeof error !== "object" || error === null) return false;
+  const candidate = error as { status?: unknown; type?: unknown };
+  return candidate.status === 413 && candidate.type === "entity.too.large";
 }

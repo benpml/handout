@@ -8,7 +8,7 @@ import {
   workspaceMembers,
   workspaces,
   type Database,
-} from "@lightsite/db";
+} from "@handout/db";
 
 export type AppUserProfileRecord = {
   userId: string;

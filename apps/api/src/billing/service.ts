@@ -4,7 +4,7 @@ import type {
   BillingSummary,
   BillingSubscriptionStatus,
   WorkspacePlan,
-} from "@lightsite/contracts";
+} from "@handout/contracts";
 import type { CurrentActor } from "../auth/current-actor";
 import type { BootstrapWorkspaceSwitcherItem } from "../bootstrap/service";
 import type { BillingRecord, BillingRepository } from "./repository";

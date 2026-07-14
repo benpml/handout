@@ -1,5 +1,5 @@
-import type { AppBootstrapResponse } from "@lightsite/contracts"
-import { validateWorkEmail } from "@lightsite/domain"
+import type { AppBootstrapResponse } from "@handout/contracts"
+import { validateWorkEmail } from "@handout/domain"
 
 export type OnboardingStep = "verify_email" | "account" | "workspace"
 

@@ -1,4 +1,4 @@
-import type { SiteListItem, SiteVariableDefinition, SiteVariant } from "@lightsite/contracts"
+import type { SiteListItem, SiteVariableDefinition, SiteVariant } from "@handout/contracts"
 
 import type { ComposeRecipient } from "./contracts"
 

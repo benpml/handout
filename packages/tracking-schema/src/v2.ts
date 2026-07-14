@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const TRACKING_V2_SCRIPT_VERSION = "2026-07-11.v7" as const;
+export const TRACKING_V2_SCRIPT_VERSION = "2026-07-13.v9" as const;
 export const TRACKING_V2_SCRIPT_ENDPOINT = `/track/${TRACKING_V2_SCRIPT_VERSION}/script.js` as const;
 export const TRACKING_V2_RECORDER_SCRIPT_ENDPOINT = `/track/${TRACKING_V2_SCRIPT_VERSION}/recorder.js` as const;
 export const TRACKING_V2_RRWEB_RECORD_SCRIPT_ENDPOINT = `/track/${TRACKING_V2_SCRIPT_VERSION}/rrweb-record.js` as const;
@@ -15,35 +15,32 @@ export const TRACKING_V2_IDLE_TIMEOUT_MS = 2 * 60_000;
 export const TRACKING_V2_SESSION_STALE_AFTER_MS = 2 * 60_000;
 export const TRACKING_V2_ACTIVITY_WINDOW_MS = 30_000;
 export const TRACKING_V2_MAX_HEARTBEAT_CREDIT_MS = 30_000;
-export const TRACKING_V2_MAX_SESSION_DURATION_MS = 60 * 60_000;
-export const TRACKING_V2_MAX_BATCH_EVENTS = 10;
-export const TRACKING_V2_MAX_REQUEUED_EVENTS = 50;
+export const TRACKING_V2_MAX_SESSION_DURATION_MS = 4 * 60 * 60_000;
+export const TRACKING_V2_MAX_BATCH_EVENTS = 20;
+export const TRACKING_V2_MAX_REQUEUED_EVENTS = 40;
 export const TRACKING_V2_MAX_ID_LENGTH = 160;
 export const TRACKING_V2_MAX_TOKEN_LENGTH = 2_048;
 export const TRACKING_V2_MAX_LABEL_LENGTH = 180;
-export const TRACKING_V2_MAX_URL_LENGTH = 2_000;
-export const TRACKING_V2_MAX_PATH_LENGTH = 2_048;
-export const TRACKING_V2_MAX_REFERRER_HOST_LENGTH = 253;
-export const TRACKING_V2_MAX_USER_AGENT_LENGTH = 1_024;
-export const TRACKING_V2_MAX_TIMEZONE_LENGTH = 80;
-export const TRACKING_V2_MAX_LOCALE_LENGTH = 40;
-export const TRACKING_V2_RECORDING_ENABLED = false;
-export const TRACKING_V2_RECORDING_SCHEMA_VERSION = 3;
+export const TRACKING_V2_MANIFEST_SCHEMA_VERSION = 1;
+export const TRACKING_V2_MAX_MANIFEST_ELEMENTS = 500;
+export const TRACKING_V2_MAX_MANIFEST_BYTES = 128 * 1024;
+export const TRACKING_V2_MAX_EVENT_RETENTION_DAYS = 365;
+export const TRACKING_V2_RECORDING_SCHEMA_VERSION = 4;
+export const TRACKING_V2_REPLAY_TERMS_VERSION = "2026-07-13.1" as const;
+export const TRACKING_V2_VISITOR_NOTICE_VERSION = 1;
 export const TRACKING_V2_MAX_RECORDING_DURATION_MS = 10 * 60_000;
 export const TRACKING_V2_RECORDING_FLUSH_INTERVAL_MS = 5_000;
-export const TRACKING_V2_RECORDING_MAX_CHUNK_BYTES = 512 * 1024;
 export const TRACKING_V2_RECORDING_TARGET_CHUNK_BYTES = 96 * 1024;
-export const TRACKING_V2_RECORDING_MAX_BYTES = 5 * 1024 * 1024;
+export const TRACKING_V2_RECORDING_MAX_CHUNK_BYTES = 512 * 1024;
 export const TRACKING_V2_RECORDING_KEEPALIVE_MAX_BYTES = 60 * 1024;
+export const TRACKING_V2_RECORDING_MAX_BYTES = 5 * 1024 * 1024;
 export const TRACKING_V2_RECORDING_MAX_EVENTS = 20_000;
 export const TRACKING_V2_RECORDING_MAX_EVENTS_PER_CHUNK = 500;
-export const TRACKING_V2_RECORDING_UPLOAD_TOKEN_BYTES = 32;
-export const TRACKING_V2_MAX_EVENT_RETENTION_DAYS = 365;
-export const TRACKING_V2_MAX_RAW_IP_RETENTION_DAYS = 30;
+export const TRACKING_V2_RECORDING_DAILY_MAX_COUNT = 1_000;
+export const TRACKING_V2_RECORDING_DAILY_MAX_COMPRESSED_BYTES = 1024 * 1024 * 1024;
 export const TRACKING_V2_MAX_RECORDING_RETENTION_DAYS = 30;
-export const TRACKING_V2_MAX_RECORDING_DURATION_SECONDS = 10 * 60;
 export const TRACKING_V2_RECORDING_DISCLOSURE_TEXT =
-  "Session recording captures page structure, clicks, cursor movement, scroll activity, viewport changes, and timing. It does not record typed form values.";
+  "Session replay captures visible page content and structure, clicks, cursor movement, scrolling, viewport changes, and timing. Typed form values are masked.";
 
 export const trackingV2EventTypes = [
   "site_visit",
@@ -55,14 +52,13 @@ export const trackingV2EventTypes = [
 ] as const;
 
 export const trackingV2BrowserEventTypes = [
-  "site_visit",
   "button_click",
   "link_click",
   "tab_switch",
 ] as const;
 
 export const trackingV2ServerEventTypes = ["slack_share", "webhook_send"] as const;
-export const trackingV2TrackingModes = ["off", "events", "events_and_recording"] as const;
+export const trackingV2TrackingModes = ["off", "events", "events_and_replay"] as const;
 
 export const trackingV2InternalSignalTypes = [
   "session_heartbeat",
@@ -81,6 +77,16 @@ export const trackingV2ElementKinds = [
   "unknown",
 ] as const;
 
+export const trackingV2DestinationKinds = [
+  "external_web",
+  "email",
+  "phone",
+  "calendar",
+  "download",
+  "internal_tab",
+  "other",
+] as const;
+
 export const trackingV2EventSources = [
   "browser",
   "server",
@@ -96,13 +102,6 @@ export const trackingV2SessionEndReasons = [
   "heartbeat_timeout",
   "server_expired",
   "unknown",
-] as const;
-
-export const trackingV2SuppressionMarkerTypes = [
-  "ip_address",
-  "device_id",
-  "user_id",
-  "email_domain",
 ] as const;
 
 export const trackingV2SettingScopes = ["workspace", "site", "recipient"] as const;
@@ -160,10 +159,13 @@ export type TrackingV2ServerEventType = (typeof trackingV2ServerEventTypes)[numb
 export type TrackingV2TrackingMode = (typeof trackingV2TrackingModes)[number];
 export type TrackingV2InternalSignalType = (typeof trackingV2InternalSignalTypes)[number];
 export type TrackingV2ElementKind = (typeof trackingV2ElementKinds)[number];
+export type TrackingV2DestinationKind = (typeof trackingV2DestinationKinds)[number];
 export type TrackingV2EventSource = (typeof trackingV2EventSources)[number];
 export type TrackingV2SessionEndReason = (typeof trackingV2SessionEndReasons)[number];
-export type TrackingV2SuppressionMarkerType = (typeof trackingV2SuppressionMarkerTypes)[number];
 export type TrackingV2SettingScope = (typeof trackingV2SettingScopes)[number];
+export type TrackingV2ManifestPage = z.infer<typeof trackingV2ManifestPageSchema>;
+export type TrackingV2ManifestElement = z.infer<typeof trackingV2ManifestElementSchema>;
+export type TrackingV2ManifestPayload = z.infer<typeof trackingV2ManifestPayloadSchema>;
 
 const idSchema = z.string().trim().min(8).max(TRACKING_V2_MAX_ID_LENGTH).regex(/^[A-Za-z0-9:_-]+$/);
 const opaqueTokenSchema = z.string().trim().min(24).max(TRACKING_V2_MAX_TOKEN_LENGTH);
@@ -177,9 +179,9 @@ export const trackingV2ServerEventTypeSchema = z.enum(trackingV2ServerEventTypes
 export const trackingV2TrackingModeSchema = z.enum(trackingV2TrackingModes);
 export const trackingV2InternalSignalTypeSchema = z.enum(trackingV2InternalSignalTypes);
 export const trackingV2ElementKindSchema = z.enum(trackingV2ElementKinds);
+export const trackingV2DestinationKindSchema = z.enum(trackingV2DestinationKinds);
 export const trackingV2EventSourceSchema = z.enum(trackingV2EventSources);
 export const trackingV2SessionEndReasonSchema = z.enum(trackingV2SessionEndReasons);
-export const trackingV2SuppressionMarkerTypeSchema = z.enum(trackingV2SuppressionMarkerTypes);
 export const trackingV2SettingScopeSchema = z.enum(trackingV2SettingScopes);
 
 export const trackingV2ClientEventIdSchema = idSchema;
@@ -188,6 +190,60 @@ export const trackingV2SessionIdSchema = idSchema;
 export const trackingV2OpaqueTokenSchema = opaqueTokenSchema;
 export const trackingV2IsoTimestampSchema = isoTimestampSchema;
 export const trackingV2EntityIdSchema = uuidSchema;
+
+export const trackingV2ManifestPageSchema = z
+  .object({
+    id: idSchema,
+    label: z.string().trim().min(1).max(TRACKING_V2_MAX_LABEL_LENGTH),
+  })
+  .strict();
+
+export const trackingV2ManifestElementSchema = z
+  .object({
+    id: idSchema,
+    pageId: idSchema.nullable(),
+    eventType: z.enum(["button_click", "link_click"]),
+    kind: z.enum(["button", "sidebar_button", "sidebar_link", "image_card"]),
+    label: z.string().trim().min(1).max(TRACKING_V2_MAX_LABEL_LENGTH),
+    destinationKind: trackingV2DestinationKindSchema,
+    destinationHost: z.string().trim().min(1).max(253).nullable(),
+  })
+  .strict();
+
+export const trackingV2ManifestPayloadSchema = z
+  .object({
+    schemaVersion: z.literal(TRACKING_V2_MANIFEST_SCHEMA_VERSION),
+    siteLabel: z.string().trim().min(1).max(TRACKING_V2_MAX_LABEL_LENGTH),
+    pages: z.array(trackingV2ManifestPageSchema).min(1),
+    elements: z.array(trackingV2ManifestElementSchema).max(TRACKING_V2_MAX_MANIFEST_ELEMENTS),
+  })
+  .strict()
+  .superRefine((manifest, context) => {
+    const pageIds = new Set<string>();
+    for (const [index, page] of manifest.pages.entries()) {
+      if (pageIds.has(page.id)) {
+        context.addIssue({ code: "custom", path: ["pages", index, "id"], message: "Page IDs must be unique" });
+      }
+      pageIds.add(page.id);
+    }
+
+    const elementIds = new Set<string>();
+    for (const [index, element] of manifest.elements.entries()) {
+      if (elementIds.has(element.id)) {
+        context.addIssue({ code: "custom", path: ["elements", index, "id"], message: "Element IDs must be unique" });
+      }
+      elementIds.add(element.id);
+
+      if (element.pageId && !pageIds.has(element.pageId)) {
+        context.addIssue({ code: "custom", path: ["elements", index, "pageId"], message: "Element pageId must exist" });
+      }
+
+      const expectedType = element.kind === "sidebar_link" ? "link_click" : "button_click";
+      if (element.eventType !== expectedType) {
+        context.addIssue({ code: "custom", path: ["elements", index, "eventType"], message: "Element event type does not match kind" });
+      }
+    }
+  });
 
 export const trackingV2ReadCursorSchema = z.string().trim().min(1).max(2048);
 
@@ -235,8 +291,9 @@ export const trackingV2SessionRecordingStatusFilterSchema = z.enum([
   "disabled",
   "pending",
   "available",
-  "expired",
+  "truncated",
   "failed",
+  "expired",
 ]);
 
 export const trackingV2PublicContextSchema = z
@@ -309,18 +366,15 @@ export const trackingV2LocationSummarySchema = z
 
 const trackingV2TrackingSettingsShape = {
   enabled: z.boolean(),
-  captureIpAddress: z.boolean(),
-  rawIpRetentionDays: z.number().int().min(0).max(TRACKING_V2_MAX_RAW_IP_RETENTION_DAYS),
-  eventRetentionDays: z.number().int().min(1).max(TRACKING_V2_MAX_EVENT_RETENTION_DAYS),
+  eventRetentionDays: z.union([z.literal(30), z.literal(90), z.literal(180), z.literal(365)]),
   recordingEnabled: z.boolean(),
-  recordingRetentionDays: z.number().int().min(1).max(TRACKING_V2_MAX_RECORDING_RETENTION_DAYS),
-  maxRecordingDurationSeconds: z.number().int().min(60).max(TRACKING_V2_MAX_RECORDING_DURATION_SECONDS),
+  recordingRetentionDays: z.union([z.literal(7), z.literal(14), z.literal(30)]),
+  maxRecordingDurationSeconds: z.number().int().min(60).max(TRACKING_V2_MAX_RECORDING_DURATION_MS / 1000),
 } as const;
 
 export const trackingV2TrackingSettingsSchema = z
   .object(trackingV2TrackingSettingsShape)
-  .strict()
-  .superRefine(validateTrackingV2SettingsRetention);
+  .strict();
 
 export const trackingV2UpdateSiteSettingsRequestSchema = z
   .object({
@@ -329,8 +383,13 @@ export const trackingV2UpdateSiteSettingsRequestSchema = z
   })
   .strict()
   .superRefine((settings, context) => {
-    validateTrackingV2SettingsRetention(settings, context);
-
+    if (settings.recordingEnabled && !settings.enabled) {
+      context.addIssue({
+        code: "custom",
+        path: ["enabled"],
+        message: "Activity tracking must be enabled when recording is enabled",
+      });
+    }
     if (settings.recordingEnabled && settings.recordingDisclosureAccepted !== true) {
       context.addIssue({
         code: "custom",
@@ -343,7 +402,9 @@ export const trackingV2UpdateSiteSettingsRequestSchema = z
 export const trackingV2RecordingDisclosureSchema = z
   .object({
     required: z.literal(true),
+    termsVersion: z.literal(TRACKING_V2_REPLAY_TERMS_VERSION),
     text: z.literal(TRACKING_V2_RECORDING_DISCLOSURE_TEXT),
+    acceptedAt: trackingV2IsoTimestampSchema.nullable(),
   })
   .strict();
 
@@ -354,8 +415,33 @@ export const trackingV2SiteTrackingSettingsResponseSchema = z
     workspaceDefault: trackingV2TrackingSettingsSchema,
     siteOverride: trackingV2TrackingSettingsSchema.nullable(),
     effective: trackingV2TrackingSettingsSchema,
+    recordingAvailable: z.boolean(),
     recordingDisclosure: trackingV2RecordingDisclosureSchema,
     requestId: z.string().trim().min(1),
+  })
+  .strict();
+
+export const trackingV2InternalIpRangeSchema = z
+  .object({
+    id: uuidSchema,
+    label: z.string().trim().min(1).max(160),
+    cidr: z.string().trim().min(3).max(49),
+    enabled: z.boolean(),
+    createdAt: trackingV2IsoTimestampSchema,
+  })
+  .strict();
+
+export const trackingV2InternalIpRangesResponseSchema = z
+  .object({
+    ranges: z.array(trackingV2InternalIpRangeSchema).max(100),
+    requestId: z.string().trim().min(1),
+  })
+  .strict();
+
+export const trackingV2CreateInternalIpRangeRequestSchema = z
+  .object({
+    label: z.string().trim().min(1).max(160),
+    cidr: z.string().trim().min(3).max(49).regex(/^[0-9A-Fa-f:.]+(?:\/\d{1,3})?$/),
   })
   .strict();
 
@@ -364,20 +450,24 @@ export const trackingV2EventElementSummarySchema = z
     kind: trackingV2ElementKindSchema,
     id: z.string().trim().min(1).max(TRACKING_V2_MAX_ID_LENGTH).nullable(),
     label: z.string().trim().min(1).max(TRACKING_V2_MAX_LABEL_LENGTH),
-    href: z.string().trim().min(1).max(TRACKING_V2_MAX_URL_LENGTH).nullable(),
+    destinationKind: trackingV2DestinationKindSchema.nullable(),
+    destinationHost: z.string().trim().min(1).max(253).nullable(),
   })
   .strict();
 
 export const trackingV2EventTabSummarySchema = z
   .object({
+    id: z.string().trim().min(1).max(TRACKING_V2_MAX_ID_LENGTH),
     label: z.string().trim().min(1).max(TRACKING_V2_MAX_LABEL_LENGTH),
+    fromId: z.string().trim().min(1).max(TRACKING_V2_MAX_ID_LENGTH).nullable(),
+    fromLabel: z.string().trim().min(1).max(TRACKING_V2_MAX_LABEL_LENGTH).nullable(),
   })
   .strict();
 
 export const trackingV2EventWebhookSummarySchema = z
   .object({
     id: uuidSchema,
-    url: z.string().trim().min(1).max(TRACKING_V2_MAX_URL_LENGTH),
+    endpointHost: z.string().trim().min(1).max(253),
   })
   .strict();
 
@@ -410,14 +500,6 @@ export const trackingV2EventFeedItemSchema = z
   })
   .strict();
 
-export const trackingV2SessionRecordingSummarySchema = z
-  .object({
-    status: trackingV2ReadRecordingStatusSchema,
-    available: z.boolean(),
-    durationMs: z.number().int().nonnegative().nullable(),
-  })
-  .strict();
-
 export const trackingV2SessionSummarySchema = z
   .object({
     id: trackingV2SessionIdSchema,
@@ -426,17 +508,50 @@ export const trackingV2SessionSummarySchema = z
     state: trackingV2SessionStateSchema,
     device: trackingV2DeviceSummarySchema,
     location: trackingV2LocationSummarySchema,
-    ipAddress: z.string().trim().min(1).max(80).nullable(),
-    initialPath: z.string().trim().min(1).max(TRACKING_V2_MAX_PATH_LENGTH).nullable(),
-    referrerHost: z.string().trim().min(1).max(TRACKING_V2_MAX_REFERRER_HOST_LENGTH).nullable(),
+    initialPage: trackingV2ManifestPageSchema,
     startedAt: trackingV2IsoTimestampSchema,
     lastSeenAt: trackingV2IsoTimestampSchema,
     endedAt: trackingV2IsoTimestampSchema.nullable(),
     endReason: trackingV2SessionEndReasonSchema.nullable(),
     activeMs: z.number().int().nonnegative(),
     durationMs: z.number().int().nonnegative().nullable(),
-    maxScrollDepthPercent: z.number().int().min(0).max(100).nullable(),
-    recording: trackingV2SessionRecordingSummarySchema,
+    recording: z
+      .object({
+        status: trackingV2ReadRecordingStatusSchema,
+        available: z.boolean(),
+        durationMs: z.number().int().nonnegative().nullable(),
+      })
+      .strict(),
+  })
+  .strict();
+
+export const trackingV2RecordingManifestChunkSchema = z
+  .object({
+    sequence: z.number().int().nonnegative().max(10_000),
+    eventCount: z.number().int().positive().max(TRACKING_V2_RECORDING_MAX_EVENTS_PER_CHUNK),
+    compressedBytes: z.number().int().positive().max(TRACKING_V2_RECORDING_MAX_CHUNK_BYTES),
+    checksumSha256: z.string().trim().regex(/^[a-f0-9]{64}$/),
+    firstEventAt: trackingV2IsoTimestampSchema,
+    lastEventAt: trackingV2IsoTimestampSchema,
+  })
+  .strict();
+
+export const trackingV2RecordingManifestResponseSchema = z
+  .object({
+    recordingId: uuidSchema,
+    sessionId: trackingV2SessionIdSchema,
+    status: trackingV2ReadRecordingStatusSchema,
+    startedAt: trackingV2IsoTimestampSchema,
+    endedAt: trackingV2IsoTimestampSchema.nullable(),
+    durationMs: z.number().int().nonnegative().max(TRACKING_V2_MAX_RECORDING_DURATION_MS),
+    eventCount: z.number().int().nonnegative().max(TRACKING_V2_RECORDING_MAX_EVENTS),
+    chunkCount: z.number().int().nonnegative(),
+    compressedBytes: z.number().int().nonnegative().max(
+      TRACKING_V2_RECORDING_MAX_BYTES + TRACKING_V2_RECORDING_MAX_CHUNK_BYTES,
+    ),
+    maxDurationMs: z.number().int().positive().max(TRACKING_V2_MAX_RECORDING_DURATION_MS),
+    chunks: z.array(trackingV2RecordingManifestChunkSchema).max(10_001),
+    requestId: z.string().trim().min(1),
   })
   .strict();
 
@@ -463,120 +578,40 @@ export const trackingV2SessionResponseSchema = z
   })
   .strict();
 
-export const trackingV2RecordingManifestChunkSchema = z
-  .object({
-    sequence: z.number().int().nonnegative().max(10_000),
-    eventCount: z.number().int().nonnegative(),
-    compressedBytes: z.number().int().nonnegative(),
-    checksumSha256: z.string().trim().regex(/^[a-f0-9]{64}$/i),
-    firstEventAt: trackingV2IsoTimestampSchema.nullable(),
-    lastEventAt: trackingV2IsoTimestampSchema.nullable(),
-  })
-  .strict();
-
-export const trackingV2RecordingManifestResponseSchema = z
-  .object({
-    recordingId: uuidSchema,
-    sessionId: trackingV2SessionIdSchema,
-    status: trackingV2ReadRecordingStatusSchema,
-    startedAt: trackingV2IsoTimestampSchema,
-    endedAt: trackingV2IsoTimestampSchema.nullable(),
-    durationMs: z.number().int().nonnegative(),
-    eventCount: z.number().int().nonnegative(),
-    chunkCount: z.number().int().nonnegative(),
-    compressedBytes: z.number().int().nonnegative(),
-    maxDurationMs: z.number().int().positive().max(TRACKING_V2_MAX_RECORDING_DURATION_MS),
-    chunks: z.array(trackingV2RecordingManifestChunkSchema),
-    requestId: z.string().trim().min(1),
-  })
-  .strict();
-
-export const trackingV2ViewportSchema = z
-  .object({
-    width: z.number().int().positive().max(20_000),
-    height: z.number().int().positive().max(20_000),
-  })
-  .strict();
-
-export const trackingV2PageSchema = z
-  .object({
-    path: z.string().trim().min(1).max(TRACKING_V2_MAX_PATH_LENGTH),
-    title: optionalTrimmedString(TRACKING_V2_MAX_LABEL_LENGTH),
-    referrerHost: z.string().trim().min(1).max(TRACKING_V2_MAX_REFERRER_HOST_LENGTH).nullable().optional(),
-  })
-  .strict();
-
-export const trackingV2DeviceSnapshotSchema = z
-  .object({
-    deviceId: z.string().trim().min(8).max(TRACKING_V2_MAX_ID_LENGTH).nullable().optional(),
-    timezone: z.string().trim().min(1).max(TRACKING_V2_MAX_TIMEZONE_LENGTH).nullable().optional(),
-    locale: z.string().trim().min(1).max(TRACKING_V2_MAX_LOCALE_LENGTH).nullable().optional(),
-    userAgent: z.string().trim().min(1).max(TRACKING_V2_MAX_USER_AGENT_LENGTH).nullable().optional(),
-  })
-  .strict();
-
-export const trackingV2ElementSchema = z
-  .object({
-    kind: trackingV2ElementKindSchema,
-    id: optionalTrimmedString(TRACKING_V2_MAX_ID_LENGTH),
-    blockId: optionalTrimmedString(TRACKING_V2_MAX_ID_LENGTH),
-    label: z.string().trim().min(1).max(TRACKING_V2_MAX_LABEL_LENGTH),
-    href: z.string().trim().min(1).max(TRACKING_V2_MAX_URL_LENGTH).nullable().optional(),
-  })
-  .strict();
-
 const trackingV2ClientEventBaseSchema = z
   .object({
     eventId: trackingV2ClientEventIdSchema,
     occurredAt: trackingV2IsoTimestampSchema,
     sequence: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
-    page: trackingV2PageSchema.optional(),
-    viewport: trackingV2ViewportSchema.optional(),
-  })
-  .strict();
-
-export const trackingV2SiteVisitEventSchema = trackingV2ClientEventBaseSchema
-  .extend({
-    type: z.literal("site_visit"),
-    tab: trackingV2ElementSchema
-      .extend({
-        kind: z.literal("tab"),
-      })
-      .optional(),
   })
   .strict();
 
 export const trackingV2ButtonClickEventSchema = trackingV2ClientEventBaseSchema
   .extend({
     type: z.literal("button_click"),
-    element: trackingV2ElementSchema.refine((element) => element.kind !== "link" && element.kind !== "tab", {
-      message: "button_click requires a button-like element",
-    }),
+    elementId: idSchema,
+    pageId: idSchema,
   })
   .strict();
 
 export const trackingV2LinkClickEventSchema = trackingV2ClientEventBaseSchema
   .extend({
     type: z.literal("link_click"),
-    element: trackingV2ElementSchema.extend({
-      kind: z.enum(["link", "sidebar_link"]),
-      href: z.string().trim().min(1).max(TRACKING_V2_MAX_URL_LENGTH),
-    }),
+    elementId: idSchema,
+    pageId: idSchema,
   })
   .strict();
 
 export const trackingV2TabSwitchEventSchema = trackingV2ClientEventBaseSchema
   .extend({
     type: z.literal("tab_switch"),
-    element: trackingV2ElementSchema.extend({
-      kind: z.literal("tab"),
-    }),
-    fromTabLabel: z.string().trim().min(1).max(TRACKING_V2_MAX_LABEL_LENGTH).nullable().optional(),
+    fromPageId: idSchema,
+    toPageId: idSchema,
+    trigger: z.enum(["click", "keyboard"]),
   })
   .strict();
 
 export const trackingV2BrowserEventSchema = z.discriminatedUnion("type", [
-  trackingV2SiteVisitEventSchema,
   trackingV2ButtonClickEventSchema,
   trackingV2LinkClickEventSchema,
   trackingV2TabSwitchEventSchema,
@@ -585,10 +620,17 @@ export const trackingV2BrowserEventSchema = z.discriminatedUnion("type", [
 export const trackingV2SessionStartRequestSchema = z
   .object({
     contextToken: trackingV2OpaqueTokenSchema,
+    requestId: trackingV2ClientEventIdSchema,
     startedAt: trackingV2IsoTimestampSchema,
-    page: trackingV2PageSchema,
-    viewport: trackingV2ViewportSchema.optional(),
-    device: trackingV2DeviceSnapshotSchema.optional(),
+    initialPageId: idSchema,
+    replayConsent: z
+      .object({
+        noticeVersion: z.literal(TRACKING_V2_VISITOR_NOTICE_VERSION),
+        grantedAt: trackingV2IsoTimestampSchema,
+        source: z.enum(["prompt", "remembered"]),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 
@@ -604,8 +646,8 @@ export const trackingV2RecordingAcceptedConfigSchema = z
     enabled: z.literal(true),
     recordingId: uuidSchema,
     uploadToken: trackingV2OpaqueTokenSchema,
-    chunkEndpoint: z.string().trim().min(1).max(TRACKING_V2_MAX_URL_LENGTH),
-    completeEndpoint: z.string().trim().min(1).max(TRACKING_V2_MAX_URL_LENGTH),
+    chunkEndpoint: z.string().trim().min(1).max(500),
+    completeEndpoint: z.string().trim().min(1).max(500),
     maxDurationMs: z.number().int().positive().max(TRACKING_V2_MAX_RECORDING_DURATION_MS),
     flushIntervalMs: z.literal(TRACKING_V2_RECORDING_FLUSH_INTERVAL_MS),
     targetChunkBytes: z.literal(TRACKING_V2_RECORDING_TARGET_CHUNK_BYTES),
@@ -657,7 +699,7 @@ const trackingV2StoppedSessionResponseSchema = z
     eventsAccepted: z.literal(false),
     recordingAccepted: z.literal(false),
     reason: z.enum(["disabled", "suppressed"]),
-    recording: trackingV2RecordingConfigSchema,
+    recording: trackingV2RecordingDisabledConfigSchema,
   })
   .strict();
 
@@ -678,14 +720,19 @@ export const trackingV2EventBatchSchema = z
   })
   .strict();
 
+export const trackingV2EventBatchResponseSchema = z
+  .object({
+    accepted: z.number().int().nonnegative().max(TRACKING_V2_MAX_BATCH_EVENTS),
+    rejected: z.number().int().nonnegative().max(TRACKING_V2_MAX_BATCH_EVENTS),
+  })
+  .strict();
+
 export const trackingV2SessionHeartbeatSchema = z
   .object({
     sessionId: trackingV2SessionIdSchema,
     eventToken: trackingV2OpaqueTokenSchema,
     occurredAt: trackingV2IsoTimestampSchema,
     activeMs: z.number().int().nonnegative().max(TRACKING_V2_MAX_SESSION_DURATION_MS),
-    maxScrollDepthPercent: z.number().int().min(0).max(100).optional(),
-    page: trackingV2PageSchema.optional(),
   })
   .strict();
 
@@ -707,14 +754,14 @@ export const trackingV2RrwebEventSchema = z
   })
   .strict();
 
+export const trackingV2RecordingSequenceSchema = z.number().int().nonnegative().max(10_000);
+
 export const trackingV2RecordingChunkSchema = z
   .object({
     schemaVersion: z.literal(TRACKING_V2_RECORDING_SCHEMA_VERSION),
     sessionId: trackingV2SessionIdSchema,
-    sequence: z.number().int().nonnegative().max(10_000),
+    sequence: trackingV2RecordingSequenceSchema,
     events: z.array(trackingV2RrwebEventSchema).min(1).max(TRACKING_V2_RECORDING_MAX_EVENTS_PER_CHUNK),
-    compressed: z.literal(false).optional(),
-    checksumSha256: z.string().trim().regex(/^[a-f0-9]{64}$/i).optional(),
   })
   .strict();
 
@@ -722,9 +769,18 @@ export const trackingV2RecordingCompleteSchema = z
   .object({
     schemaVersion: z.literal(TRACKING_V2_RECORDING_SCHEMA_VERSION),
     sessionId: trackingV2SessionIdSchema,
-    finalSequence: z.number().int().nonnegative().max(10_000).nullable(),
+    finalSequence: trackingV2RecordingSequenceSchema.nullable(),
     endedAt: trackingV2IsoTimestampSchema,
-    stopReason: z.enum(["ended", "hidden_timeout", "duration_cap", "size_cap", "event_cap", "error"]),
+    stopReason: z.enum([
+      "pagehide",
+      "consent_withdrawn",
+      "hidden_timeout",
+      "duration_cap",
+      "size_cap",
+      "event_cap",
+      "daily_cap",
+      "error",
+    ]),
   })
   .strict();
 
@@ -740,7 +796,7 @@ export const trackingV2SlackShareDataSchema = z
 export const trackingV2WebhookSendDataSchema = z
   .object({
     webhookId: uuidSchema,
-    webhookUrl: z.string().trim().min(1).max(TRACKING_V2_MAX_URL_LENGTH),
+    endpointHost: z.string().trim().min(1).max(253),
   })
   .strict();
 
@@ -776,6 +832,7 @@ export const trackingV2ContextTokenPayloadSchema = z
     workspaceId: uuidSchema,
     siteId: uuidSchema,
     publishedVersionId: uuidSchema,
+    manifestId: uuidSchema,
     recipientId: uuidSchema.nullable(),
     recipientRevision: z.number().int().nonnegative().nullable(),
     trackingMode: trackingV2TrackingModeSchema,
@@ -784,11 +841,6 @@ export const trackingV2ContextTokenPayloadSchema = z
   })
   .strict();
 
-export type TrackingV2Viewport = z.infer<typeof trackingV2ViewportSchema>;
-export type TrackingV2Page = z.infer<typeof trackingV2PageSchema>;
-export type TrackingV2DeviceSnapshot = z.infer<typeof trackingV2DeviceSnapshotSchema>;
-export type TrackingV2Element = z.infer<typeof trackingV2ElementSchema>;
-export type TrackingV2SiteVisitEvent = z.infer<typeof trackingV2SiteVisitEventSchema>;
 export type TrackingV2ButtonClickEvent = z.infer<typeof trackingV2ButtonClickEventSchema>;
 export type TrackingV2LinkClickEvent = z.infer<typeof trackingV2LinkClickEventSchema>;
 export type TrackingV2TabSwitchEvent = z.infer<typeof trackingV2TabSwitchEventSchema>;
@@ -796,6 +848,7 @@ export type TrackingV2BrowserEvent = z.infer<typeof trackingV2BrowserEventSchema
 export type TrackingV2SessionStartRequest = z.infer<typeof trackingV2SessionStartRequestSchema>;
 export type TrackingV2SessionStartResponse = z.infer<typeof trackingV2SessionStartResponseSchema>;
 export type TrackingV2EventBatch = z.infer<typeof trackingV2EventBatchSchema>;
+export type TrackingV2EventBatchResponse = z.infer<typeof trackingV2EventBatchResponseSchema>;
 export type TrackingV2SessionHeartbeat = z.infer<typeof trackingV2SessionHeartbeatSchema>;
 export type TrackingV2SessionEnd = z.infer<typeof trackingV2SessionEndSchema>;
 export type TrackingV2RecordingChunk = z.infer<typeof trackingV2RecordingChunkSchema>;
@@ -804,36 +857,23 @@ export type TrackingV2ServerEventData = z.infer<typeof trackingV2ServerEventData
 export type TrackingV2PublicBootstrap = z.infer<typeof trackingV2PublicBootstrapSchema>;
 export type TrackingV2ContextTokenPayload = z.infer<typeof trackingV2ContextTokenPayloadSchema>;
 export type TrackingV2SessionState = z.infer<typeof trackingV2SessionStateSchema>;
-export type TrackingV2ReadRecordingStatus = z.infer<typeof trackingV2ReadRecordingStatusSchema>;
-export type TrackingV2SessionRecordingStatusFilter = z.infer<typeof trackingV2SessionRecordingStatusFilterSchema>;
 export type TrackingV2PublicContext = z.infer<typeof trackingV2PublicContextSchema>;
 export type TrackingV2EventsQuery = z.infer<typeof trackingV2EventsQuerySchema>;
 export type TrackingV2SessionsQuery = z.infer<typeof trackingV2SessionsQuerySchema>;
 export type TrackingV2EventFeedItem = z.infer<typeof trackingV2EventFeedItemSchema>;
 export type TrackingV2EventsResponse = z.infer<typeof trackingV2EventsResponseSchema>;
 export type TrackingV2SessionSummary = z.infer<typeof trackingV2SessionSummarySchema>;
+export type TrackingV2ReadRecordingStatus = z.infer<typeof trackingV2ReadRecordingStatusSchema>;
+export type TrackingV2SessionRecordingStatusFilter = z.infer<typeof trackingV2SessionRecordingStatusFilterSchema>;
+export type TrackingV2RecordingManifestResponse = z.infer<typeof trackingV2RecordingManifestResponseSchema>;
 export type TrackingV2SessionsResponse = z.infer<typeof trackingV2SessionsResponseSchema>;
 export type TrackingV2SessionResponse = z.infer<typeof trackingV2SessionResponseSchema>;
-export type TrackingV2RecordingManifestResponse = z.infer<typeof trackingV2RecordingManifestResponseSchema>;
 export type TrackingV2TrackingSettings = z.infer<typeof trackingV2TrackingSettingsSchema>;
 export type TrackingV2UpdateSiteSettingsRequest = z.infer<typeof trackingV2UpdateSiteSettingsRequestSchema>;
 export type TrackingV2SiteTrackingSettingsResponse = z.infer<typeof trackingV2SiteTrackingSettingsResponseSchema>;
-
-function validateTrackingV2SettingsRetention(
-  settings: {
-    rawIpRetentionDays: number;
-    eventRetentionDays: number;
-  },
-  context: z.RefinementCtx,
-) {
-  if (settings.eventRetentionDays < settings.rawIpRetentionDays) {
-    context.addIssue({
-      code: "custom",
-      path: ["eventRetentionDays"],
-      message: "eventRetentionDays must be greater than or equal to rawIpRetentionDays",
-    });
-  }
-}
+export type TrackingV2InternalIpRange = z.infer<typeof trackingV2InternalIpRangeSchema>;
+export type TrackingV2InternalIpRangesResponse = z.infer<typeof trackingV2InternalIpRangesResponseSchema>;
+export type TrackingV2CreateInternalIpRangeRequest = z.infer<typeof trackingV2CreateInternalIpRangeRequestSchema>;
 
 export function isTrackingV2EventType(value: string): value is TrackingV2EventType {
   return trackingV2EventTypes.includes(value as TrackingV2EventType);
@@ -843,57 +883,6 @@ export function isTrackingV2BrowserEventType(value: string): value is TrackingV2
   return trackingV2BrowserEventTypes.includes(value as TrackingV2BrowserEventType);
 }
 
-export function sanitizeTrackingV2Url(value: string | null | undefined): string | null {
-  if (!value) {
-    return null;
-  }
-
-  try {
-    const url = new URL(value);
-
-    if (url.protocol !== "http:" && url.protocol !== "https:") {
-      return null;
-    }
-
-    url.username = "";
-    url.password = "";
-    url.hash = "";
-    url.search = "";
-
-    const sanitized = url.toString();
-    return sanitized.length > TRACKING_V2_MAX_URL_LENGTH ? null : sanitized;
-  } catch {
-    return null;
-  }
-}
-
-export function extractTrackingV2ReferrerHost(value: string | null | undefined): string | null {
-  if (!value) {
-    return null;
-  }
-
-  try {
-    const url = new URL(value);
-    const host = url.hostname.toLowerCase();
-    return host.length > TRACKING_V2_MAX_REFERRER_HOST_LENGTH ? null : host;
-  } catch {
-    return null;
-  }
-}
-
-export function sanitizeTrackingV2Path(value: string | null | undefined): string {
-  if (!value) {
-    return "/";
-  }
-
-  try {
-    const url = value.startsWith("/") ? new URL(value, "https://lightsite.local") : new URL(value);
-    const path = `${url.pathname || "/"}`;
-    return path.length > TRACKING_V2_MAX_PATH_LENGTH ? "/" : path;
-  } catch {
-    return "/";
-  }
-}
 
 export function truncateTrackingV2Label(
   value: string | null | undefined,

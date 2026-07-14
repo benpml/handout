@@ -1,13 +1,10 @@
-import { validateSiteSlug, validateWorkspaceSlug } from "@lightsite/domain";
-import {
-  trackingV2PublicContextSchema,
-  type TrackingV2PublicContext,
-} from "@lightsite/tracking-schema";
+import { validateSiteSlug, validateWorkspaceSlug } from "@handout/domain";
+import { normalizePublishedSitePayload } from "@handout/site-document";
 import type { PublicSiteRepository } from "./repository";
 import type {
-  TrackingV2ContextTokenIssueInput,
   TrackingV2ContextTokenService,
 } from "../tracking/v2/context-token";
+import type { TrackingV2Service } from "../tracking/v2/service";
 
 export const PUBLIC_SITE_AVAILABLE_CACHE_CONTROL = "public, max-age=60, stale-while-revalidate=300";
 export const PUBLIC_SITE_UNAVAILABLE_CACHE_CONTROL = "public, max-age=15, stale-while-revalidate=15";
@@ -40,6 +37,7 @@ export interface PublicSiteService {
 
 export type PublicSiteServiceOptions = {
   trackingV2ContextTokens?: TrackingV2ContextTokenService;
+  trackingV2Service?: Pick<TrackingV2Service, "preparePublicContext">;
 };
 
 export function createPublicSiteService(
@@ -77,7 +75,7 @@ export function createPublicSiteService(
 
       return {
         status: "available",
-        payload: addTrackingV2Bootstrap(record.payload, options.trackingV2ContextTokens),
+        payload: await addTrackingV2Bootstrap(record.payload, options),
         cacheControl: PUBLIC_SITE_AVAILABLE_CACHE_CONTROL,
       };
     },
@@ -88,41 +86,27 @@ function isPublicPayload(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function addTrackingV2Bootstrap(
+async function addTrackingV2Bootstrap(
   payload: Record<string, unknown>,
-  trackingV2ContextTokens: TrackingV2ContextTokenService | undefined,
+  options: PublicSiteServiceOptions,
 ) {
-  if (!trackingV2ContextTokens) {
+  if (!options.trackingV2ContextTokens || !options.trackingV2Service) {
     return payload;
   }
 
-  const issueInput = parseTrackingV2ContextIssueInput(payload.tracking);
+  const normalized = normalizePublishedSitePayload(payload);
+  if (!normalized) return payload;
 
-  if (!issueInput) {
+  try {
+    const issueInput = await options.trackingV2Service.preparePublicContext(normalized);
+    if (!issueInput) return payload;
+
+    return {
+      ...payload,
+      trackingV2: options.trackingV2ContextTokens.issue(issueInput),
+    };
+  } catch {
+    // Tracking is best-effort and must never make a published site unavailable.
     return payload;
   }
-
-  return {
-    ...payload,
-    trackingV2: trackingV2ContextTokens.issue(issueInput),
-  };
-}
-
-function parseTrackingV2ContextIssueInput(value: unknown): TrackingV2ContextTokenIssueInput | null {
-  const parsed = trackingV2PublicContextSchema.safeParse(value);
-
-  if (!parsed.success || parsed.data.trackingMode === "off") {
-    return null;
-  }
-
-  const context: TrackingV2PublicContext = parsed.data;
-
-  return {
-    workspaceId: context.workspaceId,
-    siteId: context.siteId,
-    publishedVersionId: context.publishedVersionId,
-    recipientId: context.recipientId,
-    recipientRevision: context.recipientId ? context.recipientRevision : null,
-    trackingMode: context.trackingMode,
-  };
 }

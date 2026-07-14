@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react"
 import type React from "react"
 import { createPortal } from "react-dom"
-import { LIGHTSITE_TEXT_LIMITS } from "@lightsite/domain"
+import { HANDOUT_TEXT_LIMITS } from "@handout/domain"
 import {
   IconChevronLeft,
   IconCode,
@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
-import type { LightsiteVariableOption } from "../tiptap/schema"
+import type { HandoutVariableOption } from "../tiptap/schema"
 import {
   buildRecipientPublicUrl,
   buildRecipientScreenshotUrl,
@@ -61,7 +61,7 @@ type RecipientShareDialogProps = {
     recipientId: string,
     input: Partial<Pick<SiteRecipient, "company" | "name" | "values" | "website">>
   ) => Promise<SiteRecipient | null>
-  variables: LightsiteVariableOption[]
+  variables: HandoutVariableOption[]
 }
 
 type ShareView = "new" | "past" | "detail"
@@ -320,7 +320,7 @@ function RecipientListPanel({
   websiteValidation,
 }: {
   createDisabled: boolean
-  customVariables: LightsiteVariableOption[]
+  customVariables: HandoutVariableOption[]
   draft: RecipientDraft
   onClose: () => void
   onCreate: () => void
@@ -457,7 +457,7 @@ function RecipientForm({
   onDraftChange,
   websiteValidation,
 }: {
-  customVariables: LightsiteVariableOption[]
+  customVariables: HandoutVariableOption[]
   draft: RecipientDraft
   onDraftChange: React.Dispatch<React.SetStateAction<RecipientDraft>>
   websiteValidation: ReturnType<typeof normalizeOptionalRecipientWebsite>
@@ -476,9 +476,9 @@ function RecipientForm({
           <Input
             id={nameId}
             autoComplete="off"
-            name="lightsite-recipient-name"
+            name="handout-recipient-name"
             placeholder="John"
-            maxLength={LIGHTSITE_TEXT_LIMITS.recipientName}
+            maxLength={HANDOUT_TEXT_LIMITS.recipientName}
             value={draft.name}
             onChange={(event) =>
               onDraftChange((currentDraft) => ({
@@ -495,9 +495,9 @@ function RecipientForm({
           <Input
             id={companyId}
             autoComplete="off"
-            name="lightsite-recipient-company"
+            name="handout-recipient-company"
             placeholder="Acme"
-            maxLength={LIGHTSITE_TEXT_LIMITS.recipientCompany}
+            maxLength={HANDOUT_TEXT_LIMITS.recipientCompany}
             value={draft.company}
             onChange={(event) =>
               onDraftChange((currentDraft) => ({
@@ -517,9 +517,9 @@ function RecipientForm({
           aria-invalid={!websiteValidation.ok}
           autoComplete="off"
           inputMode="url"
-          name="lightsite-recipient-website"
+          name="handout-recipient-website"
           placeholder="https://example.com"
-          maxLength={LIGHTSITE_TEXT_LIMITS.url}
+          maxLength={HANDOUT_TEXT_LIMITS.url}
           value={draft.website}
           onChange={(event) =>
             onDraftChange((currentDraft) => ({
@@ -542,7 +542,7 @@ function RecipientForm({
             id={`${websiteId}-${variable.id}`}
             autoComplete="off"
             placeholder={variable.defaultValue || "Enter value..."}
-            maxLength={LIGHTSITE_TEXT_LIMITS.recipientVariableValue}
+            maxLength={HANDOUT_TEXT_LIMITS.recipientVariableValue}
             value={draft.customValues[variable.id] ?? ""}
             onChange={(event) =>
               onDraftChange((currentDraft) => ({
@@ -593,7 +593,7 @@ function RecipientDetail({
   siteVersion,
 }: {
   copiedState: "embed" | "link" | null
-  customVariables: LightsiteVariableOption[]
+  customVariables: HandoutVariableOption[]
   onBack: () => void
   onClose: () => void
   onCopyEmbed: () => void
@@ -699,7 +699,7 @@ function RecipientDetail({
               <Input
                 id={nameId}
                 aria-invalid={nameInvalid}
-                maxLength={LIGHTSITE_TEXT_LIMITS.recipientName}
+                maxLength={HANDOUT_TEXT_LIMITS.recipientName}
                 value={identityDraft.name}
                 onBlur={() => commitIdentityDraft("name")}
                 onChange={(event) => updateIdentityDraft("name", event.target.value)}
@@ -713,7 +713,7 @@ function RecipientDetail({
               <Input
                 id={companyId}
                 aria-invalid={companyInvalid}
-                maxLength={LIGHTSITE_TEXT_LIMITS.recipientCompany}
+                maxLength={HANDOUT_TEXT_LIMITS.recipientCompany}
                 value={identityDraft.company}
                 onBlur={() => commitIdentityDraft("company")}
                 onChange={(event) => updateIdentityDraft("company", event.target.value)}
@@ -729,7 +729,7 @@ function RecipientDetail({
                 aria-invalid={!websiteValidation.ok}
                 inputMode="url"
                 placeholder="https://example.com"
-                maxLength={LIGHTSITE_TEXT_LIMITS.url}
+                maxLength={HANDOUT_TEXT_LIMITS.url}
                 value={websiteDraft}
                 onBlur={commitWebsiteDraft}
                 onChange={(event) => setWebsiteDraft(event.target.value)}
@@ -747,7 +747,7 @@ function RecipientDetail({
                 <Input
                   id={`${websiteId}-${variable.id}`}
                   placeholder={variable.defaultValue || "Enter value..."}
-                  maxLength={LIGHTSITE_TEXT_LIMITS.recipientVariableValue}
+                  maxLength={HANDOUT_TEXT_LIMITS.recipientVariableValue}
                   value={recipient.values[variable.id] ?? ""}
                   onChange={(event) =>
                     onUpdate({
@@ -884,7 +884,7 @@ function RecipientEmbedPreview({
 }
 
 function createEmptyRecipientDraft(
-  customVariables: LightsiteVariableOption[]
+  customVariables: HandoutVariableOption[]
 ): RecipientDraft {
   return {
     company: "",
@@ -898,7 +898,7 @@ function createEmptyRecipientDraft(
 
 function createRecipientValues(
   draft: RecipientDraft,
-  customVariables: LightsiteVariableOption[]
+  customVariables: HandoutVariableOption[]
 ) {
   const values: Record<string, string> = {
     "recipient-company": draft.company,

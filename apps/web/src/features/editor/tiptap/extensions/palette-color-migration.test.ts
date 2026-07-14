@@ -1,4 +1,4 @@
-import { SITE_DOCUMENT_PROSEMIRROR_SCHEMA } from "@lightsite/site-document"
+import { SITE_DOCUMENT_PROSEMIRROR_SCHEMA } from "@handout/site-document"
 import { EditorState } from "@tiptap/pm/state"
 import { describe, expect, it } from "vitest"
 

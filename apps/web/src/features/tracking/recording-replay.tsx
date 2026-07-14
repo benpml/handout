@@ -11,7 +11,8 @@ import type {
   TrackingV2RecordingChunk,
   TrackingV2RecordingManifestResponse,
   TrackingV2SessionSummary,
-} from "@lightsite/tracking-schema"
+} from "@handout/tracking-schema"
+import { TRACKING_V2_RECORDING_MAX_BYTES } from "@handout/tracking-schema"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
@@ -108,8 +109,11 @@ export function TrackingRecordingReplay({
           {variant === "drawer" ? <IconVideo className="size-3.5" /> : null}
           {variant === "drawer" ? "Session Replay" : "Recording replay"}
         </h2>
-        {variant === "default" && manifest ? (
-          <Badge variant="outline">{formatBytes(manifest.compressedBytes)}</Badge>
+        {manifest ? (
+          <div className="flex items-center gap-2">
+            {manifest.status === "truncated" ? <Badge variant="secondary">Partial</Badge> : null}
+            {variant === "default" ? <Badge variant="outline">{formatBytes(manifest.compressedBytes)}</Badge> : null}
+          </div>
         ) : null}
       </div>
       <div className={cn(
@@ -118,8 +122,8 @@ export function TrackingRecordingReplay({
       )}>
         {!session.recording.available ? (
           <RecordingReplayEmpty
-            detail="This session does not include a recording."
-            title="Replay unavailable"
+            detail={unavailableReplayCopy(session.recording.status).detail}
+            title={unavailableReplayCopy(session.recording.status).title}
             variant={variant}
           />
         ) : null}
@@ -266,7 +270,10 @@ function RrwebReplayPlayer({
         })
         setStatus("ready")
       })
-      .catch(() => {
+      .catch((error: unknown) => {
+        if (import.meta.env.DEV) {
+          console.error("Session replay initialization failed.", error)
+        }
         if (!disposed) {
           setLoadError("The replay engine could not reconstruct this recording.")
           setStatus("error")
@@ -514,6 +521,7 @@ async function loadRecordingChunks({
 }) {
   const chunks = new Array<TrackingV2RecordingChunk>(manifest.chunks.length)
   let nextIndex = 0
+  let loadedBytes = 0
   const workerCount = Math.min(4, manifest.chunks.length)
 
   await Promise.all(Array.from({ length: workerCount }, async () => {
@@ -523,16 +531,33 @@ async function loadRecordingChunks({
       const chunk = manifest.chunks[index]
 
       if (!chunk) continue
-      chunks[index] = await getTrackingV2RecordingChunk(
+      const payload = await getTrackingV2RecordingChunk(
         workspaceId,
         manifest.recordingId,
         chunk.sequence,
         signal
       )
+      const serialized = JSON.stringify(payload)
+      loadedBytes += new TextEncoder().encode(serialized).byteLength
+      if (loadedBytes > TRACKING_V2_RECORDING_MAX_BYTES) {
+        throw new Error("The replay exceeds the playback memory limit.")
+      }
+      if (payload.sequence !== chunk.sequence || payload.events.length !== chunk.eventCount) {
+        throw new Error("The replay chunk metadata does not match its payload.")
+      }
+      if (await sha256Hex(serialized) !== chunk.checksumSha256) {
+        throw new Error("The replay chunk failed its integrity check.")
+      }
+      chunks[index] = payload
     }
   }))
 
   return chunks
+}
+
+async function sha256Hex(value: string) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value))
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("")
 }
 
 function fitReplayToViewport({
@@ -559,6 +584,7 @@ function fitReplayToViewport({
     wrapper.style.left = `${Math.max(0, (root.clientWidth - width * scale) / 2)}px`
     wrapper.style.transform = `scale(${scale})`
     wrapper.style.transformOrigin = "top left"
+    wrapper.style.pointerEvents = "none"
     root.style.height = `${Math.max(296, Math.ceil(height * scale))}px`
 
     if (!wrapperObserver && typeof ResizeObserver !== "undefined") {
@@ -596,4 +622,17 @@ const quietReplayLogger: Pick<Console, "debug" | "error" | "info" | "log" | "war
   info() {},
   log() {},
   warn() {},
+}
+
+function unavailableReplayCopy(status: TrackingV2SessionSummary["recording"]["status"]) {
+  if (status === "pending" || status === "recording") {
+    return { title: "Replay processing", detail: "The replay is still receiving its final session data." }
+  }
+  if (status === "expired" || status === "deleted") {
+    return { title: "Replay expired", detail: "This replay has reached its retention limit and was removed." }
+  }
+  if (status === "failed") {
+    return { title: "Replay unavailable", detail: "The visit ended before a usable replay could be assembled." }
+  }
+  return { title: "Replay unavailable", detail: "This session does not include a replay." }
 }

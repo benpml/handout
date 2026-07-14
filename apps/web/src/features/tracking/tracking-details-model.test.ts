@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { TrackingV2EventFeedItem } from "@lightsite/tracking-schema"
+import type { TrackingV2EventFeedItem } from "@handout/tracking-schema"
 
 import {
   formatSessionEndReason,

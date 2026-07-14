@@ -1,5 +1,5 @@
 {
-  "name": "@lightsite/public-worker",
+  "name": "@handout/public-worker",
   "version": "0.1.0",
   "private": true,
   "type": "module",

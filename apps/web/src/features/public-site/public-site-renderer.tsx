@@ -1,5 +1,5 @@
 import { useMemo, type ComponentProps } from "react"
-import { renderPublicSiteHtml } from "@lightsite/site-document"
+import { renderPublicSiteHtml } from "@handout/site-document"
 
 import type { PublishedSitePayload } from "./types"
 
@@ -12,7 +12,7 @@ export function PublicSiteRenderer({
 }) {
   const html = useMemo(
     () => renderPublicSiteHtml(payload, {
-      includeTracking: true,
+      includeTracking: false,
       origin: typeof window === "undefined" ? undefined : window.location.origin,
       runtimeMode: "inline",
     }),

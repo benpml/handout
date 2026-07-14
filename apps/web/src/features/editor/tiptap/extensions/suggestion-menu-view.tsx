@@ -9,12 +9,12 @@ import {
   useState,
 } from "react"
 
-export type LightsiteNextSuggestionMenuHandle = {
+export type HandoutNextSuggestionMenuHandle = {
   isPointerInside: () => boolean
   onKeyDown: (props: SuggestionKeyDownProps) => boolean
 }
 
-export type LightsiteNextSuggestionMenuProps<TItem> = {
+export type HandoutNextSuggestionMenuProps<TItem> = {
   command: (item: TItem) => void
   getCategory?: (item: TItem) => string | null | undefined
   getDescription: (item: TItem) => string
@@ -27,7 +27,7 @@ export type LightsiteNextSuggestionMenuProps<TItem> = {
   query: string
 }
 
-function LightsiteNextSuggestionMenuComponent<TItem>(
+function HandoutNextSuggestionMenuComponent<TItem>(
   {
     command,
     getCategory,
@@ -38,8 +38,8 @@ function LightsiteNextSuggestionMenuComponent<TItem>(
     items,
     onPointerLeaveMenu,
     query,
-  }: LightsiteNextSuggestionMenuProps<TItem>,
-  ref: React.ForwardedRef<LightsiteNextSuggestionMenuHandle>
+  }: HandoutNextSuggestionMenuProps<TItem>,
+  ref: React.ForwardedRef<HandoutNextSuggestionMenuHandle>
 ) {
   const menuRef = useRef<HTMLDivElement>(null)
   const itemRefs = useRef<Array<HTMLButtonElement | null>>([])
@@ -132,7 +132,7 @@ function LightsiteNextSuggestionMenuComponent<TItem>(
     return (
       <div
         ref={menuRef}
-        className="lightsite-editor-suggestion-menu"
+        className="handout-editor-suggestion-menu"
         data-interaction="keyboard"
         role="listbox"
         onMouseDown={preventMenuMouseDown}
@@ -140,7 +140,7 @@ function LightsiteNextSuggestionMenuComponent<TItem>(
         onPointerLeave={markPointerOutside}
         onPointerDown={stopMenuPointerDown}
       >
-        <div className="lightsite-editor-suggestion-empty">No matches</div>
+        <div className="handout-editor-suggestion-empty">No matches</div>
       </div>
     )
   }
@@ -148,7 +148,7 @@ function LightsiteNextSuggestionMenuComponent<TItem>(
   return (
     <div
       ref={menuRef}
-      className="lightsite-editor-suggestion-menu"
+      className="handout-editor-suggestion-menu"
       data-interaction="keyboard"
       role="listbox"
       onMouseDown={preventMenuMouseDown}
@@ -171,7 +171,7 @@ function LightsiteNextSuggestionMenuComponent<TItem>(
           <div key={`${label}:${index}`}>
             {showCategory ? (
               <div
-                className="lightsite-editor-suggestion-category"
+                className="handout-editor-suggestion-category"
                 data-separated={separateCategory ? "true" : "false"}
               >
                 {category}
@@ -182,7 +182,7 @@ function LightsiteNextSuggestionMenuComponent<TItem>(
                 itemRefs.current[index] = node
               }}
               aria-selected={active}
-              className="lightsite-editor-suggestion-item"
+              className="handout-editor-suggestion-item"
               data-active={active ? "true" : "false"}
               data-tone={tone}
               role="option"
@@ -194,15 +194,15 @@ function LightsiteNextSuggestionMenuComponent<TItem>(
               onPointerEnter={() => setActiveItem(index)}
             >
               {Icon ? (
-                <span className="lightsite-editor-suggestion-icon">
+                <span className="handout-editor-suggestion-icon">
                   <Icon aria-hidden />
                 </span>
               ) : null}
               {leadingVisual ? (
-                <span className="lightsite-editor-suggestion-leading">{leadingVisual}</span>
+                <span className="handout-editor-suggestion-leading">{leadingVisual}</span>
               ) : null}
-              <span className="lightsite-editor-suggestion-copy">
-                <span className="lightsite-editor-suggestion-label">{label}</span>
+              <span className="handout-editor-suggestion-copy">
+                <span className="handout-editor-suggestion-label">{label}</span>
               </span>
             </button>
           </div>
@@ -245,10 +245,10 @@ function positionMenuWrapper(menu: HTMLDivElement | null) {
   wrapper.style.zIndex = "50"
 }
 
-export const LightsiteNextSuggestionMenuView = forwardRef(
-  LightsiteNextSuggestionMenuComponent
+export const HandoutNextSuggestionMenuView = forwardRef(
+  HandoutNextSuggestionMenuComponent
 ) as <TItem>(
-  props: LightsiteNextSuggestionMenuProps<TItem> & {
-    ref?: React.ForwardedRef<LightsiteNextSuggestionMenuHandle>
+  props: HandoutNextSuggestionMenuProps<TItem> & {
+    ref?: React.ForwardedRef<HandoutNextSuggestionMenuHandle>
   }
 ) => React.ReactElement

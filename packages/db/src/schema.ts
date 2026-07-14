@@ -9,16 +9,17 @@ import {
   type SiteSidebarLink,
   type SiteVariableDefinition,
   type TiptapNode,
-} from "@lightsite/site-document";
+} from "@handout/site-document";
+import type { TrackingV2ManifestPayload } from "@handout/tracking-schema";
 import {
   boolean,
+  bigint,
   check,
   cidr,
   customType,
   date,
   foreignKey,
   index,
-  inet,
   integer,
   jsonb,
   pgEnum,
@@ -28,7 +29,6 @@ import {
   uniqueIndex,
   uuid,
   varchar,
-  bigint,
 } from "drizzle-orm/pg-core";
 
 export {
@@ -86,9 +86,12 @@ export const trackingRecipientSessionEndReasonEnum = pgEnum("tracking_recipient_
 export const trackingRecordingStatusEnum = pgEnum("tracking_recording_status", [
   "disabled",
   "pending",
+  "recording",
   "available",
-  "expired",
+  "truncated",
   "failed",
+  "expired",
+  "deleted",
 ]);
 export const trackingRecipientEventTypeEnum = pgEnum("tracking_recipient_event_type", [
   "site_visit",
@@ -114,11 +117,14 @@ export const trackingElementKindEnum = pgEnum("tracking_element_kind", [
   "calendar",
   "unknown",
 ]);
-export const trackingSuppressionMarkerTypeEnum = pgEnum("tracking_suppression_marker_type", [
-  "ip_address",
-  "device_id",
-  "user_id",
-  "email_domain",
+export const trackingDestinationKindEnum = pgEnum("tracking_destination_kind", [
+  "external_web",
+  "email",
+  "phone",
+  "calendar",
+  "download",
+  "internal_tab",
+  "other",
 ]);
 
 export const user = pgTable(
@@ -450,12 +456,14 @@ export const trackingSettings = pgTable(
     recipientId: uuid("recipient_id").references(() => siteVariants.id, { onDelete: "cascade" }),
     scope: trackingSettingScopeEnum("scope").notNull(),
     enabled: boolean("enabled").notNull().default(true),
-    captureIpAddress: boolean("capture_ip_address").notNull().default(true),
-    rawIpRetentionDays: integer("raw_ip_retention_days").notNull().default(30),
-    eventRetentionDays: integer("event_retention_days").notNull().default(365),
+    eventRetentionDays: integer("event_retention_days").notNull().default(90),
     recordingEnabled: boolean("recording_enabled").notNull().default(false),
-    recordingRetentionDays: integer("recording_retention_days").notNull().default(30),
+    recordingRetentionDays: integer("recording_retention_days").notNull().default(14),
     maxRecordingDurationSeconds: integer("max_recording_duration_seconds").notNull().default(600),
+    recordingTermsVersion: varchar("recording_terms_version", { length: 40 }),
+    recordingTermsAcceptedAt: timestamp("recording_terms_accepted_at", { withTimezone: true }),
+    recordingTermsAcceptedByUserId: varchar("recording_terms_accepted_by_user_id", { length: 191 })
+      .references(() => user.id, { onDelete: "set null" }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
@@ -482,11 +490,63 @@ export const trackingSettings = pgTable(
     ),
     retentionCheck: check(
       "tracking_settings_retention_check",
-      sql`${table.rawIpRetentionDays} >= 0
-        and ${table.eventRetentionDays} >= ${table.rawIpRetentionDays}
-        and ${table.recordingRetentionDays} >= 0
+      sql`${table.eventRetentionDays} in (30, 90, 180, 365)
+        and ${table.recordingRetentionDays} in (7, 14, 30)
         and ${table.maxRecordingDurationSeconds} between 60 and 600`,
     ),
+    recordingTermsCheck: check(
+      "tracking_settings_recording_terms_check",
+      sql`${table.recordingEnabled} = false or (
+        ${table.enabled} = true
+        and
+        ${table.recordingTermsVersion} is not null
+        and ${table.recordingTermsAcceptedAt} is not null
+      )`,
+    ),
+  }),
+);
+
+export const trackingEventManifests = pgTable(
+  "tracking_event_manifests",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    workspaceId: uuid("workspace_id").notNull().references(() => workspaces.id, { onDelete: "cascade" }),
+    siteId: uuid("site_id").notNull().references(() => sites.id, { onDelete: "cascade" }),
+    publishedVersionId: uuid("published_version_id").notNull(),
+    recipientId: uuid("recipient_id"),
+    recipientRevision: integer("recipient_revision"),
+    schemaVersion: integer("schema_version").notNull(),
+    sourceHash: varchar("source_hash", { length: 64 }).notNull(),
+    payload: jsonb("payload").$type<TrackingV2ManifestPayload>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    recipientUniqueIdx: uniqueIndex("tracking_event_manifests_recipient_unique_idx")
+      .on(table.publishedVersionId, table.recipientId, table.recipientRevision, table.schemaVersion)
+      .where(sql`${table.recipientId} is not null`),
+    defaultUniqueIdx: uniqueIndex("tracking_event_manifests_default_unique_idx")
+      .on(table.publishedVersionId, table.schemaVersion)
+      .where(sql`${table.recipientId} is null`),
+    workspaceCreatedAtIdx: index("tracking_event_manifests_workspace_created_idx").on(table.workspaceId, table.createdAt),
+    siteCreatedAtIdx: index("tracking_event_manifests_site_created_idx").on(table.siteId, table.createdAt),
+    recipientRevisionCheck: check(
+      "tracking_event_manifests_recipient_revision_check",
+      sql`(
+        (${table.recipientId} is null and ${table.recipientRevision} is null)
+        or (${table.recipientId} is not null and ${table.recipientRevision} is not null and ${table.recipientRevision} >= 0)
+      )`,
+    ),
+    schemaVersionCheck: check("tracking_event_manifests_schema_version_check", sql`${table.schemaVersion} > 0`),
+    publishedVersionFk: foreignKey({
+      name: "trk_event_manifests_version_fk",
+      columns: [table.publishedVersionId],
+      foreignColumns: [siteVersions.id],
+    }).onDelete("cascade"),
+    recipientFk: foreignKey({
+      name: "trk_event_manifests_recipient_fk",
+      columns: [table.recipientId],
+      foreignColumns: [siteVariants.id],
+    }).onDelete("cascade"),
   }),
 );
 
@@ -498,30 +558,26 @@ export const trackingRecipientSessions = pgTable(
     workspaceId: uuid("workspace_id").notNull().references(() => workspaces.id, { onDelete: "cascade" }),
     siteId: uuid("site_id").notNull().references(() => sites.id, { onDelete: "cascade" }),
     recipientId: uuid("recipient_id").references(() => siteVariants.id, { onDelete: "set null" }),
-    publishedVersionId: uuid("published_version_id").notNull(),
+    publishedVersionId: uuid("published_version_id"),
+    manifestId: uuid("manifest_id"),
+    recipientRevision: integer("recipient_revision"),
+    initialPageId: varchar("initial_page_id", { length: 160 }).notNull(),
+    initialPageLabel: varchar("initial_page_label", { length: 180 }).notNull(),
     state: trackingRecipientSessionStateEnum("state").notNull().default("active"),
     eventTokenHash: varchar("event_token_hash", { length: 128 }).notNull(),
-    deviceIdHash: varchar("device_id_hash", { length: 128 }),
-    ipAddress: inet("ip_address"),
-    ipAddressHash: varchar("ip_address_hash", { length: 128 }),
     city: varchar("city", { length: 120 }),
     region: varchar("region", { length: 120 }),
     countryCode: varchar("country_code", { length: 2 }),
     deviceType: varchar("device_type", { length: 40 }),
     osName: varchar("os_name", { length: 80 }),
     browserName: varchar("browser_name", { length: 80 }),
-    userAgentFamily: varchar("user_agent_family", { length: 120 }),
-    referrerHost: varchar("referrer_host", { length: 253 }),
-    initialPath: varchar("initial_path", { length: 2048 }),
     startedAt: timestamp("started_at", { withTimezone: true }).notNull(),
     lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull(),
     endedAt: timestamp("ended_at", { withTimezone: true }),
     endReason: trackingRecipientSessionEndReasonEnum("end_reason"),
     activeMs: integer("active_ms").notNull().default(0),
     durationMs: integer("duration_ms"),
-    maxScrollDepthPercent: integer("max_scroll_depth_percent"),
     recordingStatus: trackingRecordingStatusEnum("recording_status").notNull().default("disabled"),
-    recordingObjectKey: text("recording_object_key"),
     recordingDurationMs: integer("recording_duration_ms"),
     metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -536,13 +592,17 @@ export const trackingRecipientSessions = pgTable(
     activeLastSeenIdx: index("tracking_recipient_sessions_active_seen_idx")
       .on(table.lastSeenAt)
       .where(sql`${table.state} = 'active'`),
-    deviceHashIdx: index("tracking_recipient_sessions_device_hash_idx").on(table.workspaceId, table.deviceIdHash),
-    ipHashIdx: index("tracking_recipient_sessions_ip_hash_idx").on(table.workspaceId, table.ipAddressHash),
+    manifestIdx: index("tracking_recipient_sessions_manifest_idx").on(table.manifestId),
     publishedVersionFk: foreignKey({
       name: "trk_rec_sessions_version_fk",
       columns: [table.publishedVersionId],
       foreignColumns: [siteVersions.id],
-    }).onDelete("cascade"),
+    }).onDelete("set null"),
+    manifestFk: foreignKey({
+      name: "trk_rec_sessions_manifest_fk",
+      columns: [table.manifestId],
+      foreignColumns: [trackingEventManifests.id],
+    }).onDelete("set null"),
     endedAfterStartedCheck: check(
       "tracking_recipient_sessions_ended_check",
       sql`${table.endedAt} is null or ${table.endedAt} >= ${table.startedAt}`,
@@ -551,7 +611,7 @@ export const trackingRecipientSessions = pgTable(
       "tracking_recipient_sessions_duration_check",
       sql`${table.activeMs} >= 0
         and (${table.durationMs} is null or ${table.durationMs} >= 0)
-        and (${table.maxScrollDepthPercent} is null or ${table.maxScrollDepthPercent} between 0 and 100)`,
+        and (${table.recordingDurationMs} is null or ${table.recordingDurationMs} between 0 and 600000)`,
     ),
   }),
 );
@@ -565,10 +625,13 @@ export const trackingRecordings = pgTable(
     recipientId: uuid("recipient_id").references(() => siteVariants.id, { onDelete: "set null" }),
     sessionId: uuid("session_id").notNull(),
     publicSessionId: varchar("public_session_id", { length: 160 }).notNull(),
-    status: varchar("status", { length: 40 }).notNull().default("pending"),
-    rrwebVersion: varchar("rrweb_version", { length: 40 }).notNull().default("rrweb-2.1.0"),
+    status: trackingRecordingStatusEnum("status").notNull().default("pending"),
+    rrwebVersion: varchar("rrweb_version", { length: 40 }).notNull().default("2.1.0"),
     runtimeVersion: varchar("runtime_version", { length: 80 }).notNull(),
     privacyVersion: integer("privacy_version").notNull().default(1),
+    visitorNoticeVersion: integer("visitor_notice_version").notNull(),
+    consentGrantedAt: timestamp("consent_granted_at", { withTimezone: true }).notNull(),
+    consentSource: varchar("consent_source", { length: 20 }).notNull(),
     uploadTokenHash: varchar("upload_token_hash", { length: 128 }).notNull(),
     maxDurationMs: integer("max_duration_ms").notNull(),
     maxChunkBytes: integer("max_chunk_bytes").notNull(),
@@ -579,6 +642,7 @@ export const trackingRecordings = pgTable(
     eventCount: integer("event_count").notNull().default(0),
     chunkCount: integer("chunk_count").notNull().default(0),
     compressedBytes: integer("compressed_bytes").notNull().default(0),
+    uncompressedBytes: integer("uncompressed_bytes").notNull().default(0),
     objectPrefix: text("object_prefix").notNull(),
     stopReason: varchar("stop_reason", { length: 80 }),
     finalSequence: integer("final_sequence"),
@@ -596,19 +660,18 @@ export const trackingRecordings = pgTable(
       columns: [table.sessionId],
       foreignColumns: [trackingRecipientSessions.id],
     }).onDelete("cascade"),
-    statusCheck: check(
-      "tracking_recordings_status_check",
-      sql`${table.status} in ('pending', 'recording', 'available', 'truncated', 'failed', 'expired', 'deleted')`,
-    ),
-    durationCheck: check(
-      "tracking_recordings_duration_check",
+    boundsCheck: check(
+      "tracking_recordings_bounds_check",
       sql`${table.durationMs} >= 0
         and ${table.eventCount} >= 0
         and ${table.chunkCount} >= 0
         and ${table.compressedBytes} >= 0
+        and ${table.uncompressedBytes} >= 0
         and ${table.maxDurationMs} between 60000 and 600000
         and ${table.maxChunkBytes} between 1024 and 524288
         and ${table.maxEvents} between 1 and 20000
+        and ${table.visitorNoticeVersion} > 0
+        and ${table.consentSource} in ('prompt', 'remembered')
         and (${table.finalSequence} is null or ${table.finalSequence} >= 0)
         and (${table.endedAt} is null or ${table.endedAt} >= ${table.startedAt})`,
     ),
@@ -622,15 +685,14 @@ export const trackingRecordingChunks = pgTable(
     recordingId: uuid("recording_id").notNull().references(() => trackingRecordings.id, { onDelete: "cascade" }),
     workspaceId: uuid("workspace_id").notNull().references(() => workspaces.id, { onDelete: "cascade" }),
     sessionId: uuid("session_id").notNull(),
-    publicSessionId: varchar("public_session_id", { length: 160 }).notNull(),
     sequence: integer("sequence").notNull(),
     objectKey: text("object_key").notNull(),
     eventCount: integer("event_count").notNull(),
     compressedBytes: integer("compressed_bytes").notNull(),
-    uncompressedBytes: integer("uncompressed_bytes"),
-    checksumSha256: varchar("checksum_sha256", { length: 128 }).notNull(),
-    firstEventAt: timestamp("first_event_at", { withTimezone: true }),
-    lastEventAt: timestamp("last_event_at", { withTimezone: true }),
+    uncompressedBytes: integer("uncompressed_bytes").notNull(),
+    checksumSha256: varchar("checksum_sha256", { length: 64 }).notNull(),
+    firstEventAt: timestamp("first_event_at", { withTimezone: true }).notNull(),
+    lastEventAt: timestamp("last_event_at", { withTimezone: true }).notNull(),
     receivedAt: timestamp("received_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => ({
@@ -641,14 +703,30 @@ export const trackingRecordingChunks = pgTable(
       columns: [table.sessionId],
       foreignColumns: [trackingRecipientSessions.id],
     }).onDelete("cascade"),
-    chunkCheck: check(
-      "tracking_recording_chunks_check",
+    boundsCheck: check(
+      "tracking_recording_chunks_bounds_check",
       sql`${table.sequence} >= 0
         and ${table.eventCount} > 0
         and ${table.compressedBytes} > 0
-        and (${table.uncompressedBytes} is null or ${table.uncompressedBytes} >= ${table.compressedBytes})
-        and (${table.firstEventAt} is null or ${table.lastEventAt} is null or ${table.lastEventAt} >= ${table.firstEventAt})`,
+        and ${table.uncompressedBytes} > 0
+        and ${table.lastEventAt} >= ${table.firstEventAt}`,
     ),
+  }),
+);
+
+export const trackingRecordingObjectDeletions = pgTable(
+  "tracking_recording_object_deletions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    objectKey: text("object_key").notNull(),
+    attemptCount: integer("attempt_count").notNull().default(0),
+    lastAttemptAt: timestamp("last_attempt_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    objectKeyUniqueIdx: uniqueIndex("tracking_recording_object_deletions_object_key_idx").on(table.objectKey),
+    createdAtIdx: index("tracking_recording_object_deletions_created_idx").on(table.createdAt),
+    boundsCheck: check("tracking_recording_object_deletions_attempts_check", sql`${table.attemptCount} >= 0`),
   }),
 );
 
@@ -662,8 +740,8 @@ export const trackingRecordingUsageDaily = pgTable(
   },
   (table) => ({
     primaryIdx: uniqueIndex("tracking_recording_usage_daily_workspace_date_idx").on(table.workspaceId, table.date),
-    usageCheck: check(
-      "tracking_recording_usage_daily_check",
+    boundsCheck: check(
+      "tracking_recording_usage_daily_bounds_check",
       sql`${table.recordingCount} >= 0 and ${table.compressedBytes} >= 0`,
     ),
   }),
@@ -680,15 +758,21 @@ export const trackingRecipientEvents = pgTable(
     siteId: uuid("site_id").notNull().references(() => sites.id, { onDelete: "cascade" }),
     recipientId: uuid("recipient_id").references(() => siteVariants.id, { onDelete: "set null" }),
     publishedVersionId: uuid("published_version_id"),
+    manifestId: uuid("manifest_id"),
+    recipientRevision: integer("recipient_revision"),
     type: trackingRecipientEventTypeEnum("type").notNull(),
     source: trackingRecipientEventSourceEnum("source").notNull(),
-    tabLabel: varchar("tab_label", { length: 180 }),
+    pageId: varchar("page_id", { length: 160 }),
+    pageLabel: varchar("page_label", { length: 180 }),
+    fromPageId: varchar("from_page_id", { length: 160 }),
+    fromPageLabel: varchar("from_page_label", { length: 180 }),
     elementKind: trackingElementKindEnum("element_kind"),
     elementId: varchar("element_id", { length: 160 }),
     elementLabel: varchar("element_label", { length: 180 }),
-    elementHref: text("element_href"),
+    destinationKind: trackingDestinationKindEnum("destination_kind"),
+    destinationHost: varchar("destination_host", { length: 253 }),
     webhookId: uuid("webhook_id"),
-    webhookUrl: text("webhook_url"),
+    webhookEndpointHost: varchar("webhook_endpoint_host", { length: 253 }),
     scriptVersion: varchar("script_version", { length: 80 }),
     requestId: varchar("request_id", { length: 160 }),
     eventData: jsonb("event_data").$type<Record<string, unknown>>().notNull().default({}),
@@ -701,6 +785,7 @@ export const trackingRecipientEvents = pgTable(
     siteReceivedAtIdx: index("tracking_recipient_events_site_received_idx").on(table.siteId, table.receivedAt),
     recipientReceivedAtIdx: index("tracking_recipient_events_recipient_received_idx").on(table.recipientId, table.receivedAt),
     sessionReceivedAtIdx: index("tracking_recipient_events_session_received_idx").on(table.sessionId, table.receivedAt),
+    manifestIdx: index("tracking_recipient_events_manifest_idx").on(table.manifestId),
     workspaceTypeReceivedAtIdx: index("tracking_recipient_events_workspace_type_received_idx").on(
       table.workspaceId,
       table.type,
@@ -711,11 +796,16 @@ export const trackingRecipientEvents = pgTable(
       name: "trk_rec_events_session_fk",
       columns: [table.sessionId],
       foreignColumns: [trackingRecipientSessions.id],
-    }).onDelete("set null"),
+    }).onDelete("cascade"),
     publishedVersionFk: foreignKey({
       name: "trk_rec_events_version_fk",
       columns: [table.publishedVersionId],
       foreignColumns: [siteVersions.id],
+    }).onDelete("set null"),
+    manifestFk: foreignKey({
+      name: "trk_rec_events_manifest_fk",
+      columns: [table.manifestId],
+      foreignColumns: [trackingEventManifests.id],
     }).onDelete("set null"),
     browserSessionCheck: check(
       "tracking_recipient_events_session_scope_check",
@@ -742,49 +832,18 @@ export const trackingRecipientEvents = pgTable(
     clickDataCheck: check(
       "tracking_recipient_events_click_data_check",
       sql`(
-        (${table.type} = 'link_click' and ${table.elementHref} is not null and ${table.elementKind} in ('link', 'sidebar_link'))
+        (${table.type} = 'link_click' and ${table.destinationKind} is not null and ${table.elementKind} = 'sidebar_link')
         or (${table.type} = 'tab_switch' and ${table.elementKind} = 'tab')
-        or (${table.type} = 'button_click' and ${table.elementKind} in ('button', 'sidebar_button', 'image_card', 'calendar', 'unknown'))
+        or (${table.type} = 'button_click' and ${table.destinationKind} is not null and ${table.elementKind} in ('button', 'sidebar_button', 'image_card'))
         or (${table.type} not in ('button_click', 'link_click', 'tab_switch'))
       )`,
     ),
     webhookDataCheck: check(
       "tracking_recipient_events_webhook_data_check",
       sql`(
-        (${table.type} = 'webhook_send' and ${table.webhookId} is not null and ${table.webhookUrl} is not null)
+        (${table.type} = 'webhook_send' and ${table.webhookId} is not null and ${table.webhookEndpointHost} is not null)
         or (${table.type} <> 'webhook_send')
       )`,
-    ),
-  }),
-);
-
-export const trackingSuppressionMarkers = pgTable(
-  "tracking_suppression_markers",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    workspaceId: uuid("workspace_id").notNull().references(() => workspaces.id, { onDelete: "cascade" }),
-    userId: varchar("user_id", { length: 191 }).references(() => user.id, { onDelete: "set null" }),
-    markerType: trackingSuppressionMarkerTypeEnum("marker_type").notNull(),
-    markerHash: varchar("marker_hash", { length: 128 }).notNull(),
-    label: varchar("label", { length: 160 }),
-    firstSeenAt: timestamp("first_seen_at", { withTimezone: true }).defaultNow().notNull(),
-    lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).defaultNow().notNull(),
-    expiresAt: timestamp("expires_at", { withTimezone: true }),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
-  },
-  (table) => ({
-    workspaceMarkerIdx: uniqueIndex("tracking_suppression_workspace_marker_idx").on(
-      table.workspaceId,
-      table.markerType,
-      table.markerHash,
-    ),
-    markerHashIdx: index("tracking_suppression_marker_hash_idx").on(table.markerHash),
-    userLastSeenIdx: index("tracking_suppression_user_seen_idx").on(table.userId, table.lastSeenAt),
-    expiresAtIdx: index("tracking_suppression_expires_idx").on(table.expiresAt),
-    seenCheck: check(
-      "tracking_suppression_seen_check",
-      sql`${table.lastSeenAt} >= ${table.firstSeenAt}`,
     ),
   }),
 );
@@ -812,12 +871,12 @@ export const workspacesRelations = relations(workspaces, ({ many, one }) => ({
   sites: many(sites),
   versions: many(siteVersions),
   trackingSettings: many(trackingSettings),
+  trackingEventManifests: many(trackingEventManifests),
   trackingRecipientSessions: many(trackingRecipientSessions),
   trackingRecipientEvents: many(trackingRecipientEvents),
   trackingRecordings: many(trackingRecordings),
   trackingRecordingChunks: many(trackingRecordingChunks),
   trackingRecordingUsageDaily: many(trackingRecordingUsageDaily),
-  trackingSuppressionMarkers: many(trackingSuppressionMarkers),
   trackingInternalIpRanges: many(trackingInternalIpRanges),
   billing: one(workspaceBilling, {
     fields: [workspaces.id],
@@ -828,8 +887,8 @@ export const workspacesRelations = relations(workspaces, ({ many, one }) => ({
 export const userRelations = relations(user, ({ many, one }) => ({
   sessions: many(session),
   accounts: many(account),
-  trackingSuppressionMarkers: many(trackingSuppressionMarkers),
   createdTrackingInternalIpRanges: many(trackingInternalIpRanges),
+  acceptedTrackingSettings: many(trackingSettings),
   profile: one(userProfiles, {
     fields: [user.id],
     references: [userProfiles.userId],
@@ -888,9 +947,9 @@ export const sitesRelations = relations(sites, ({ one, many }) => ({
   versions: many(siteVersions),
   access: many(siteAccess),
   trackingSettings: many(trackingSettings),
+  trackingEventManifests: many(trackingEventManifests),
   trackingRecipientSessions: many(trackingRecipientSessions),
   trackingRecipientEvents: many(trackingRecipientEvents),
-  trackingRecordings: many(trackingRecordings),
 }));
 
 export const siteVersionsRelations = relations(siteVersions, ({ one, many }) => ({
@@ -902,6 +961,7 @@ export const siteVersionsRelations = relations(siteVersions, ({ one, many }) => 
     fields: [siteVersions.siteId],
     references: [sites.id],
   }),
+  trackingEventManifests: many(trackingEventManifests),
   trackingRecipientSessions: many(trackingRecipientSessions),
   trackingRecipientEvents: many(trackingRecipientEvents),
 }));
@@ -916,6 +976,7 @@ export const siteVariantsRelations = relations(siteVariants, ({ one, many }) => 
     references: [sites.id],
   }),
   trackingSettings: many(trackingSettings),
+  trackingEventManifests: many(trackingEventManifests),
   trackingRecipientSessions: many(trackingRecipientSessions),
   trackingRecipientEvents: many(trackingRecipientEvents),
   trackingRecordings: many(trackingRecordings),
@@ -934,31 +995,31 @@ export const trackingSettingsRelations = relations(trackingSettings, ({ one }) =
     fields: [trackingSettings.recipientId],
     references: [siteVariants.id],
   }),
+  recordingTermsAcceptedBy: one(user, {
+    fields: [trackingSettings.recordingTermsAcceptedByUserId],
+    references: [user.id],
+  }),
 }));
 
-export const trackingRecipientSessionsRelations = relations(trackingRecipientSessions, ({ one, many }) => ({
+export const trackingEventManifestsRelations = relations(trackingEventManifests, ({ one, many }) => ({
   workspace: one(workspaces, {
-    fields: [trackingRecipientSessions.workspaceId],
+    fields: [trackingEventManifests.workspaceId],
     references: [workspaces.id],
   }),
   site: one(sites, {
-    fields: [trackingRecipientSessions.siteId],
+    fields: [trackingEventManifests.siteId],
     references: [sites.id],
   }),
-  recipient: one(siteVariants, {
-    fields: [trackingRecipientSessions.recipientId],
-    references: [siteVariants.id],
-  }),
   publishedVersion: one(siteVersions, {
-    fields: [trackingRecipientSessions.publishedVersionId],
+    fields: [trackingEventManifests.publishedVersionId],
     references: [siteVersions.id],
   }),
-  events: many(trackingRecipientEvents),
-  recording: one(trackingRecordings, {
-    fields: [trackingRecipientSessions.id],
-    references: [trackingRecordings.sessionId],
+  recipient: one(siteVariants, {
+    fields: [trackingEventManifests.recipientId],
+    references: [siteVariants.id],
   }),
-  recordingChunks: many(trackingRecordingChunks),
+  sessions: many(trackingRecipientSessions),
+  events: many(trackingRecipientEvents),
 }));
 
 export const trackingRecordingsRelations = relations(trackingRecordings, ({ one, many }) => ({
@@ -1003,6 +1064,34 @@ export const trackingRecordingUsageDailyRelations = relations(trackingRecordingU
   }),
 }));
 
+export const trackingRecipientSessionsRelations = relations(trackingRecipientSessions, ({ one, many }) => ({
+  workspace: one(workspaces, {
+    fields: [trackingRecipientSessions.workspaceId],
+    references: [workspaces.id],
+  }),
+  site: one(sites, {
+    fields: [trackingRecipientSessions.siteId],
+    references: [sites.id],
+  }),
+  recipient: one(siteVariants, {
+    fields: [trackingRecipientSessions.recipientId],
+    references: [siteVariants.id],
+  }),
+  publishedVersion: one(siteVersions, {
+    fields: [trackingRecipientSessions.publishedVersionId],
+    references: [siteVersions.id],
+  }),
+  manifest: one(trackingEventManifests, {
+    fields: [trackingRecipientSessions.manifestId],
+    references: [trackingEventManifests.id],
+  }),
+  events: many(trackingRecipientEvents),
+  recording: one(trackingRecordings, {
+    fields: [trackingRecipientSessions.id],
+    references: [trackingRecordings.sessionId],
+  }),
+}));
+
 export const trackingRecipientEventsRelations = relations(trackingRecipientEvents, ({ one }) => ({
   workspace: one(workspaces, {
     fields: [trackingRecipientEvents.workspaceId],
@@ -1020,20 +1109,13 @@ export const trackingRecipientEventsRelations = relations(trackingRecipientEvent
     fields: [trackingRecipientEvents.publishedVersionId],
     references: [siteVersions.id],
   }),
+  manifest: one(trackingEventManifests, {
+    fields: [trackingRecipientEvents.manifestId],
+    references: [trackingEventManifests.id],
+  }),
   session: one(trackingRecipientSessions, {
     fields: [trackingRecipientEvents.sessionId],
     references: [trackingRecipientSessions.id],
-  }),
-}));
-
-export const trackingSuppressionMarkersRelations = relations(trackingSuppressionMarkers, ({ one }) => ({
-  workspace: one(workspaces, {
-    fields: [trackingSuppressionMarkers.workspaceId],
-    references: [workspaces.id],
-  }),
-  user: one(user, {
-    fields: [trackingSuppressionMarkers.userId],
-    references: [user.id],
   }),
 }));
 

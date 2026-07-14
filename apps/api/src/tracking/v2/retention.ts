@@ -1,167 +1,152 @@
-import type {
-  TrackingV2ExpiredRecordingChunkRecord,
-  TrackingV2Repository,
-} from "./repository";
+import type { TrackingV2Repository } from "./repository";
 import type { TrackingV2RecordingObjectStore } from "./recording-object-store";
+import type { TrackingV2RecordingRepository } from "./recording-repository";
 import { createTrackingV2SessionExpirationService } from "./session-expiration";
 
 export type TrackingV2RetentionServiceOptions = {
   repository: TrackingV2Repository;
-  recordingObjectStore?: TrackingV2RecordingObjectStore | null;
+  recording?: {
+    objectStore: TrackingV2RecordingObjectStore;
+    repository: TrackingV2RecordingRepository;
+  };
   now?: () => Date;
-};
-
-export type TrackingV2RetentionRunInput = {
-  batchSize?: number;
-  objectBatchSize?: number;
-  now?: Date;
 };
 
 export type TrackingV2RetentionRunResult = {
   now: string;
   sessionsExpired: number;
-  rawIpAddressesPruned: number;
-  suppressionMarkersDeleted: number;
-  eventsDeleted: number;
+  staleRecordingsSettled: number;
   recordingsExpired: number;
-  recordingChunkObjectsDeleted: number;
-  recordingChunkMetadataDeleted: number;
-  recordingChunkDeleteFailures: number;
-  recordingChunksSkippedWithoutStore: number;
+  recordingObjectsQueued: number;
+  recordingObjectsDeleted: number;
+  recordingObjectDeleteFailures: number;
+  recordingObjectDeletionBacklog: number;
   recordingsDeleted: number;
+  eventsDeleted: number;
   sessionsDeleted: number;
+  manifestsDeleted: number;
 };
 
 export interface TrackingV2RetentionService {
-  runOnce(input?: TrackingV2RetentionRunInput): Promise<TrackingV2RetentionRunResult>;
+  runOnce(input?: { batchSize?: number; now?: Date }): Promise<TrackingV2RetentionRunResult>;
 }
 
 const DEFAULT_BATCH_SIZE = 500;
-const DEFAULT_OBJECT_BATCH_SIZE = 100;
 const MAX_BATCH_SIZE = 5_000;
+const STALE_RECORDING_UPLOAD_MS = 15 * 60_000;
+const RETENTION_INTERVAL_MS = 15 * 60_000;
+const OBJECT_DELETE_CONCURRENCY = 8;
 
-export function createTrackingV2RetentionService(
-  options: TrackingV2RetentionServiceOptions,
-): TrackingV2RetentionService {
+export function createTrackingV2RetentionService(options: TrackingV2RetentionServiceOptions): TrackingV2RetentionService {
   const now = options.now ?? (() => new Date());
-
   return {
     async runOnce(input = {}) {
       const runAt = input.now ?? now();
-      const batchSize = normalizeBatchSize(input.batchSize, DEFAULT_BATCH_SIZE);
-      const objectBatchSize = normalizeBatchSize(input.objectBatchSize, DEFAULT_OBJECT_BATCH_SIZE);
-
-      const sessionExpiration = await createTrackingV2SessionExpirationService({
-        repository: options.repository,
-      }).runOnce({
-        limit: batchSize,
-        now: runAt,
-      });
-      const rawIpAddressesPruned = await options.repository.pruneRawIpAddresses({
-        now: runAt,
-        limit: batchSize,
-      });
-      const suppressionMarkersDeleted = await options.repository.pruneExpiredSuppressionMarkers({
-        now: runAt,
-        limit: batchSize,
-      });
-      const eventsDeleted = await options.repository.pruneExpiredEvents({
-        now: runAt,
-        limit: batchSize,
-      });
-      const recordingsExpired = await options.repository.expireRecordings({
-        now: runAt,
-        limit: batchSize,
-      });
-      const objectCleanup = await deleteExpiredRecordingChunks({
-        chunks: await options.repository.listExpiredRecordingChunks({
+      const limit = normalizeBatchSize(input.batchSize);
+      const sessionsExpired = (await createTrackingV2SessionExpirationService({ repository: options.repository })
+        .runOnce({ limit, now: runAt })).expired;
+      let staleRecordingsSettled = 0;
+      let recordingsExpired = 0;
+      let recordingObjectsQueued = 0;
+      let recordingObjectsDeleted = 0;
+      let recordingObjectDeleteFailures = 0;
+      let recordingObjectDeletionBacklog = 0;
+      let recordingsDeleted = 0;
+      if (options.recording) {
+        staleRecordingsSettled = await options.recording.repository.expireStalePending({
+          staleBefore: new Date(runAt.getTime() - STALE_RECORDING_UPLOAD_MS),
           now: runAt,
-          limit: objectBatchSize,
-        }),
-        objectStore: options.recordingObjectStore ?? null,
-        repository: options.repository,
-      });
-      const recordingsDeleted = await options.repository.markExpiredRecordingsDeleted({
-        now: runAt,
-        limit: batchSize,
-      });
-      const sessionsDeleted = await options.repository.pruneExpiredSessions({
-        now: runAt,
-        limit: batchSize,
-      });
-
+          limit,
+        });
+        recordingsExpired = await options.recording.repository.expireRecordings({ now: runAt, limit });
+        const chunks = await options.recording.repository.listExpiredChunks({ now: runAt, limit });
+        recordingObjectsQueued = await options.recording.repository.deleteChunkMetadata(chunks.map((chunk) => chunk.id));
+        recordingsDeleted = await options.recording.repository.markExpiredDeleted({ now: runAt, limit });
+        const pendingDeletions = await options.recording.repository.listPendingObjectDeletions({ limit });
+        const deletionResults = await mapConcurrent(pendingDeletions, OBJECT_DELETE_CONCURRENCY, async (deletion) => {
+          try {
+            await options.recording!.objectStore.deleteObject(deletion.objectKey);
+            return { id: deletion.id, deleted: true as const };
+          } catch {
+            return { id: deletion.id, deleted: false as const };
+          }
+        });
+        const successfulIds = deletionResults.filter((result) => result.deleted).map((result) => result.id);
+        const failedIds = deletionResults.filter((result) => !result.deleted).map((result) => result.id);
+        recordingObjectsDeleted = await options.recording.repository.completeObjectDeletions(successfulIds);
+        recordingObjectDeleteFailures = await options.recording.repository.markObjectDeletionAttempts({
+          ids: failedIds,
+          attemptedAt: runAt,
+        });
+        recordingObjectDeletionBacklog = await options.recording.repository.countPendingObjectDeletions();
+      }
+      const eventsDeleted = await options.repository.pruneExpiredEvents({ now: runAt, limit });
+      const sessionsDeleted = await options.repository.pruneExpiredSessions({ now: runAt, limit });
+      const manifestsDeleted = await options.repository.pruneUnreferencedManifests({ now: runAt, limit });
       return {
         now: runAt.toISOString(),
-        sessionsExpired: sessionExpiration.expired,
-        rawIpAddressesPruned,
-        suppressionMarkersDeleted,
-        eventsDeleted,
+        sessionsExpired,
+        staleRecordingsSettled,
         recordingsExpired,
-        recordingChunkObjectsDeleted: objectCleanup.objectsDeleted,
-        recordingChunkMetadataDeleted: objectCleanup.metadataDeleted,
-        recordingChunkDeleteFailures: objectCleanup.deleteFailures,
-        recordingChunksSkippedWithoutStore: objectCleanup.skippedWithoutStore,
+        recordingObjectsQueued,
+        recordingObjectsDeleted,
+        recordingObjectDeleteFailures,
+        recordingObjectDeletionBacklog,
         recordingsDeleted,
+        eventsDeleted,
         sessionsDeleted,
+        manifestsDeleted,
       };
     },
   };
 }
 
-async function deleteExpiredRecordingChunks(input: {
-  chunks: TrackingV2ExpiredRecordingChunkRecord[];
-  objectStore: TrackingV2RecordingObjectStore | null;
-  repository: TrackingV2Repository;
+export function startTrackingV2RetentionJob(input: {
+  service: TrackingV2RetentionService;
+  intervalMs?: number;
+  onError?: (error: unknown) => void;
+  onResult?: (result: TrackingV2RetentionRunResult) => void;
 }) {
-  if (input.chunks.length === 0) {
-    return {
-      objectsDeleted: 0,
-      metadataDeleted: 0,
-      deleteFailures: 0,
-      skippedWithoutStore: 0,
-    };
-  }
-
-  if (!input.objectStore) {
-    return {
-      objectsDeleted: 0,
-      metadataDeleted: 0,
-      deleteFailures: 0,
-      skippedWithoutStore: input.chunks.length,
-    };
-  }
-
-  const deletedChunkIds: string[] = [];
-  let deleteFailures = 0;
-
-  for (const chunk of input.chunks) {
+  const intervalMs = input.intervalMs ?? RETENTION_INTERVAL_MS;
+  let running = false;
+  const run = async () => {
+    if (running) return;
+    running = true;
     try {
-      await input.objectStore.deleteObject(chunk.objectKey);
-      deletedChunkIds.push(chunk.id);
-    } catch {
-      deleteFailures += 1;
+      input.onResult?.(await input.service.runOnce());
+    } catch (error) {
+      input.onError?.(error);
+    } finally {
+      running = false;
     }
-  }
-
-  return {
-    objectsDeleted: deletedChunkIds.length,
-    metadataDeleted: await input.repository.deleteRecordingChunks({
-      chunkIds: deletedChunkIds,
-    }),
-    deleteFailures,
-    skippedWithoutStore: 0,
   };
+  const interval = setInterval(() => void run(), intervalMs);
+  void run();
+  return () => clearInterval(interval);
 }
 
-function normalizeBatchSize(value: number | undefined, fallback: number) {
-  if (value === undefined) {
-    return fallback;
-  }
+async function mapConcurrent<TInput, TOutput>(
+  values: TInput[],
+  concurrency: number,
+  operation: (value: TInput) => Promise<TOutput>,
+) {
+  const output = new Array<TOutput>(values.length);
+  let nextIndex = 0;
+  await Promise.all(Array.from({ length: Math.min(concurrency, values.length) }, async () => {
+    while (nextIndex < values.length) {
+      const index = nextIndex;
+      nextIndex += 1;
+      output[index] = await operation(values[index]!);
+    }
+  }));
+  return output;
+}
 
+function normalizeBatchSize(value: number | undefined) {
+  if (value === undefined) return DEFAULT_BATCH_SIZE;
   if (!Number.isInteger(value) || value < 1 || value > MAX_BATCH_SIZE) {
     throw new TrackingV2RetentionInputError("Retention batch size must be between 1 and 5000.");
   }
-
   return value;
 }
 

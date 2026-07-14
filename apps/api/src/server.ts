@@ -5,6 +5,7 @@ import {
   devActor,
   getDevAppBootstrap,
   isDevAuthBypassEnabled,
+  provisionDevAuthBypass,
 } from "./auth/dev-auth"
 import { createDbBootstrapRepository } from "./bootstrap/repository"
 import { createBootstrapService } from "./bootstrap/service"
@@ -18,10 +19,9 @@ import { logger } from "./lib/logger"
 import { createDbSiteRepository } from "./sites/repository"
 import { createSiteService } from "./sites/service"
 import { createDbTrackingV2Repository } from "./tracking/v2/repository"
-import {
-  createTrackingV2SessionExpirationService,
-  startTrackingV2SessionExpirationJob,
-} from "./tracking/v2/session-expiration"
+import { createConfiguredTrackingV2RecordingObjectStore } from "./tracking/v2/recording-config"
+import { createDbTrackingV2RecordingRepository } from "./tracking/v2/recording-repository"
+import { createTrackingV2RetentionService, startTrackingV2RetentionJob } from "./tracking/v2/retention"
 
 const bootstrapService = createBootstrapService(createDbBootstrapRepository())
 const siteRepository = createDbSiteRepository()
@@ -79,51 +79,71 @@ const destroyCollaboration = attachSiteCollaborationWebSocketServer(
   server,
   collaboration.hocuspocus,
 )
-let stopTrackingSessionExpirationJob = () => {}
+let stopTrackingRetentionJob = () => {}
 let shuttingDown = false
 
+await provisionDevAuthBypass()
+
 server.listen(env.API_PORT, () => {
-  logger.info("Lightsite API listening", {
+  logger.info("Handout API listening", {
     url: `http://localhost:${env.API_PORT}`,
   })
 
-  if (env.TRACKING_V2_ENABLED) {
-    void startTrackingSessionExpiration()
+  if (env.TRACKING_V2_ENABLED && env.TRACKING_RETENTION_MODE === "in-process") {
+    void startTrackingRetention()
   }
 })
 
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.once(signal, () => {
+    if (shuttingDown) return
     shuttingDown = true
-    stopTrackingSessionExpirationJob()
+    stopTrackingRetentionJob()
+    const forceShutdown = setTimeout(() => {
+      server.closeAllConnections()
+      process.exit(0)
+    }, process.env.NODE_ENV === "production" ? 10_000 : 1_000)
+    forceShutdown.unref()
+    server.close(() => {
+      clearTimeout(forceShutdown)
+      process.exit(0)
+    })
+    server.closeIdleConnections()
     void destroyCollaboration().finally(() => {
-      server.close(() => process.exit(0))
+      server.closeIdleConnections()
     })
   })
 }
 
-async function startTrackingSessionExpiration() {
+async function startTrackingRetention() {
   try {
-    const { db } = await import("@lightsite/db")
+    const { db } = await import("@handout/db")
     if (shuttingDown) {
       return
     }
 
-    stopTrackingSessionExpirationJob = startTrackingV2SessionExpirationJob({
-      service: createTrackingV2SessionExpirationService({
+    const objectStore = createConfiguredTrackingV2RecordingObjectStore(env)
+    stopTrackingRetentionJob = startTrackingV2RetentionJob({
+      service: createTrackingV2RetentionService({
         repository: createDbTrackingV2Repository(db),
+        ...(objectStore ? {
+          recording: {
+            objectStore,
+            repository: createDbTrackingV2RecordingRepository(db),
+          },
+        } : {}),
       }),
       onError(error) {
-        logger.error("Tracking session expiration failed", { error })
+        logger.error("Tracking retention failed", { error })
       },
       onResult(result) {
-        if (result.expired > 0) {
-          logger.info("Expired stale tracking sessions", result)
+        if (result.sessionsExpired > 0 || result.recordingObjectsDeleted > 0) {
+          logger.info("Completed tracking retention", result)
         }
       },
     })
   } catch (error) {
-    logger.error("Tracking session expiration failed to start", { error })
+    logger.error("Tracking retention failed to start", { error })
   }
 }
 

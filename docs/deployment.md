@@ -1,6 +1,6 @@
-# Lightsite Deployment
+# Handout Deployment
 
-This is the low-cost production shape for the first Lightsite release:
+This is the low-cost production shape for the first Handout release:
 
 - Logged-in React app: Cloudflare Pages.
 - Public recipient pages: Cloudflare Worker with Cache API and optional R2 HTML snapshots.
@@ -15,7 +15,7 @@ The goal is to keep public traffic cheap and bounded. Public pages should hit Cl
 Repository:
 
 ```txt
-https://github.com/benpml/lightsite.git
+https://github.com/benpml/handout.git
 ```
 
 Render and Cloudflare should deploy from the `main` branch unless we add a release branch later.
@@ -41,12 +41,12 @@ Recommended Neon guardrails:
 
 ## Render API
 
-The root `render.yaml` defines the `lightsite-api` service.
+The root `render.yaml` defines the `handout-api` service.
 
 Render setup:
 
 1. New > Blueprint.
-2. Connect `benpml/lightsite`.
+2. Connect `benpml/handout`.
 3. Use `render.yaml`.
 4. Provide `DATABASE_URL` and `LOGO_DEV_TOKEN` when prompted.
 5. Let Render generate `BETTER_AUTH_SECRET` and `TRACKING_SIGNING_SECRET`.
@@ -58,8 +58,9 @@ Important Render settings:
 - `TRUST_PROXY=true` is required behind Render's proxy.
 - `API_JSON_BODY_LIMIT=256kb` keeps request bodies bounded.
 
-Render free web services do not support Blueprint `preDeployCommand`, so run Neon
-migrations explicitly before the first deploy and before schema-changing releases:
+Render free web services do not support Blueprint `preDeployCommand`, so the web
+service start command intentionally does not run migrations. Run Neon migrations
+explicitly before the first deploy and before every schema-changing release:
 
 ```bash
 DATABASE_URL=<neon pooled postgres connection string> pnpm db:migrate
@@ -77,7 +78,7 @@ API_ORIGIN=https://<render-api-host>
 Current Render API URL:
 
 ```txt
-https://lightsite-api.onrender.com
+https://api.handout.link
 ```
 
 ## Cloudflare Pages
@@ -87,7 +88,7 @@ Create a Pages project for `apps/web`.
 Build settings:
 
 ```txt
-Build command: pnpm install --frozen-lockfile && pnpm --filter @lightsite/web build
+Build command: pnpm install --frozen-lockfile && pnpm --filter @handout/web build
 Build output directory: apps/web/dist
 Root directory: /
 ```
@@ -103,15 +104,15 @@ VITE_GIPHY_API_KEY=<giphy key>
 Current Cloudflare Pages production URL:
 
 ```txt
-https://lightsite-bfi.pages.dev
+https://app.handout.link
 ```
 
 Current deployment was created with Wrangler direct upload:
 
 ```bash
-pnpm --filter @lightsite/web build
-pnpm exec wrangler pages project create lightsite --production-branch main
-pnpm exec wrangler pages deploy apps/web/dist --project-name=lightsite --branch=main
+pnpm --filter @handout/web build
+pnpm exec wrangler pages project create handout --production-branch main
+pnpm exec wrangler pages deploy apps/web/dist --project-name=handout --branch=main
 ```
 
 This is enough for the first live preview. For hands-off web deploys, connect
@@ -128,7 +129,7 @@ The app has:
 Create one R2 bucket:
 
 ```txt
-lightsite-public-snapshots
+handout-public-snapshots
 ```
 
 The public Worker binds it as:
@@ -142,6 +143,33 @@ Recommended R2 lifecycle:
 - Delete temporary/public HTML snapshots after 7-30 days once production publish snapshots are versioned.
 - Keep uploaded assets/screenshots under separate prefixes when those flows are added.
 
+Session replay uses a separate private bucket:
+
+```txt
+handout-session-replays
+```
+
+The bucket must have no public development URL or custom domain. Its `delete-expired-replays`
+lifecycle rule expires every object after 30 days and aborts incomplete multipart uploads after
+one day. Application retention normally removes objects after the selected 7, 14, or 30-day
+period; the provider rule is a hard defense-in-depth ceiling.
+
+Create one R2 S3 token with Object Read & Write access restricted only to this bucket. Store its
+access key and secret in Render as `TRACKING_REPLAY_S3_ACCESS_KEY_ID` and
+`TRACKING_REPLAY_S3_SECRET_ACCESS_KEY`. Never commit those values.
+
+## Tracking Retention
+
+Production retention runs as the `handout-tracking-retention` Render cron job at minute 17 every
+six hours. Recording reads enforce `expires_at` immediately, while this lower-frequency physical
+cleanup cadence keeps a mostly idle Neon database from being woken every few minutes.
+The API web service uses `TRACKING_RETENTION_MODE=external` so it does not run a duplicate timer.
+The cron command processes bounded batches until idle and exits nonzero when object deletion
+fails or work remains after its safety ceiling; Render failure notifications must remain enabled.
+
+The cron job and API share the same Neon connection and bucket-scoped R2 credentials. The cron
+job uses `DATABASE_POOL_MAX=2`; the API remains capped at five connections.
+
 ## Cloudflare Public Worker
 
 Worker package:
@@ -153,7 +181,7 @@ apps/public-worker
 Local typecheck:
 
 ```bash
-pnpm --filter @lightsite/public-worker build
+pnpm --filter @handout/public-worker build
 ```
 
 Deploy:
@@ -179,7 +207,7 @@ Worker variables in `apps/public-worker/wrangler.jsonc`:
 
 ```txt
 API_ORIGIN=https://<render-api-host>
-PUBLIC_ORIGIN=https://lightsite.io
+PUBLIC_ORIGIN=https://handout.link
 EDGE_CACHE_HTML_SECONDS=60
 EDGE_CACHE_UNAVAILABLE_SECONDS=15
 EDGE_R2_SNAPSHOT_SECONDS=300

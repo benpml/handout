@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/immutability, react-hooks/purity, react-hooks/refs -- Hocuspocus exposes imperative provider callbacks whose lifecycle is owned and cleaned up by this hook. */
 import { useCallback, useEffect, useMemo, useRef, useState, type SetStateAction } from "react"
 import {
   HocuspocusProvider,
@@ -12,12 +13,12 @@ import {
   updateSiteCollaborationMetadata,
   type SiteContent,
   SITE_DOCUMENT_SCHEMA_VERSION,
-} from "@lightsite/site-document"
+} from "@handout/site-document"
 import { IndexeddbPersistence } from "y-indexeddb"
 import { ySyncPluginKey } from "@tiptap/y-tiptap"
 import * as Y from "yjs"
 
-import type { AppBootstrapResponse } from "@lightsite/contracts"
+import type { AppBootstrapResponse } from "@handout/contracts"
 
 export type EditorSaveStatus =
   | "connecting"
@@ -167,7 +168,7 @@ export function useSiteCollaboration(input: {
       return
     }
 
-    const reloadKey = `lightsite:collaboration-schema-reload:${siteId}`
+    const reloadKey = `handout:collaboration-schema-reload:${siteId}`
     if (window.sessionStorage.getItem(reloadKey)) {
       return
     }
@@ -178,7 +179,7 @@ export function useSiteCollaboration(input: {
 
   useEffect(() => {
     if (isRemoteSynced) {
-      window.sessionStorage.removeItem(`lightsite:collaboration-schema-reload:${siteId}`)
+      window.sessionStorage.removeItem(`handout:collaboration-schema-reload:${siteId}`)
     }
   }, [isRemoteSynced, siteId])
 

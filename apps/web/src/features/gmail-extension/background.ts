@@ -2,9 +2,9 @@ import type { BackgroundRequest, BackgroundResponse } from "./contracts"
 
 const API_ORIGIN = (import.meta.env.VITE_EXTENSION_API_ORIGIN || "http://localhost:3011").replace(/\/$/, "")
 const WEB_ORIGIN = (import.meta.env.VITE_EXTENSION_WEB_ORIGIN || "http://localhost:5173").replace(/\/$/, "")
-const PUBLIC_ORIGIN = (import.meta.env.VITE_EXTENSION_PUBLIC_ORIGIN || "https://lightsite.io").replace(/\/$/, "")
-const TOKEN_KEY = "lightsite.extension.authToken.v1"
-const DEV_TOKEN = "__lightsite_dev__"
+const PUBLIC_ORIGIN = (import.meta.env.VITE_EXTENSION_PUBLIC_ORIGIN || "https://handout.link").replace(/\/$/, "")
+const TOKEN_KEY = "handout.extension.authToken.v1"
+const DEV_TOKEN = "__handout_dev__"
 
 chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) => {
   void handleMessage(message as BackgroundRequest)
@@ -20,13 +20,13 @@ async function handleMessage(message: BackgroundRequest): Promise<BackgroundResp
       return success({ connected: Boolean(token), development: token === DEV_TOKEN })
     }
     case "connect":
-      return connectViaLightsite()
+      return connectViaHandout()
     case "sign-out":
       await signOut()
       return success({ connected: false })
     case "open-tab":
       if (!isAllowedOpenUrl(message.url)) {
-        return failureResponse("url.not_allowed", "This link cannot be opened by Lightsite.")
+        return failureResponse("url.not_allowed", "This link cannot be opened by Handout.")
       }
       await chrome.tabs.create({ url: message.url })
       return success(null)
@@ -37,10 +37,10 @@ async function handleMessage(message: BackgroundRequest): Promise<BackgroundResp
   }
 }
 
-async function connectViaLightsite(): Promise<BackgroundResponse> {
+async function connectViaHandout(): Promise<BackgroundResponse> {
   const verifier = createPkceVerifier()
   const codeChallenge = await createPkceChallenge(verifier)
-  const redirectUri = chrome.identity.getRedirectURL("lightsite")
+  const redirectUri = chrome.identity.getRedirectURL("handout")
   const authorizeUrl = new URL("/extension-connect", WEB_ORIGIN)
   authorizeUrl.search = new URLSearchParams({
     code_challenge: codeChallenge,
@@ -54,18 +54,18 @@ async function connectViaLightsite(): Promise<BackgroundResponse> {
       url: authorizeUrl.toString(),
     })
   } catch {
-    return failureResponse("auth.cancelled", "Lightsite connection was cancelled.")
+    return failureResponse("auth.cancelled", "Handout connection was cancelled.")
   }
 
   if (!callbackUrl) {
-    return failureResponse("auth.cancelled", "Lightsite connection was cancelled.")
+    return failureResponse("auth.cancelled", "Handout connection was cancelled.")
   }
 
   const code = new URL(callbackUrl).hash
     ? new URLSearchParams(new URL(callbackUrl).hash.slice(1)).get("code")
     : null
   if (!code) {
-    return failureResponse("auth.code_missing", "Lightsite did not return a connection code.")
+    return failureResponse("auth.code_missing", "Handout did not return a connection code.")
   }
 
   const response = await fetch(`${API_ORIGIN}/api/extension-auth/exchange`, {
@@ -81,7 +81,7 @@ async function connectViaLightsite(): Promise<BackgroundResponse> {
   if (!development && !token) {
     return failureResponse(
       "auth.token_missing",
-      "Lightsite connected, but the extension session was not returned. Try again.",
+      "Handout connected, but the extension session was not returned. Try again.",
       response.status,
     )
   }
@@ -106,14 +106,14 @@ async function signOut() {
 
 async function apiRequest(message: Extract<BackgroundRequest, { type: "api-request" }>) {
   if (!isAllowedApiPath(message.path)) {
-    return failureResponse("api.path_not_allowed", "This Lightsite API request is not allowed.")
+    return failureResponse("api.path_not_allowed", "This Handout API request is not allowed.")
   }
 
   const token = await getStoredToken()
-  if (!token) return failureResponse("auth.required", "Connect Lightsite to continue.", 401)
+  if (!token) return failureResponse("auth.required", "Connect Handout to continue.", 401)
 
   const headers: Record<string, string> = {}
-  if (token === DEV_TOKEN) headers["x-lightsite-dev-auth"] = "1"
+  if (token === DEV_TOKEN) headers["x-handout-dev-auth"] = "1"
   else headers.authorization = `Bearer ${token}`
   if (message.body !== undefined) headers["content-type"] = "application/json"
 
@@ -157,7 +157,7 @@ function success<T>(data: T): BackgroundResponse<T> {
 
 function failure(error: unknown): BackgroundResponse {
   if (error instanceof TypeError) {
-    return failureResponse("network.unavailable", "Lightsite could not be reached. Check your connection and try again.")
+    return failureResponse("network.unavailable", "Handout could not be reached. Check your connection and try again.")
   }
   return failureResponse("request.failed", error instanceof Error ? error.message : "The request failed.")
 }
@@ -167,7 +167,7 @@ function responseFailure(response: Response, body: unknown): BackgroundResponse 
   const error = asRecord(parsed?.error)
   return failureResponse(
     typeof error?.code === "string" ? error.code : `http.${response.status}`,
-    typeof error?.message === "string" ? error.message : "The Lightsite request failed.",
+    typeof error?.message === "string" ? error.message : "The Handout request failed.",
     response.status,
   )
 }

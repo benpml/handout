@@ -1,12 +1,12 @@
 import type {
+  TrackingV2DestinationKind,
   TrackingV2EventFeedItem,
   TrackingV2SessionSummary,
-} from "@lightsite/tracking-schema"
+} from "@handout/tracking-schema"
 
 export type TrackingDashboardMetrics = {
   averageActiveMs: number
   clicks: number
-  recordingSessions: number
   sessions: number
   slackShares: number
   visits: number
@@ -87,7 +87,6 @@ export function buildTrackingDashboardSummary({
     metrics: {
       averageActiveMs: average(sessions.map((session) => session.activeMs)),
       clicks,
-      recordingSessions: sessions.filter((session) => session.recording.available).length,
       sessions: sessions.length,
       slackShares,
       visits,
@@ -162,9 +161,10 @@ export function filterTrackingV2EventsByQuery(
       event.element?.id,
       event.element?.kind,
       event.element?.label,
-      event.element?.href,
+      event.element?.destinationKind,
+      event.element?.destinationHost,
       event.webhook?.id,
-      event.webhook?.url,
+      event.webhook?.endpointHost,
       event.session?.device.type,
       event.session?.device.os,
       event.session?.device.browser,
@@ -190,7 +190,7 @@ function addClickedElement(
     return
   }
 
-  const key = `${element.kind}:${element.id ?? element.href ?? element.label}`
+  const key = `${element.kind}:${element.id ?? element.label}`
   const existing = clickedElements.get(key)
 
   if (existing) {
@@ -200,11 +200,15 @@ function addClickedElement(
 
   clickedElements.set(key, {
     clickCount: 1,
-    detail: element.href ?? event.site.name,
+    detail: element.destinationHost ?? formatDestinationKind(element.destinationKind) ?? event.site.name,
     key,
     kind: element.kind,
     label: element.label,
   })
+}
+
+function formatDestinationKind(kind: TrackingV2DestinationKind | null) {
+  return kind ? kind.replaceAll("_", " ") : null
 }
 
 function addRecipientEventActivity(

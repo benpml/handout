@@ -1,4 +1,4 @@
-# Lightsite Engineering Notes
+# Handout Engineering Notes
 
 ## Component Organization
 
@@ -58,7 +58,7 @@ Start product UI inside the feature that owns it. Promote only when there is rea
 The theme lives in `apps/web/src/index.css`.
 
 - Base shadcn tokens come from the Figma `mode` variable collection.
-- Lightsite semantic additions are `page-background`, `tertiary-foreground`, `variable-*`, and `editing-*`.
+- Handout semantic additions are `page-background`, `tertiary-foreground`, `variable-*`, and `editing-*`.
 - Add new semantic colors in `index.css` under `:root`, `.dark`, and `@theme inline`.
 - Do not create a second theme CSS file.
 

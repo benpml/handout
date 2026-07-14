@@ -2,7 +2,7 @@ import { QueryClient } from "@tanstack/react-query"
 
 import { isApiClientError } from "./errors"
 
-export function createLightsiteQueryClient() {
+export function createHandoutQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {

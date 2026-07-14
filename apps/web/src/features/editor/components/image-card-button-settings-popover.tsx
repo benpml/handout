@@ -1,10 +1,10 @@
 import { IconLink } from "@tabler/icons-react"
 import type { Editor } from "@tiptap/react"
-import { LIGHTSITE_TEXT_LIMITS } from "@lightsite/domain"
+import { HANDOUT_TEXT_LIMITS } from "@handout/domain"
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react"
 
 import { getFormValue, normalizeButtonHref } from "../lib/button-link"
-import type { LightsiteNextImageCardButtonSettingsTarget } from "../tiptap/extensions/image-card-button-settings"
+import type { HandoutNextImageCardButtonSettingsTarget } from "../tiptap/extensions/image-card-button-settings"
 import { useFloatingEditorPopoverPosition } from "./use-floating-editor-popover-position"
 
 type EditorImageCardButtonSettingsPopoverProps = {
@@ -13,7 +13,7 @@ type EditorImageCardButtonSettingsPopoverProps = {
 
 type ImageCardButtonSettingsStorage = {
   subscribe: (
-    listener: (target: LightsiteNextImageCardButtonSettingsTarget) => void
+    listener: (target: HandoutNextImageCardButtonSettingsTarget) => void
   ) => () => void
 }
 
@@ -25,7 +25,7 @@ type ImageCardButtonSettingsError = {
 export function EditorImageCardButtonSettingsPopover({
   editor,
 }: EditorImageCardButtonSettingsPopoverProps) {
-  const [target, setTarget] = useState<LightsiteNextImageCardButtonSettingsTarget | null>(null)
+  const [target, setTarget] = useState<HandoutNextImageCardButtonSettingsTarget | null>(null)
   const [labelDraft, setLabelDraft] = useState("")
   const [hrefDraft, setHrefDraft] = useState("")
   const [error, setError] = useState<ImageCardButtonSettingsError | null>(null)
@@ -46,7 +46,7 @@ export function EditorImageCardButtonSettingsPopover({
     reset()
 
     if (activeTarget?.mode === "create") {
-      editor.chain().focus().removeLightsiteNextImageCardButtonDraft(activeTarget.pos).run()
+      editor.chain().focus().removeHandoutNextImageCardButtonDraft(activeTarget.pos).run()
       return
     }
 
@@ -59,7 +59,7 @@ export function EditorImageCardButtonSettingsPopover({
         return
       }
 
-      editor.commands.previewLightsiteNextImageCardButtonDraft(target.pos, {
+      editor.commands.previewHandoutNextImageCardButtonDraft(target.pos, {
         includeButton: true,
         ...attrs,
       })
@@ -70,9 +70,9 @@ export function EditorImageCardButtonSettingsPopover({
   useEffect(() => {
     const storage = (
       editor.storage as unknown as {
-        lightsiteNextImageCardButtonSettings?: ImageCardButtonSettingsStorage
+        handoutNextImageCardButtonSettings?: ImageCardButtonSettingsStorage
       }
-    ).lightsiteNextImageCardButtonSettings
+    ).handoutNextImageCardButtonSettings
 
     if (!storage) {
       return
@@ -87,7 +87,7 @@ export function EditorImageCardButtonSettingsPopover({
       setError(null)
 
       if (nextTarget.mode === "create") {
-        editor.commands.previewLightsiteNextImageCardButtonDraft(nextTarget.pos, {
+        editor.commands.previewHandoutNextImageCardButtonDraft(nextTarget.pos, {
           includeButton: true,
           label: nextLabel,
         })
@@ -106,7 +106,7 @@ export function EditorImageCardButtonSettingsPopover({
       return null
     }
 
-    const button = node.querySelector<HTMLElement>(".lightsite-editor-image-card-cta")
+    const button = node.querySelector<HTMLElement>(".handout-editor-image-card-cta")
 
     return (button ?? node).getBoundingClientRect()
   }, [editor, target])
@@ -182,7 +182,7 @@ export function EditorImageCardButtonSettingsPopover({
       editor
         .chain()
         .focus()
-        .setLightsiteNextImageCardButtonAttrs(target.pos, {
+        .setHandoutNextImageCardButtonAttrs(target.pos, {
           href: normalized,
           includeButton: true,
           label,
@@ -201,21 +201,21 @@ export function EditorImageCardButtonSettingsPopover({
     <div
       ref={popoverRef}
       aria-label="Image card button settings"
-      className="lightsite-editor-button-settings lightsite-editor-image-card-button-settings"
+      className="handout-editor-button-settings handout-editor-image-card-button-settings"
       role="dialog"
       style={{ left: position.x, maxHeight: position.maxHeight, top: position.y }}
       onPointerDown={(event) => event.stopPropagation()}
       onWheel={(event) => event.stopPropagation()}
     >
       <form onSubmit={save}>
-        <label className="lightsite-editor-button-settings-label" htmlFor="lightsite-editor-card-button-label">
+        <label className="handout-editor-button-settings-label" htmlFor="handout-editor-card-button-label">
           Button text
         </label>
-        <div className="lightsite-editor-button-settings-field">
+        <div className="handout-editor-button-settings-field">
           <input
             ref={labelInputRef}
-            id="lightsite-editor-card-button-label"
-            maxLength={LIGHTSITE_TEXT_LIMITS.sidebarLabel}
+            id="handout-editor-card-button-label"
+            maxLength={HANDOUT_TEXT_LIMITS.sidebarLabel}
             name="label"
             placeholder="Learn more"
             type="text"
@@ -230,17 +230,17 @@ export function EditorImageCardButtonSettingsPopover({
           />
         </div>
         {error?.field === "label" ? (
-          <div className="lightsite-editor-button-settings-error">{error.message}</div>
+          <div className="handout-editor-button-settings-error">{error.message}</div>
         ) : null}
-        <label className="lightsite-editor-button-settings-label" htmlFor="lightsite-editor-card-button-link">
+        <label className="handout-editor-button-settings-label" htmlFor="handout-editor-card-button-link">
           Button link
         </label>
-        <div className="lightsite-editor-button-settings-field">
+        <div className="handout-editor-button-settings-field">
           <IconLink aria-hidden="true" />
           <input
-            id="lightsite-editor-card-button-link"
+            id="handout-editor-card-button-link"
             inputMode="url"
-            maxLength={LIGHTSITE_TEXT_LIMITS.url}
+            maxLength={HANDOUT_TEXT_LIMITS.url}
             name="href"
             placeholder="https://example.com"
             type="text"
@@ -252,14 +252,14 @@ export function EditorImageCardButtonSettingsPopover({
           />
         </div>
         {error?.field === "href" ? (
-          <div className="lightsite-editor-button-settings-error">{error.message}</div>
+          <div className="handout-editor-button-settings-error">{error.message}</div>
         ) : null}
-        <div className="lightsite-editor-button-settings-actions">
-          <button className="lightsite-editor-button-settings-action" type="button" onClick={cancel}>
+        <div className="handout-editor-button-settings-actions">
+          <button className="handout-editor-button-settings-action" type="button" onClick={cancel}>
             Cancel
           </button>
           <button
-            className="lightsite-editor-button-settings-action lightsite-editor-button-settings-action-primary"
+            className="handout-editor-button-settings-action handout-editor-button-settings-action-primary"
             type="submit"
           >
             {isCreateMode ? "Create" : "Save"}

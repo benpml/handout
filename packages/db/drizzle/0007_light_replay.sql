@@ -1,5 +1,5 @@
 ALTER TABLE "tracking_recordings" DROP CONSTRAINT "tracking_recordings_duration_check";--> statement-breakpoint
-ALTER TABLE "tracking_recordings" ALTER COLUMN "rrweb_version" SET DEFAULT 'lightsite-minimal-v1';--> statement-breakpoint
+ALTER TABLE "tracking_recordings" ALTER COLUMN "rrweb_version" SET DEFAULT 'handout-minimal-v1';--> statement-breakpoint
 UPDATE "tracking_recordings" SET "max_chunk_bytes" = 61440 WHERE "max_chunk_bytes" > 61440;--> statement-breakpoint
 ALTER TABLE "tracking_recordings" ADD CONSTRAINT "tracking_recordings_duration_check" CHECK ("tracking_recordings"."duration_ms" >= 0
         and "tracking_recordings"."event_count" >= 0

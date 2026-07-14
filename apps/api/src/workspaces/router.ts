@@ -5,7 +5,7 @@ import {
   workspaceLogoPreviewQuerySchema,
   workspaceLogoPreviewResponseSchema,
   workspaceSlugAvailabilityResponseSchema,
-} from "@lightsite/contracts";
+} from "@handout/contracts";
 import { Router } from "express";
 import { z } from "zod";
 import type { CurrentActorProvider } from "../auth/current-actor";

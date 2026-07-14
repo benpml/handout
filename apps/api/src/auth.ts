@@ -2,10 +2,10 @@ import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { betterAuth } from "better-auth";
 import { APIError } from "better-auth/api";
 import { bearer } from "better-auth/plugins";
-import { validateWorkEmail } from "@lightsite/domain";
+import { validateWorkEmail } from "@handout/domain";
 import { env } from "./env";
-import { db } from "@lightsite/db";
-import * as databaseSchema from "@lightsite/db";
+import { db } from "@handout/db";
+import * as databaseSchema from "@handout/db";
 
 export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,

@@ -56,7 +56,7 @@ for (const filePath of await listSourceFiles(publicSiteRoot)) {
   const imports = collectImports(source);
 
   for (const importRecord of imports) {
-    if (importRecord.source === "@lightsite/contracts" && !importRecord.typeOnly) {
+    if (importRecord.source === "@handout/contracts" && !importRecord.typeOnly) {
       failures.push({
         filePath,
         importSource: importRecord.source,

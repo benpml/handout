@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge"
-import type { SiteStatus, WorkspaceRole } from "@lightsite/contracts"
+import type { SiteStatus, WorkspaceRole } from "@handout/contracts"
 
 type InviteStatus = "pending" | "expired" | "revoked" | "send_failed"
 

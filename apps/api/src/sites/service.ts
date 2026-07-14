@@ -1,13 +1,13 @@
 import {
-  LIGHTSITE_COLLECTION_LIMITS,
-  LIGHTSITE_TEXT_LIMITS,
+  HANDOUT_COLLECTION_LIMITS,
+  HANDOUT_TEXT_LIMITS,
   normalizeWebsiteDomain,
   slugifyName,
   validateSiteSlug,
   validateTextLimit,
-} from "@lightsite/domain";
-import { normalizeSiteContent } from "@lightsite/db";
-import { SITE_DOCUMENT_SCHEMA_VERSION } from "@lightsite/site-document";
+} from "@handout/domain";
+import { normalizeSiteContent } from "@handout/db";
+import { SITE_DOCUMENT_SCHEMA_VERSION } from "@handout/site-document";
 import {
   SiteSlugConflictError,
   type SiteRecord,
@@ -1160,10 +1160,10 @@ function validateUnknownStringFields(
   const issues: SitePublishValidationIssue[] = [];
 
   if (typeof value === "string") {
-    if (value.length > LIGHTSITE_TEXT_LIMITS.blockText) {
+    if (value.length > HANDOUT_TEXT_LIMITS.blockText) {
       issues.push({
         path,
-        message: `Text must be ${LIGHTSITE_TEXT_LIMITS.blockText.toLocaleString("en-US")} characters or fewer.`,
+        message: `Text must be ${HANDOUT_TEXT_LIMITS.blockText.toLocaleString("en-US")} characters or fewer.`,
       });
     }
 

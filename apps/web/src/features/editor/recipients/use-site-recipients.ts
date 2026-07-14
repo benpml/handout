@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import type { SiteVariant } from "@lightsite/contracts"
+import type { SiteVariant } from "@handout/contracts"
 
 import {
   batchUpsertSiteVariants,

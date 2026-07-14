@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createDefaultSiteContent } from "@lightsite/site-document";
+import { createDefaultSiteContent } from "@handout/site-document";
 import {
   appBootstrapResponseSchema,
   apiErrorResponseSchema,

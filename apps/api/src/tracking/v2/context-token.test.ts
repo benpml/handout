@@ -7,6 +7,7 @@ const payload = {
   workspaceId: "11111111-1111-4111-8111-111111111111",
   siteId: "22222222-2222-4222-8222-222222222222",
   publishedVersionId: "33333333-3333-4333-8333-333333333333",
+  manifestId: "55555555-5555-4555-8555-555555555555",
   recipientId: "44444444-4444-4444-8444-444444444444",
   recipientRevision: 7,
   trackingMode: "events" as const,
@@ -53,6 +54,7 @@ describe("createEncryptedTrackingV2ContextTokenService", () => {
     expect(decodedSegments).not.toContain(payload.workspaceId);
     expect(decodedSegments).not.toContain(payload.siteId);
     expect(decodedSegments).not.toContain(payload.recipientId);
+    expect(decodedSegments).not.toContain(payload.manifestId);
   });
 
   it("rejects expired tokens", () => {
@@ -67,7 +69,9 @@ describe("createEncryptedTrackingV2ContextTokenService", () => {
     const service = createService();
     const bootstrap = service.issue(payload);
     const parts = bootstrap.contextToken.split(".");
-    parts[3] = `${parts[3]!.slice(0, -1)}A`;
+    const ciphertext = parts[3]!;
+    const index = Math.floor(ciphertext.length / 2);
+    parts[3] = `${ciphertext.slice(0, index)}${ciphertext[index] === "A" ? "B" : "A"}${ciphertext.slice(index + 1)}`;
 
     expect(service.verify(parts.join("."))).toBeNull();
   });

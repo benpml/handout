@@ -32,7 +32,7 @@ export function CalendarEmbedView({ editor, getPos, node }: NodeViewProps) {
       editor
         .chain()
         .focus()
-        .openLightsiteNextCalendarEmbedSettings(pos, src ? "edit" : "create")
+        .openHandoutNextCalendarEmbedSettings(pos, src ? "edit" : "create")
         .run()
     },
     [editor, getPos, src]
@@ -79,7 +79,7 @@ export function CalendarEmbedView({ editor, getPos, node }: NodeViewProps) {
         nextHeight = clampHeight(startHeight + moveEvent.clientY - startY)
 
         if (element) {
-          element.style.setProperty("--lightsite-calendar-embed-height", `${nextHeight}px`)
+          element.style.setProperty("--handout-calendar-embed-height", `${nextHeight}px`)
         }
       }
 
@@ -98,27 +98,27 @@ export function CalendarEmbedView({ editor, getPos, node }: NodeViewProps) {
   return (
     <NodeViewWrapper
       as="figure"
-      data-lightsite-editor-block=""
-      data-lightsite-editor-block-type="calendar-embed"
-      className="lightsite-editor-calendar-embed-shell"
+      data-handout-editor-block=""
+      data-handout-editor-block-type="calendar-embed"
+      className="handout-editor-calendar-embed-shell"
     >
       {src ? (
         <div
           ref={embedRef}
-          className="lightsite-editor-calendar-embed"
+          className="handout-editor-calendar-embed"
           style={
             {
-              "--lightsite-calendar-embed-height": `${height}px`,
+              "--handout-calendar-embed-height": `${height}px`,
             } as React.CSSProperties
           }
         >
-          <div className="lightsite-editor-calendar-embed-toolbar" contentEditable={false}>
-            <div className="lightsite-editor-calendar-embed-meta">
+          <div className="handout-editor-calendar-embed-toolbar" contentEditable={false}>
+            <div className="handout-editor-calendar-embed-meta">
               <IconCalendarEvent aria-hidden="true" />
               <span>{host || "Calendar"}</span>
             </div>
             <button
-              className="lightsite-editor-calendar-embed-edit"
+              className="handout-editor-calendar-embed-edit"
               type="button"
               onClick={openSettings}
               onMouseDown={(event) => {
@@ -131,7 +131,7 @@ export function CalendarEmbedView({ editor, getPos, node }: NodeViewProps) {
             </button>
           </div>
           <iframe
-            className="lightsite-editor-calendar-embed-frame"
+            className="handout-editor-calendar-embed-frame"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
             src={src}
@@ -139,7 +139,7 @@ export function CalendarEmbedView({ editor, getPos, node }: NodeViewProps) {
           />
           <button
             aria-label="Resize calendar embed vertically"
-            className="lightsite-editor-calendar-embed-resize"
+            className="handout-editor-calendar-embed-resize"
             contentEditable={false}
             type="button"
             onPointerDown={startResize}
@@ -147,7 +147,7 @@ export function CalendarEmbedView({ editor, getPos, node }: NodeViewProps) {
         </div>
       ) : (
         <button
-          className="lightsite-editor-calendar-embed-empty"
+          className="handout-editor-calendar-embed-empty"
           contentEditable={false}
           type="button"
           onClick={openSettings}
@@ -157,8 +157,8 @@ export function CalendarEmbedView({ editor, getPos, node }: NodeViewProps) {
           }}
         >
           <IconCalendarEvent aria-hidden="true" />
-          <span className="lightsite-editor-calendar-embed-empty-title">Add calendar embed</span>
-          <span className="lightsite-editor-calendar-embed-empty-description">
+          <span className="handout-editor-calendar-embed-empty-title">Add calendar embed</span>
+          <span className="handout-editor-calendar-embed-empty-description">
             Paste a calendar scheduling link or iframe code
           </span>
         </button>

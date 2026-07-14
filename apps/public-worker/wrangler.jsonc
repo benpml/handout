@@ -1,16 +1,12 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "lightsite-public",
+  "name": "handout-public",
   "main": "src/index.ts",
   "compatibility_date": "2026-07-07",
   "workers_dev": true,
   "routes": [
     {
-      "pattern": "lightsite.io",
-      "custom_domain": true
-    },
-    {
-      "pattern": "www.lightsite.io",
+      "pattern": "handout.link",
       "custom_domain": true
     }
   ],
@@ -18,8 +14,8 @@
     "enabled": true
   },
   "vars": {
-    "API_ORIGIN": "https://lightsite-api.onrender.com",
-    "PUBLIC_ORIGIN": "https://lightsite.io",
+    "API_ORIGIN": "https://api.handout.link",
+    "PUBLIC_ORIGIN": "https://handout.link",
     "EDGE_CACHE_HTML_SECONDS": "60",
     "EDGE_CACHE_UNAVAILABLE_SECONDS": "15",
     "EDGE_R2_SNAPSHOT_SECONDS": "300"
@@ -27,11 +23,11 @@
   "r2_buckets": [
     {
       "binding": "SNAPSHOT_BUCKET",
-      "bucket_name": "lightsite-public-snapshots"
+      "bucket_name": "handout-public-snapshots"
     },
     {
       "binding": "PREVIEW_BUCKET",
-      "bucket_name": "lightsite-recipient-previews"
+      "bucket_name": "handout-recipient-previews"
     }
   ]
 }

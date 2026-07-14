@@ -18,8 +18,8 @@ describe("public worker cache policy", () => {
     expect(classifyPublicRoute("/api/tracking/events")).toBe("api");
     expect(classifyPublicRoute("/editor-assets/site-avatar.png")).toBe("asset");
     expect(classifyPublicRoute("/fonts/geist-latin-wght-normal.woff2")).toBe("asset");
-    expect(classifyPublicRoute("/lightsite-logo.svg")).toBe("asset");
-    expect(classifyPublicRoute("/site-runtime.v3.js")).toBe("asset");
+    expect(classifyPublicRoute("/handout-logo.svg")).toBe("asset");
+    expect(classifyPublicRoute("/site-runtime.v4.js")).toBe("asset");
     expect(classifyPublicRoute("/health")).toBe("health");
     expect(classifyPublicRoute("/api")).toBe("api");
     expect(classifyPublicRoute("/acme")).toBe("not-found");

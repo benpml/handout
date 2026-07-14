@@ -3,11 +3,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
 import { IconArrowRight, IconBuilding, IconRefresh, IconUserCircle } from "@tabler/icons-react"
 import {
-  LIGHTSITE_TEXT_LIMITS,
+  HANDOUT_TEXT_LIMITS,
   normalizeWebsiteDomain,
   slugifyName,
   validateWorkspaceSlug,
-} from "@lightsite/domain"
+} from "@handout/domain"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -56,7 +56,7 @@ export function OnboardingPage() {
     <main className="flex min-h-dvh items-center justify-center bg-page-background px-4 py-8 text-foreground">
       <div className="flex w-full max-w-md flex-col gap-4">
         <div className="flex flex-col gap-1">
-          <p className="text-sm font-medium text-muted-foreground">Lightsite</p>
+          <p className="text-sm font-medium text-muted-foreground">Handout</p>
           <h1 className="font-heading text-2xl leading-8 font-semibold tracking-normal">
             Set up your workspace
           </h1>
@@ -204,7 +204,7 @@ function AccountSetupCard({
               <FieldLabel htmlFor="display-name">Name</FieldLabel>
               <Input
                 id="display-name"
-                maxLength={LIGHTSITE_TEXT_LIMITS.accountDisplayName}
+                maxLength={HANDOUT_TEXT_LIMITS.accountDisplayName}
                 value={displayName}
                 onChange={(event) => {
                   setDisplayName(event.target.value)
@@ -320,7 +320,7 @@ function WorkspaceSetupCard({ defaultName }: { defaultName: string }) {
               <FieldLabel htmlFor="workspace-name">Workspace name</FieldLabel>
               <Input
                 id="workspace-name"
-                maxLength={LIGHTSITE_TEXT_LIMITS.workspaceName}
+                maxLength={HANDOUT_TEXT_LIMITS.workspaceName}
                 value={name}
                 onChange={(event) => {
                   const nextName = event.target.value
@@ -343,7 +343,7 @@ function WorkspaceSetupCard({ defaultName }: { defaultName: string }) {
               <FieldLabel htmlFor="workspace-slug">Workspace slug</FieldLabel>
               <Input
                 id="workspace-slug"
-                maxLength={LIGHTSITE_TEXT_LIMITS.slug}
+                maxLength={HANDOUT_TEXT_LIMITS.slug}
                 value={slug}
                 onChange={(event) => {
                   setSlugTouched(true)
@@ -372,7 +372,7 @@ function WorkspaceSetupCard({ defaultName }: { defaultName: string }) {
               <FieldLabel htmlFor="workspace-website">Website</FieldLabel>
               <Input
                 id="workspace-website"
-                maxLength={LIGHTSITE_TEXT_LIMITS.url}
+                maxLength={HANDOUT_TEXT_LIMITS.url}
                 value={website}
                 onChange={(event) => {
                   setWebsite(event.target.value)

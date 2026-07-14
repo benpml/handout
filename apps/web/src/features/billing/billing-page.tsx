@@ -8,7 +8,7 @@ import {
   IconInfinity,
   IconSparkles,
 } from "@tabler/icons-react"
-import type { BillingInterval, WorkspacePlan } from "@lightsite/contracts"
+import type { BillingInterval, WorkspacePlan } from "@handout/contracts"
 import { toast } from "sonner"
 
 import { PageHeader } from "@/components/common/page-header"
@@ -172,7 +172,7 @@ export function BillingPage() {
       <section className="grid gap-4 lg:grid-cols-2">
         <PlanCard
           badge={activePlan === "free" ? "Current" : undefined}
-          description="Try Lightsite and build before you publish."
+          description="Try Handout and build before you publish."
           features={[
             "Build up to 10 sites",
             "Private drafts",

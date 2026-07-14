@@ -16,8 +16,8 @@ import {
   IconUsersGroup,
   IconWorld,
 } from "@tabler/icons-react"
-import type { SiteDetailResponse } from "@lightsite/contracts"
-import type { TrackingV2EventFeedItem } from "@lightsite/tracking-schema"
+import type { SiteDetailResponse } from "@handout/contracts"
+import type { TrackingV2EventFeedItem } from "@handout/tracking-schema"
 import { toast } from "sonner"
 
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -105,7 +105,7 @@ export function SiteDetailsPage() {
   }, [recipientActivityQuery.data])
   const draftContent = siteContentQuery.data?.draftContent
   const publicSitePath = site ? `/${activeWorkspace.slug}/${site.slug}` : ""
-  const publicSiteDisplayUrl = site ? `lightsite.io/${activeWorkspace.slug}/${site.slug}` : "lightsite.io/site"
+  const publicSiteDisplayUrl = site ? `handout.link/${activeWorkspace.slug}/${site.slug}` : "handout.link/site"
   const previewPayload = site && draftContent
     ? createSitePreviewPayload({
         content: draftContent,
@@ -157,7 +157,7 @@ export function SiteDetailsPage() {
         </div>
 
         <div className="mx-auto mt-7 flex w-full max-w-[640px] flex-col gap-9">
-        <section className="flex flex-col gap-4">
+        <section className="@container/site-overview flex flex-col gap-4">
           <div className="flex flex-wrap items-start gap-4">
             <div className="flex min-w-[240px] flex-1 basis-0 flex-col gap-0.5">
               <h1 className="truncate text-xl leading-7 font-medium tracking-normal text-foreground">
@@ -168,7 +168,7 @@ export function SiteDetailsPage() {
                 <span className="truncate">{publicSiteDisplayUrl}</span>
               </div>
             </div>
-            <div className="flex w-full flex-wrap items-center justify-start gap-2 sm:min-w-[240px] sm:flex-1 sm:basis-0 sm:justify-end sm:pt-2.5">
+            <div className="flex w-full flex-wrap items-center justify-start gap-2 @min-[540px]/site-overview:w-auto @min-[540px]/site-overview:min-w-[240px] @min-[540px]/site-overview:flex-1 @min-[540px]/site-overview:basis-0 @min-[540px]/site-overview:justify-end @min-[540px]/site-overview:pt-2.5">
               {site.status === "published" ? (
                 <Button asChild variant="outline" size="compact" className="sm:w-[74px]">
                   <a href={publicSitePath} target="_blank" rel="noreferrer">
@@ -195,7 +195,7 @@ export function SiteDetailsPage() {
             </div>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-[216px_minmax(0,1fr)]">
+          <div className="grid gap-3 @min-[540px]/site-overview:grid-cols-[216px_minmax(0,1fr)]">
             <SiteDetailPreviewCard
               isError={siteContentQuery.isError}
               isLoading={siteContentQuery.isLoading}
@@ -317,12 +317,12 @@ function SiteMetadataCard({
       <DetailMetadataRow
         icon={IconCalendarPlus}
         label="Created"
-        value={formatFullDateTime(site.createdAt)}
+        value={<span className="whitespace-nowrap">{formatFullDateTime(site.createdAt)}</span>}
       />
       <DetailMetadataRow
         icon={IconCalendarStats}
         label="Updated"
-        value={formatFullDateTime(site.updatedAt)}
+        value={<span className="whitespace-nowrap">{formatFullDateTime(site.updatedAt)}</span>}
       />
     </div>
   )
@@ -473,7 +473,7 @@ function SiteDetailsLoadingState() {
     <div className="flex min-h-full flex-col px-6 pt-5 pb-6">
       <div className="mx-auto flex w-full max-w-[695px] flex-col">
         <Skeleton className="h-[26px] w-24" />
-        <div className="mx-auto mt-7 flex w-full max-w-[640px] flex-col gap-4">
+        <div className="@container/site-overview mx-auto mt-7 flex w-full max-w-[640px] flex-col gap-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-col gap-2">
               <Skeleton className="h-7 w-56" />
@@ -481,7 +481,7 @@ function SiteDetailsLoadingState() {
             </div>
             <Skeleton className="h-[30px] w-48" />
           </div>
-          <div className="grid gap-3 md:grid-cols-[216px_minmax(0,1fr)]">
+          <div className="grid gap-3 @min-[540px]/site-overview:grid-cols-[216px_minmax(0,1fr)]">
             <Skeleton className="h-[150px] rounded-xl" />
             <Skeleton className="h-[150px] rounded-xl" />
           </div>

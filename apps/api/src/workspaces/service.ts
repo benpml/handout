@@ -3,7 +3,7 @@ import {
   slugifyName,
   validateTextLimit,
   validateWorkspaceSlug,
-} from "@lightsite/domain";
+} from "@handout/domain";
 import {
   WorkspaceSlugConflictError,
   type WorkspaceRecord,

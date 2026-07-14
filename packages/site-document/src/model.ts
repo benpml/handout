@@ -1,11 +1,11 @@
 import {
-  LIGHTSITE_COLLECTION_LIMITS,
-  LIGHTSITE_TEXT_LIMITS,
-} from "@lightsite/domain";
+  HANDOUT_COLLECTION_LIMITS,
+  HANDOUT_TEXT_LIMITS,
+} from "@handout/domain";
 import {
   trackingV2PublicBootstrapSchema,
   trackingV2PublicContextSchema,
-} from "@lightsite/tracking-schema";
+} from "@handout/tracking-schema";
 import { z } from "zod";
 
 import { SITE_DOCUMENT_PROSEMIRROR_SCHEMA } from "./tiptap/site-extensions";
@@ -93,16 +93,16 @@ export type TiptapNode = {
 };
 
 export const tiptapMarkSchema: z.ZodType<TiptapMark> = z.object({
-  type: limitedTrimmedString(LIGHTSITE_TEXT_LIMITS.variableName).min(1),
-  attrs: z.record(limitedString(LIGHTSITE_TEXT_LIMITS.variableName), boundedUnknownSchema).optional(),
+  type: limitedTrimmedString(HANDOUT_TEXT_LIMITS.variableName).min(1),
+  attrs: z.record(limitedString(HANDOUT_TEXT_LIMITS.variableName), boundedUnknownSchema).optional(),
 });
 
 export const tiptapNodeSchema: z.ZodType<TiptapNode> = z.lazy(() => z.object({
-  type: limitedTrimmedString(LIGHTSITE_TEXT_LIMITS.variableName).min(1),
-  attrs: z.record(limitedString(LIGHTSITE_TEXT_LIMITS.variableName), boundedUnknownSchema).optional(),
-  content: z.array(tiptapNodeSchema).max(LIGHTSITE_COLLECTION_LIMITS.blocksPerTab).optional(),
+  type: limitedTrimmedString(HANDOUT_TEXT_LIMITS.variableName).min(1),
+  attrs: z.record(limitedString(HANDOUT_TEXT_LIMITS.variableName), boundedUnknownSchema).optional(),
+  content: z.array(tiptapNodeSchema).max(HANDOUT_COLLECTION_LIMITS.blocksPerTab).optional(),
   marks: z.array(tiptapMarkSchema).max(32).optional(),
-  text: limitedString(LIGHTSITE_TEXT_LIMITS.blockText).optional(),
+  text: limitedString(HANDOUT_TEXT_LIMITS.blockText).optional(),
 }));
 
 export const tiptapDocumentSchema = tiptapNodeSchema
@@ -173,16 +173,32 @@ export const tiptapDocumentSchema = tiptapNodeSchema
   });
 
 export const siteVariableDefinitionSchema = z.object({
-  id: limitedTrimmedString(LIGHTSITE_TEXT_LIMITS.variableName).min(1),
-  key: limitedTrimmedString(LIGHTSITE_TEXT_LIMITS.variableName).min(1),
-  label: limitedTrimmedString(LIGHTSITE_TEXT_LIMITS.variableName).min(1),
+  id: limitedTrimmedString(HANDOUT_TEXT_LIMITS.variableName).min(1),
+  key: limitedTrimmedString(HANDOUT_TEXT_LIMITS.variableName).min(1),
+  label: limitedTrimmedString(HANDOUT_TEXT_LIMITS.variableName).min(1),
   type: z.enum(["text", "image", "url"]),
+  description: limitedString(HANDOUT_TEXT_LIMITS.variableDescription).optional(),
   defaultValue: boundedUnknownSchema,
 });
 
+export const sitePrimaryColorSchema = z.enum([
+  "neutral",
+  "purple",
+  "blue",
+  "cyan",
+  "teal",
+  "green",
+  "yellow",
+  "orange",
+  "red",
+  "pink",
+]);
+
+export const siteTrackingConsentPopupSchema = z.enum(["popup-a", "popup-b", "none"]);
+
 export const siteContentPageSchema = z.object({
-  id: limitedTrimmedString(LIGHTSITE_TEXT_LIMITS.variableName).min(1),
-  name: limitedString(LIGHTSITE_TEXT_LIMITS.siteName),
+  id: limitedTrimmedString(HANDOUT_TEXT_LIMITS.variableName).min(1),
+  name: limitedString(HANDOUT_TEXT_LIMITS.siteName),
   slug: z.string().trim().min(1).max(96),
   status: z.enum(["visible", "hidden"]),
   sortOrder: z.number().int().nonnegative(),
@@ -190,24 +206,24 @@ export const siteContentPageSchema = z.object({
 });
 
 const siteSidebarSectionsSchema = z.object({
-  tabs: z.object({ label: limitedString(LIGHTSITE_TEXT_LIMITS.sidebarLabel) }),
-  links: z.object({ label: limitedString(LIGHTSITE_TEXT_LIMITS.sidebarLabel) }),
-  nextSteps: z.object({ label: limitedString(LIGHTSITE_TEXT_LIMITS.sidebarLabel) }),
+  tabs: z.object({ label: limitedString(HANDOUT_TEXT_LIMITS.sidebarLabel) }),
+  links: z.object({ label: limitedString(HANDOUT_TEXT_LIMITS.sidebarLabel) }),
+  nextSteps: z.object({ label: limitedString(HANDOUT_TEXT_LIMITS.sidebarLabel) }),
 });
 
 export const siteSidebarLinkSchema = z.object({
-  id: limitedTrimmedString(LIGHTSITE_TEXT_LIMITS.variableName).min(1),
-  label: limitedString(LIGHTSITE_TEXT_LIMITS.sidebarLabel),
-  href: limitedString(LIGHTSITE_TEXT_LIMITS.url),
+  id: limitedTrimmedString(HANDOUT_TEXT_LIMITS.variableName).min(1),
+  label: limitedString(HANDOUT_TEXT_LIMITS.sidebarLabel),
+  href: limitedString(HANDOUT_TEXT_LIMITS.url),
   icon: z.enum(["link", "website"]),
   status: z.enum(["visible", "hidden"]),
   sortOrder: z.number().int().nonnegative(),
 });
 
 export const siteSidebarButtonSchema = z.object({
-  id: limitedTrimmedString(LIGHTSITE_TEXT_LIMITS.variableName).min(1),
-  label: limitedString(LIGHTSITE_TEXT_LIMITS.sidebarLabel),
-  href: limitedString(LIGHTSITE_TEXT_LIMITS.url),
+  id: limitedTrimmedString(HANDOUT_TEXT_LIMITS.variableName).min(1),
+  label: limitedString(HANDOUT_TEXT_LIMITS.sidebarLabel),
+  href: limitedString(HANDOUT_TEXT_LIMITS.url),
   style: z.enum(["filled", "outline"]),
   status: z.enum(["visible", "hidden"]),
   sortOrder: z.number().int().nonnegative(),
@@ -225,8 +241,8 @@ export const defaultSiteSidebar = {
 
 export const siteSidebarSchema = z.object({
   sections: siteSidebarSectionsSchema,
-  links: z.array(siteSidebarLinkSchema).max(LIGHTSITE_COLLECTION_LIMITS.links),
-  nextSteps: z.array(siteSidebarButtonSchema).max(LIGHTSITE_COLLECTION_LIMITS.links),
+  links: z.array(siteSidebarLinkSchema).max(HANDOUT_COLLECTION_LIMITS.links),
+  nextSteps: z.array(siteSidebarButtonSchema).max(HANDOUT_COLLECTION_LIMITS.links),
 });
 
 export const siteContentSchema = z.object({
@@ -235,9 +251,14 @@ export const siteContentSchema = z.object({
   settings: z.object({
     ogImageAssetId: z.string().trim().min(1).optional(),
     allowSearchIndexing: z.literal(false),
+    siteTitle: limitedString(HANDOUT_TEXT_LIMITS.siteName).default(""),
+    siteDescription: limitedString(HANDOUT_TEXT_LIMITS.variableDescription).default(""),
+    primaryColor: sitePrimaryColorSchema.default("neutral"),
+    trackingConsentPopup: siteTrackingConsentPopupSchema.default("popup-a"),
+    trackingPrivacyPolicyUrl: limitedString(HANDOUT_TEXT_LIMITS.url).default(""),
   }),
   variables: z.array(siteVariableDefinitionSchema).max(200),
-  pages: z.array(siteContentPageSchema).min(1).max(LIGHTSITE_COLLECTION_LIMITS.tabs),
+  pages: z.array(siteContentPageSchema).min(1).max(HANDOUT_COLLECTION_LIMITS.tabs),
   sidebar: siteSidebarSchema,
 });
 
@@ -278,6 +299,8 @@ export const publicSitePayloadSchema = z.object({
 });
 
 export type SiteVariableDefinition = z.infer<typeof siteVariableDefinitionSchema>;
+export type SitePrimaryColor = z.infer<typeof sitePrimaryColorSchema>;
+export type SiteTrackingConsentPopup = z.infer<typeof siteTrackingConsentPopupSchema>;
 export type SiteContentPage = z.infer<typeof siteContentPageSchema>;
 export type SiteSidebarLink = z.infer<typeof siteSidebarLinkSchema>;
 export type SiteSidebarButton = z.infer<typeof siteSidebarButtonSchema>;
@@ -287,13 +310,14 @@ export type PublishedSitePayload = z.infer<typeof publicSitePayloadSchema>;
 
 const recipientWebsiteVariable: SiteVariableDefinition = {
   id: "recipient_website",
-  key: "recipient_website",
-  label: "Recipient website",
+  key: "website",
+  label: "Website",
   type: "url",
+  description: "The recipient company's website.",
   defaultValue: "",
 };
 
-export function createDefaultSiteContent(siteName = "Untitled Lightsite"): SiteContent {
+export function createDefaultSiteContent(siteName = "Untitled Handout"): SiteContent {
   const pageName = siteName.trim() || "Overview";
 
   return {
@@ -301,6 +325,11 @@ export function createDefaultSiteContent(siteName = "Untitled Lightsite"): SiteC
     themeMode: "dark",
     settings: {
       allowSearchIndexing: false,
+      siteTitle: "",
+      siteDescription: "",
+      primaryColor: "neutral",
+      trackingConsentPopup: "popup-a",
+      trackingPrivacyPolicyUrl: "",
     },
     variables: [recipientWebsiteVariable],
     pages: [{
@@ -374,15 +403,78 @@ export function getSiteSidebarModel(
   };
 }
 
-export function getSiteMetadata(content: SiteContent, fallbackTitle: string) {
+export function getSiteMetadata(
+  content: SiteContent,
+  fallbackTitle: string,
+  values: Readonly<Record<string, string>> = {},
+) {
   const page = getVisibleSitePages(content)[0];
   const pageTitle = page ? findNode(page.document, "pageTitleTitle") : null;
   const pageSubtitle = page ? findNode(page.document, "pageTitleSubtitle") : null;
+  const configuredTitle = resolveSiteSettingTemplate(content.settings.siteTitle, values).trim();
+  const configuredDescription = resolveSiteSettingTemplate(
+    content.settings.siteDescription,
+    values,
+  ).trim();
 
   return {
-    title: getNodeText(pageTitle).trim() || fallbackTitle.trim() || "Untitled Lightsite",
-    description: getNodeText(pageSubtitle).trim(),
+    title: configuredTitle || getNodeText(pageTitle).trim() || fallbackTitle.trim() || "Untitled Handout",
+    description: configuredDescription || getNodeText(pageSubtitle).trim(),
   };
+}
+
+export function getSiteVariableValues(
+  content: SiteContent,
+  input: {
+    recipientCompany?: string | null;
+    recipientName?: string | null;
+    variableValues?: Readonly<Record<string, unknown>> | null;
+  } = {},
+) {
+  const values: Record<string, string> = {};
+
+  for (const variable of content.variables) {
+    const value = toSiteVariableString(variable.defaultValue);
+    values[variable.id] = value;
+    values[variable.key] = value;
+  }
+
+  for (const [key, rawValue] of Object.entries(input.variableValues ?? {})) {
+    const value = toSiteVariableString(rawValue);
+    values[key] = value;
+    const definition = content.variables.find(
+      (variable) => variable.id === key || variable.key === key,
+    );
+    if (definition) {
+      values[definition.id] = value;
+      values[definition.key] = value;
+    }
+  }
+
+  if (input.recipientName) {
+    values["recipient-name"] = input.recipientName;
+    values.recipient_name = input.recipientName;
+    values.name = input.recipientName;
+  }
+  if (input.recipientCompany) {
+    values["recipient-company"] = input.recipientCompany;
+    values.recipient_company = input.recipientCompany;
+    values.company = input.recipientCompany;
+  }
+  const recipientWebsite = values.recipient_website ?? values.website;
+  if (recipientWebsite !== undefined) {
+    values.recipient_website = recipientWebsite;
+    values.website = recipientWebsite;
+  }
+
+  return values;
+}
+
+export function resolveSiteSettingTemplate(
+  value: string,
+  values: Readonly<Record<string, string>>,
+) {
+  return value.replace(/\{\{\s*([a-zA-Z0-9_-]+)\s*\}\}/g, (_match, key: string) => values[key] ?? "");
 }
 
 export function getNodeText(node: TiptapNode | null | undefined): string {
@@ -423,14 +515,14 @@ function validateUnknown(value: unknown, context: z.RefinementCtx, depth: number
   }
 
   if (typeof value === "string") {
-    if (value.length > LIGHTSITE_TEXT_LIMITS.blockText) {
+    if (value.length > HANDOUT_TEXT_LIMITS.blockText) {
       context.addIssue({ code: "custom", message: "Content string is too long." });
     }
     return;
   }
 
   if (Array.isArray(value)) {
-    if (value.length > LIGHTSITE_COLLECTION_LIMITS.blocksPerTab) {
+    if (value.length > HANDOUT_COLLECTION_LIMITS.blocksPerTab) {
       context.addIssue({ code: "custom", message: "Content array is too large." });
       return;
     }
@@ -446,4 +538,10 @@ function validateUnknown(value: unknown, context: z.RefinementCtx, depth: number
     }
     entries.forEach(([, entry]) => validateUnknown(entry, context, depth + 1));
   }
+}
+
+function toSiteVariableString(value: unknown) {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  return "";
 }

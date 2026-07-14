@@ -22,7 +22,7 @@ export function VideoEmbedView({ editor, getPos, node }: NodeViewProps) {
       editor
         .chain()
         .focus()
-        .openLightsiteNextVideoEmbedSettings(pos, src ? "edit" : "create")
+        .openHandoutNextVideoEmbedSettings(pos, src ? "edit" : "create")
         .run()
     },
     [editor, getPos, src]
@@ -31,19 +31,19 @@ export function VideoEmbedView({ editor, getPos, node }: NodeViewProps) {
   return (
     <NodeViewWrapper
       as="figure"
-      data-lightsite-editor-block=""
-      data-lightsite-editor-block-type="video-embed"
-      className="lightsite-editor-video-embed-shell"
+      data-handout-editor-block=""
+      data-handout-editor-block-type="video-embed"
+      className="handout-editor-video-embed-shell"
     >
       {src ? (
-        <div className="lightsite-editor-video-embed">
-          <div className="lightsite-editor-video-embed-toolbar" contentEditable={false}>
-            <div className="lightsite-editor-video-embed-meta">
+        <div className="handout-editor-video-embed">
+          <div className="handout-editor-video-embed-toolbar" contentEditable={false}>
+            <div className="handout-editor-video-embed-meta">
               <IconVideo aria-hidden="true" />
               <span>{label}</span>
             </div>
             <button
-              className="lightsite-editor-video-embed-edit"
+              className="handout-editor-video-embed-edit"
               type="button"
               onClick={openSettings}
               onMouseDown={(event) => {
@@ -58,7 +58,7 @@ export function VideoEmbedView({ editor, getPos, node }: NodeViewProps) {
           <iframe
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
-            className="lightsite-editor-video-embed-frame"
+            className="handout-editor-video-embed-frame"
             loading="lazy"
             referrerPolicy="strict-origin-when-cross-origin"
             src={src}
@@ -67,7 +67,7 @@ export function VideoEmbedView({ editor, getPos, node }: NodeViewProps) {
         </div>
       ) : (
         <button
-          className="lightsite-editor-video-embed-empty"
+          className="handout-editor-video-embed-empty"
           contentEditable={false}
           type="button"
           onClick={openSettings}
@@ -77,8 +77,8 @@ export function VideoEmbedView({ editor, getPos, node }: NodeViewProps) {
           }}
         >
           <IconVideo aria-hidden="true" />
-          <span className="lightsite-editor-video-embed-empty-title">Add video embed</span>
-          <span className="lightsite-editor-video-embed-empty-description">
+          <span className="handout-editor-video-embed-empty-title">Add video embed</span>
+          <span className="handout-editor-video-embed-empty-description">
             Paste a YouTube, Vimeo, Loom, or iframe embed code
           </span>
         </button>

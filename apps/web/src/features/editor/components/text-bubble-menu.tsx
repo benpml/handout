@@ -1,6 +1,6 @@
 import type React from "react"
-import { normalizeEditorHighlightColor, normalizeEditorTextColor } from "@lightsite/design-tokens"
-import { LIGHTSITE_TEXT_LIMITS, normalizeWebsiteUrl } from "@lightsite/domain"
+import { normalizeEditorHighlightColor, normalizeEditorTextColor } from "@handout/design-tokens"
+import { HANDOUT_TEXT_LIMITS, normalizeWebsiteUrl } from "@handout/domain"
 import { BubbleMenu } from "@tiptap/react/menus"
 import type { Editor } from "@tiptap/react"
 import { useEditorState } from "@tiptap/react"
@@ -321,14 +321,14 @@ export function EditorTextBubbleMenu({ editor }: EditorTextBubbleMenuProps) {
         offset: 10,
       }}
     >
-      <div ref={bubbleRef} className="lightsite-editor-bubble-menu-shell">
-        <div className="lightsite-editor-bubble-menu">
+      <div ref={bubbleRef} className="handout-editor-bubble-menu-shell">
+        <div className="handout-editor-bubble-menu">
           <SegmentButton
             label={editorState.blockTypeLabel}
             expanded={activePanel === "type"}
             onClick={() => setActivePanel(activePanel === "type" ? null : "type")}
           />
-          <span className="lightsite-editor-bubble-menu-separator" />
+          <span className="handout-editor-bubble-menu-separator" />
           <MenuButton
             label="Bold"
             active={editorState.isBold}
@@ -364,7 +364,7 @@ export function EditorTextBubbleMenu({ editor }: EditorTextBubbleMenuProps) {
           >
             <IconCode />
           </MenuButton>
-          <span className="lightsite-editor-bubble-menu-separator" />
+          <span className="handout-editor-bubble-menu-separator" />
           <MenuButton label="Link" active={editorState.isLink} onClick={openLinkPanel}>
             <IconLink />
           </MenuButton>
@@ -374,7 +374,7 @@ export function EditorTextBubbleMenu({ editor }: EditorTextBubbleMenuProps) {
             highlightColor={editorState.highlightColor}
             onClick={() => setActivePanel(activePanel === "color" ? null : "color")}
           />
-          <span className="lightsite-editor-bubble-menu-separator" />
+          <span className="handout-editor-bubble-menu-separator" />
           <MenuButton
             label="More"
             active={activePanel === "more"}
@@ -384,7 +384,7 @@ export function EditorTextBubbleMenu({ editor }: EditorTextBubbleMenuProps) {
           </MenuButton>
         </div>
         {activePanel === "type" ? (
-          <div className="lightsite-editor-bubble-panel lightsite-editor-bubble-panel-type">
+          <div className="handout-editor-bubble-panel handout-editor-bubble-panel-type">
             {textTypeOptions.map((option) => {
               const Icon = option.icon
               const active = option.active(editor)
@@ -394,7 +394,7 @@ export function EditorTextBubbleMenu({ editor }: EditorTextBubbleMenuProps) {
                   key={option.label}
                   type="button"
                   data-slot="editor-menu-item"
-                  className="lightsite-editor-bubble-panel-row"
+                  className="handout-editor-bubble-panel-row"
                   data-active={active}
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => {
@@ -402,18 +402,18 @@ export function EditorTextBubbleMenu({ editor }: EditorTextBubbleMenuProps) {
                     setActivePanel(null)
                   }}
                 >
-                  <Icon className="lightsite-editor-bubble-panel-row-icon" />
-                  <span className="lightsite-editor-bubble-panel-row-copy">
-                    <span className="lightsite-editor-bubble-panel-row-label">{option.label}</span>
+                  <Icon className="handout-editor-bubble-panel-row-icon" />
+                  <span className="handout-editor-bubble-panel-row-copy">
+                    <span className="handout-editor-bubble-panel-row-label">{option.label}</span>
                   </span>
-                  {active ? <IconCheck className="lightsite-editor-bubble-panel-row-check" /> : null}
+                  {active ? <IconCheck className="handout-editor-bubble-panel-row-check" /> : null}
                 </button>
               )
             })}
           </div>
         ) : null}
         {activePanel === "color" ? (
-          <div className="lightsite-editor-bubble-panel lightsite-editor-color-panel">
+          <div className="handout-editor-bubble-panel handout-editor-color-panel">
             <ColorSection label="Text color">
               {textColors.map((option) => (
                 <TextColorButton
@@ -438,27 +438,27 @@ export function EditorTextBubbleMenu({ editor }: EditorTextBubbleMenuProps) {
         ) : null}
         {activePanel === "link" ? (
           <form
-            className="lightsite-editor-bubble-panel lightsite-editor-link-panel"
+            className="handout-editor-bubble-panel handout-editor-link-panel"
             onMouseDown={(event) => event.stopPropagation()}
             onSubmit={(event) => {
               event.preventDefault()
               applyLink()
             }}
           >
-            <label className="lightsite-editor-link-panel-label" htmlFor="lightsite-editor-link-input">
+            <label className="handout-editor-link-panel-label" htmlFor="handout-editor-link-input">
               Link
             </label>
-            <InputGroup className="lightsite-editor-link-panel-field">
+            <InputGroup className="handout-editor-link-panel-field">
               <InputGroupAddon>
-                <IconLink className="lightsite-editor-link-editor-icon" />
+                <IconLink className="handout-editor-link-editor-icon" />
               </InputGroupAddon>
               <InputGroupInput
-                id="lightsite-editor-link-input"
+                id="handout-editor-link-input"
                 ref={linkInputRef}
                 aria-label="Link URL"
                 aria-invalid={linkError ? true : undefined}
                 inputMode="url"
-                maxLength={LIGHTSITE_TEXT_LIMITS.url}
+                maxLength={HANDOUT_TEXT_LIMITS.url}
                 placeholder="Paste or type a link"
                 value={linkHref}
                 onChange={(event) => {
@@ -477,7 +477,7 @@ export function EditorTextBubbleMenu({ editor }: EditorTextBubbleMenuProps) {
             {linkError ? (
               <div className="px-1 text-xs text-destructive">{linkError}</div>
             ) : null}
-            <div className="lightsite-editor-link-panel-actions">
+            <div className="handout-editor-link-panel-actions">
               {editorState.isLink ? (
                 <Button
                   type="button"
@@ -506,46 +506,46 @@ export function EditorTextBubbleMenu({ editor }: EditorTextBubbleMenuProps) {
           </form>
         ) : null}
         {activePanel === "more" ? (
-          <div className="lightsite-editor-bubble-panel lightsite-editor-bubble-panel-more">
+          <div className="handout-editor-bubble-panel handout-editor-bubble-panel-more">
             <button
               type="button"
               data-slot="editor-menu-item"
-              className="lightsite-editor-bubble-panel-row"
+              className="handout-editor-bubble-panel-row"
               disabled={!editorState.canClear}
               onMouseDown={(event) => event.preventDefault()}
               onClick={clearFormatting}
             >
-              <IconClearFormatting className="lightsite-editor-bubble-panel-row-icon" />
-              <span className="lightsite-editor-bubble-panel-row-copy">
-                <span className="lightsite-editor-bubble-panel-row-label">Clear formatting</span>
+              <IconClearFormatting className="handout-editor-bubble-panel-row-icon" />
+              <span className="handout-editor-bubble-panel-row-copy">
+                <span className="handout-editor-bubble-panel-row-label">Clear formatting</span>
               </span>
             </button>
             <button
               type="button"
               data-slot="editor-menu-item"
-              className="lightsite-editor-bubble-panel-row"
+              className="handout-editor-bubble-panel-row"
               disabled={!editorState.isLink}
               onMouseDown={(event) => event.preventDefault()}
               onClick={removeLink}
             >
-              <IconUnlink className="lightsite-editor-bubble-panel-row-icon" />
-              <span className="lightsite-editor-bubble-panel-row-copy">
-                <span className="lightsite-editor-bubble-panel-row-label">Remove link</span>
+              <IconUnlink className="handout-editor-bubble-panel-row-icon" />
+              <span className="handout-editor-bubble-panel-row-copy">
+                <span className="handout-editor-bubble-panel-row-label">Remove link</span>
               </span>
             </button>
             <button
               type="button"
               data-slot="editor-menu-item"
-              className="lightsite-editor-bubble-panel-row"
+              className="handout-editor-bubble-panel-row"
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => {
                 editor.chain().focus().unsetColor().removeEmptyTextStyle().unsetHighlight().run()
                 setActivePanel(null)
               }}
             >
-              <IconX className="lightsite-editor-bubble-panel-row-icon" />
-              <span className="lightsite-editor-bubble-panel-row-copy">
-                <span className="lightsite-editor-bubble-panel-row-label">Clear colors</span>
+              <IconX className="handout-editor-bubble-panel-row-icon" />
+              <span className="handout-editor-bubble-panel-row-copy">
+                <span className="handout-editor-bubble-panel-row-label">Clear colors</span>
               </span>
             </button>
           </div>
@@ -631,11 +631,11 @@ function ColorTrigger({
       onClick={onClick}
     >
       <span
-        className="lightsite-editor-color-trigger-glyph"
+        className="handout-editor-color-trigger-glyph"
         style={
           {
-            "--lightsite-editor-current-text-color": textColor || "var(--popover-foreground)",
-            "--lightsite-editor-current-highlight-color": highlightColor || "transparent",
+            "--handout-editor-current-text-color": textColor || "var(--popover-foreground)",
+            "--handout-editor-current-highlight-color": highlightColor || "transparent",
           } as React.CSSProperties
         }
       >
@@ -648,9 +648,9 @@ function ColorTrigger({
 
 function ColorSection({ children, label }: { children: React.ReactNode; label: string }) {
   return (
-    <section className="lightsite-editor-color-section">
-      <div className="lightsite-editor-color-section-label">{label}</div>
-      <div className="lightsite-editor-color-grid">{children}</div>
+    <section className="handout-editor-color-section">
+      <div className="handout-editor-color-section-label">{label}</div>
+      <div className="handout-editor-color-grid">{children}</div>
     </section>
   )
 }
@@ -668,14 +668,14 @@ function TextColorButton({
     <button
       type="button"
       aria-label={`${option.label} text color`}
-      className="lightsite-editor-text-color-button"
+      className="handout-editor-text-color-button"
       data-active={active}
       onMouseDown={(event) => event.preventDefault()}
       onClick={onSelect}
       style={
         {
-          "--lightsite-editor-color-ring": option.ring,
-          "--lightsite-editor-color-value": option.value ?? "var(--popover-foreground)",
+          "--handout-editor-color-ring": option.ring,
+          "--handout-editor-color-value": option.value ?? "var(--popover-foreground)",
         } as React.CSSProperties
       }
     >
@@ -697,16 +697,16 @@ function HighlightColorButton({
     <button
       type="button"
       aria-label={`${option.label} highlight color`}
-      className="lightsite-editor-highlight-color-button"
+      className="handout-editor-highlight-color-button"
       data-active={active}
       data-empty={option.value === null}
       onMouseDown={(event) => event.preventDefault()}
       onClick={onSelect}
       style={
         {
-          "--lightsite-editor-highlight-value": option.value ?? "transparent",
-          "--lightsite-editor-highlight-swatch": option.swatch ?? "transparent",
-          "--lightsite-editor-highlight-border": option.border ?? "transparent",
+          "--handout-editor-highlight-value": option.value ?? "transparent",
+          "--handout-editor-highlight-swatch": option.swatch ?? "transparent",
+          "--handout-editor-highlight-border": option.border ?? "transparent",
         } as React.CSSProperties
       }
     />

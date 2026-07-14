@@ -1,5 +1,5 @@
 import { ReactNodeViewRenderer } from "@tiptap/react"
-import { SiteCalendarEmbed } from "@lightsite/site-document"
+import { SiteCalendarEmbed } from "@handout/site-document"
 
 import { CalendarEmbedView } from "./calendar-embed-view"
 

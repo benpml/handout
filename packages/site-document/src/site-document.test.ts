@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { LIGHTSITE_THEME_CSS } from "@lightsite/design-tokens";
+import { HANDOUT_THEME_CSS } from "@handout/design-tokens";
 
 import {
   createDefaultSiteContent,
+  getSiteMetadata,
+  getSiteVariableValues,
   normalizeSiteContent,
   normalizePublishedSitePayload,
   normalizeSiteIconColor,
@@ -12,6 +14,7 @@ import {
   PUBLIC_SITE_PAYLOAD_SCHEMA_VERSION,
   renderPublicSiteHtml,
   renderPublicSitePreviewHtml,
+  resolvePublicSiteTracking,
   renderSiteIconSvg,
   SITE_ICON_OPTIONS,
   SITE_DOCUMENT_CSS,
@@ -45,6 +48,44 @@ describe("canonical site document", () => {
 
     expect(siteContentSchema.safeParse(unknownNode).success).toBe(false);
     expect(siteContentSchema.safeParse(unknownMark).success).toBe(false);
+  });
+
+  it("adds site settings defaults without discarding older valid documents", () => {
+    const legacy = createDefaultSiteContent("Existing site") as unknown as Record<string, unknown>;
+    const settings = { ...((legacy.settings ?? {}) as Record<string, unknown>) };
+    delete settings.siteTitle;
+    delete settings.siteDescription;
+    delete settings.primaryColor;
+    delete settings.trackingConsentPopup;
+    delete settings.trackingPrivacyPolicyUrl;
+    legacy.settings = settings;
+
+    const normalized = normalizeSiteContent(legacy, "Fallback");
+
+    expect(normalized.pages[0]?.name).toBe("Existing site");
+    expect(normalized.settings).toMatchObject({
+      siteTitle: "",
+      siteDescription: "",
+      primaryColor: "neutral",
+      trackingConsentPopup: "popup-a",
+      trackingPrivacyPolicyUrl: "",
+    });
+  });
+
+  it("resolves recipient variables in configured title and description metadata", () => {
+    const content = createDefaultSiteContent("Fallback title");
+    content.settings.siteTitle = "Plan for {{company}}";
+    content.settings.siteDescription = "Prepared for {{name}} at {{website}}";
+    const values = getSiteVariableValues(content, {
+      recipientCompany: "Acme",
+      recipientName: "Mira",
+      variableValues: { recipient_website: "acme.com" },
+    });
+
+    expect(getSiteMetadata(content, "Fallback title", values)).toEqual({
+      title: "Plan for Acme",
+      description: "Prepared for Mira at acme.com",
+    });
   });
 
   it("renders nested Tiptap content, variables, navigation, and tracking from one source", () => {
@@ -97,36 +138,104 @@ describe("canonical site document", () => {
 
     const html = renderPublicSiteHtml(payload, {
       includeTracking: false,
-      origin: "https://lightsite.test",
+      origin: "https://handout.test",
     });
 
     expect(html).toContain("Plan for Acme");
     expect(html).toContain('src="/api/public/site-logo/acme/rollout/workspace?theme=dark&amp;variant=mira"');
     expect(html).toContain('src="/api/public/site-logo/acme/rollout/recipient?theme=dark&amp;variant=mira"');
-    expect(html).toContain('data-ls-logo-kind="workspace"');
-    expect(html).toContain('data-ls-logo-kind="recipient"');
+    expect(html).toContain('data-handout-logo-kind="workspace"');
+    expect(html).toContain('data-handout-logo-kind="recipient"');
     expect(html).toContain("<strong>Bold</strong>");
-    expect(html).toContain('data-ls-element-id="book-call"');
-    expect(html).toContain('class="ls-button-block ls-button-block-full"');
-    expect(html).toContain('data-ls-element-kind="sidebar_link"');
-    expect(html).toContain('data-ls-element-kind="tab"');
+    expect(html).toContain('data-handout-element-id="book-call"');
+    expect(html).toContain('class="handout-button-block handout-button-block-full"');
+    expect(html).toContain('data-handout-track="link" data-handout-element-id="proposal-link"');
+    expect(html).toContain('data-handout-page-id="page-pricing" data-handout-track="tab"');
     expect(html).toContain(renderSiteIconSvg("notes"));
-    expect(html).toContain('data-ls-element-href="https://example.com/book"');
-    expect(html).toContain('<script defer src="/site-runtime.v3.js"></script>');
+    expect(html).not.toContain("data-handout-element-kind");
+    expect(html).not.toContain("data-handout-element-label");
+    expect(html).not.toContain("data-handout-element-href");
+    expect(html).toContain('<script defer src="/site-runtime.v4.js"></script>');
     expect(html).toContain('url("/fonts/geist-latin-wght-normal.woff2")');
     expect(html).toContain('format("woff2")');
     expect(html).not.toContain("woff2-variations");
     expect(html).not.toContain("<script>(function");
     expect(html).toContain("Open site navigation");
     expect(html).toContain('aria-label="Close site navigation"');
-    expect(html).toContain('class="ls-sidebar-backdrop"');
+    expect(html).toContain('class="handout-sidebar-backdrop"');
     expect(html).toContain(renderSiteIconSvg("menu"));
     expect(html).toContain(renderSiteIconSvg("x"));
     expect(html).toContain('stroke-width="2"');
     expect(html).toContain('<h2>Tabs</h2>');
-    expect(html).toContain('<span class="ls-footer-logo" role="img" aria-label="Lightsite"></span>');
-    expect(html).not.toContain('<img src="/lightsite-logo.svg" alt="Lightsite">');
-    expect(html).toContain(`<style>${LIGHTSITE_THEME_CSS}${SITE_DOCUMENT_CSS}</style>`);
+    expect(html).toContain('<span class="handout-footer-logo" role="img" aria-label="Handout"></span>');
+    expect(html).not.toContain('<img src="/handout-logo.svg" alt="Handout">');
+    expect(html).toContain(`<style>${HANDOUT_THEME_CSS}${SITE_DOCUMENT_CSS}</style>`);
+  });
+
+  it("builds a compact server-owned manifest from the same resolved controls", () => {
+    const payload = buildPayload();
+    payload.content.pages[0]!.document.content = [
+      {
+        type: "paragraph",
+        content: [{
+          type: "text",
+          text: "Untracked rich link",
+          marks: [{ type: "link", attrs: { href: "https://private.example/path?token=secret" } }],
+        }],
+      },
+      {
+        type: "buttonBlock",
+        attrs: { id: "book-call", href: "https://calendar.example/book/mira?token=secret", fullWidth: false },
+        content: [
+          { type: "text", text: "Book with " },
+          { type: "variableToken", attrs: { variableId: "company_name", fallbackName: "Company" } },
+        ],
+      },
+      {
+        type: "buttonBlock",
+        attrs: { href: "https://example.com/unidentified", fullWidth: false },
+        content: [{ type: "text", text: "Missing stable ID" }],
+      },
+    ];
+    payload.content.sidebar.links.push({
+      id: "proposal-link",
+      label: "Proposal for {{company_name}}",
+      href: "https://docs.example/proposal/acme?recipient=mira#private",
+      icon: "website",
+      status: "visible",
+      sortOrder: 0,
+    });
+
+    const resolved = resolvePublicSiteTracking(payload);
+
+    expect(resolved.manifest).toEqual({
+      schemaVersion: 1,
+      siteLabel: "Rollout",
+      pages: [{ id: "page-overview", label: "Overview" }],
+      elements: [
+        {
+          id: "book-call",
+          pageId: "page-overview",
+          eventType: "button_click",
+          kind: "button",
+          label: "Book with Acme",
+          destinationKind: "external_web",
+          destinationHost: "calendar.example",
+        },
+        {
+          id: "proposal-link",
+          pageId: null,
+          eventType: "link_click",
+          kind: "sidebar_link",
+          label: "Proposal for Acme",
+          destinationKind: "external_web",
+          destinationHost: "docs.example",
+        },
+      ],
+    });
+    expect(JSON.stringify(resolved.manifest)).not.toContain("token=secret");
+    expect(JSON.stringify(resolved.manifest)).not.toContain("private.example");
+    expect(JSON.stringify(resolved.manifest)).not.toContain("Missing stable ID");
   });
 
   it("keeps a default-width Tiptap button content-sized in public output", () => {
@@ -139,50 +248,50 @@ describe("canonical site document", () => {
 
     const html = renderPublicSiteHtml(payload, { includeTracking: false });
 
-    expect(html).toContain('class="ls-button-block"');
-    expect(html).not.toContain('class="ls-button-block ls-button-block-full"');
+    expect(html).toContain('class="handout-button-block"');
+    expect(html).not.toContain('class="handout-button-block handout-button-block-full"');
   });
 
   it("keeps the canonical editor and public typography in one stylesheet", () => {
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-document-editor .ls-prosemirror>h2");
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-prosemirror>h2");
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-document-editor .handout-prosemirror>h2");
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-prosemirror>h2");
     expect(SITE_DOCUMENT_CSS).toContain('font-family:"Geist Variable","Geist"')
     expect(SITE_DOCUMENT_CSS).toContain("letter-spacing:-.02em")
     expect(SITE_DOCUMENT_CSS).toContain("letter-spacing:-.03em")
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-document,.ls-document-editor{font-weight:325}")
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-prosemirror>p{padding:0;color:var(--tertiary-foreground);font-size:16px;font-weight:325;font-variation-settings:\"wght\" 325")
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-document-editor .ls-prosemirror>p{padding:0;color:var(--tertiary-foreground);font-size:16px;font-weight:325;font-variation-settings:\"wght\" 325")
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-page-title-subtitle{max-width:100%;margin:8px 0 0;color:var(--tertiary-foreground);font-size:16px;font-weight:325;font-variation-settings:\"wght\" 325")
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-prosemirror>h1+p,.ls-prosemirror>h2+p,.ls-prosemirror>h3+p{margin-top:14px}")
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-page-title-subtitle{max-width:100%;margin:8px 0 0")
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-document-editor .ls-prosemirror>h1+p,.ls-document-editor .ls-prosemirror>h2+p,.ls-document-editor .ls-prosemirror>h3+p{margin-top:14px}")
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-document-editor .ls-prosemirror{width:100%;min-width:0;max-width:100%")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-document,.handout-document-editor{font-weight:325}")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-prosemirror>p{padding:0;color:var(--tertiary-foreground);font-size:16px;font-weight:325;font-variation-settings:\"wght\" 325")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-document-editor .handout-prosemirror>p{padding:0;color:var(--tertiary-foreground);font-size:16px;font-weight:325;font-variation-settings:\"wght\" 325")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-page-title-subtitle{max-width:100%;margin:8px 0 0;color:var(--tertiary-foreground);font-size:16px;font-weight:325;font-variation-settings:\"wght\" 325")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-prosemirror>h1+p,.handout-prosemirror>h2+p,.handout-prosemirror>h3+p{margin-top:14px}")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-page-title-subtitle{max-width:100%;margin:8px 0 0")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-document-editor .handout-prosemirror>h1+p,.handout-document-editor .handout-prosemirror>h2+p,.handout-document-editor .handout-prosemirror>h3+p{margin-top:14px}")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-document-editor .handout-prosemirror{width:100%;min-width:0;max-width:100%")
     expect(SITE_DOCUMENT_CSS).toContain("width:min(612px,calc(100% - 104px));max-width:calc(100% - 104px)")
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-logo-grid{display:grid;width:100%;min-width:0;max-width:100%")
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-table th{background:var(--table-header-background)")
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-button-block{display:inline-flex;width:max-content;min-height:32px;max-width:100%;align-items:center;justify-content:center;padding:0 12px;border-radius:8px;background:var(--primary);color:var(--primary-foreground);font-size:15px")
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-button-block-full{display:flex;width:100%;min-height:40px;padding:2px 12px}")
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-document-editor .lightsite-editor-button-block-full{min-height:40px;padding:2px 12px}")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-logo-grid{display:grid;width:100%;min-width:0;max-width:100%")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-table th{background:var(--table-header-background)")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-button-block{display:inline-flex;width:max-content;min-height:32px;max-width:100%;align-items:center;justify-content:center;padding:0 12px;border-radius:8px;background:var(--handout-primary,var(--primary));color:var(--handout-primary-foreground,var(--primary-foreground));font-size:15px")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-button-block-full{display:flex;width:100%;min-height:40px;padding:2px 12px}")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-document-editor .handout-editor-button-block-full{min-height:40px;padding:2px 12px}")
     expect(SITE_DOCUMENT_CSS).toContain("font-size:20px;font-weight:500;letter-spacing:-.03em;line-height:32px");
-    expect(SITE_DOCUMENT_CSS).not.toContain("--ls-");
-    expect(LIGHTSITE_THEME_CSS).toContain("--tertiary-foreground:var(--neutral-300)");
-    expect(LIGHTSITE_THEME_CSS).toContain("--secondary-foreground:var(--neutral-200)");
+    expect(SITE_DOCUMENT_CSS).toContain("--handout-primary");
+    expect(HANDOUT_THEME_CSS).toContain("--tertiary-foreground:var(--neutral-300)");
+    expect(HANDOUT_THEME_CSS).toContain("--secondary-foreground:var(--neutral-200)");
     expect(SITE_DOCUMENT_CSS).toContain("font-size:14px;font-weight:500;line-height:24px");
     expect(SITE_DOCUMENT_CSS).not.toContain("text-transform:uppercase");
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-sidebar-section>h2{height:26px;min-width:0;margin:0;overflow:hidden;color:var(--muted-foreground);font-size:14px;font-weight:500");
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-sidebar-mobile-title{min-width:0;flex:1;overflow:hidden;color:var(--tertiary-foreground);font-size:16px;font-weight:500");
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-tab{color:var(--tertiary-foreground)}");
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-tab svg{color:inherit}");
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-sidebar-section>h2{height:26px;min-width:0;margin:0;overflow:hidden;color:var(--muted-foreground);font-size:14px;font-weight:500");
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-sidebar-mobile-title{min-width:0;flex:1;overflow:hidden;color:var(--tertiary-foreground);font-size:16px;font-weight:500");
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-tab{color:var(--tertiary-foreground)}");
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-tab svg{color:inherit}");
     expect(SITE_DOCUMENT_CSS).toContain("height:44px;align-items:center;gap:8px;padding:0 12px");
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-sidebar-mobile-header{display:flex;height:44px");
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-sidebar-mobile-header{display:flex;height:44px");
     expect(SITE_DOCUMENT_CSS).toContain("padding:0 8px 0 16px");
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-sidebar-inner{width:100%;padding:20px 16px}");
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-sidebar-inner{width:100%;padding:20px 16px}");
     expect(SITE_DOCUMENT_CSS).toContain("width:28px;height:28px");
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-sidebar-close svg{width:14px;height:14px}");
-    expect(SITE_DOCUMENT_CSS).toContain(".ls-mobile-menu svg{width:14px;height:14px}");
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-sidebar-close svg{width:14px;height:14px}");
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-mobile-menu svg{width:14px;height:14px}");
     expect(SITE_DOCUMENT_CSS).toContain("color:var(--tertiary-foreground);cursor:pointer");
     expect(SITE_DOCUMENT_CSS).toContain("background:var(--neutral-alpha-a500)");
-    expect(SITE_DOCUMENT_CSS).toContain('mask:url("/lightsite-logo.svg") center/contain no-repeat');
+    expect(SITE_DOCUMENT_CSS).toContain('mask:url("/handout-logo.svg") center/contain no-repeat');
   });
 
   it("uses the complete shared Tabler icon catalog in every renderer", () => {
@@ -278,17 +387,17 @@ describe("canonical site document", () => {
     });
 
     expect(html).toContain(`<script>${PUBLIC_SITE_RUNTIME}</script>`);
-    expect(html).toContain('class="ls-sidebar"');
+    expect(html).toContain('class="handout-sidebar"');
     expect(html).toContain('aria-label="Open site navigation"');
-    expect(html).toContain('data-ls-page-target=');
+    expect(html).toContain('data-handout-page-target=');
     expect(html).not.toContain(`<script defer src="${PUBLIC_SITE_RUNTIME_PATH}"></script>`);
     expect(html).toContain('src="/api/workspaces/logo-preview/image?domain=acme.io&amp;size=128&amp;theme=dark"');
     expect(html).toContain('src="/api/workspaces/logo-preview/image?domain=linear.app&amp;size=128&amp;theme=dark"');
     expect(html).not.toContain(PUBLIC_SITE_LOGO_ENDPOINT);
-    expect(PUBLIC_SITE_RUNTIME).toContain("image.src='/lightsite-logo.svg'");
+    expect(PUBLIC_SITE_RUNTIME).toContain("image.src='/handout-logo.svg'");
     expect(PUBLIC_SITE_RUNTIME).toContain("removeLogoTile(tile)");
     expect(PUBLIC_SITE_RUNTIME).toContain("setSidebarOpen(false,true)");
-    expect(PUBLIC_SITE_RUNTIME).toContain(".ls-sidebar-backdrop");
+    expect(PUBLIC_SITE_RUNTIME).toContain(".handout-sidebar-backdrop");
   });
 
   it("omits empty editor scaffold paragraphs from public output", () => {
@@ -323,6 +432,87 @@ describe("canonical site document", () => {
 
   it("fails closed when public payload structure is incomplete", () => {
     expect(normalizePublishedSitePayload({ schemaVersion: 2 })).toBeNull();
+  });
+
+  it("keeps the site usable when invalid tracking identity disables analytics", () => {
+    const payload = buildPayload();
+    payload.content.pages[0]!.document.content = [
+      {
+        type: "buttonBlock",
+        attrs: { id: "duplicate-button", href: "https://example.com/one" },
+        content: [{ type: "text", text: "First action" }],
+      },
+      {
+        type: "buttonBlock",
+        attrs: { id: "duplicate-button", href: "https://example.com/two" },
+        content: [{ type: "text", text: "Second action" }],
+      },
+    ];
+
+    const html = renderPublicSiteHtml(payload);
+    expect(html).toContain("First action");
+    expect(html).toContain("Second action");
+    expect(html).not.toContain("data-handout-element-id");
+  });
+
+  it("applies the selected primary color to buttons and active tabs", () => {
+    const payload = buildPayload();
+    payload.content.settings.primaryColor = "purple";
+
+    const html = renderPublicSiteHtml(payload, { includeTracking: false });
+
+    expect(html).toContain("--handout-primary:var(--purple-foreground)");
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-sidebar-row.is-active{background:var(--handout-primary-soft");
+    expect(SITE_DOCUMENT_CSS).toContain("background:var(--handout-primary,var(--primary))");
+  });
+
+  it("gates tracking behind the selected visitor consent popup", () => {
+    const payload = buildPayload();
+    payload.trackingV2 = {
+      version: 2,
+      trackingMode: "events",
+      contextToken: "lsv2.context-token-at-least-24",
+      issuedAt: "2026-07-09T12:00:00.000Z",
+      expiresAt: "2026-07-10T12:00:00.000Z",
+    };
+    payload.content.settings.trackingConsentPopup = "popup-b";
+    payload.content.settings.trackingPrivacyPolicyUrl = "https://customer.example/privacy";
+
+    const popupHtml = renderPublicSiteHtml(payload);
+    expect(popupHtml).toContain('data-handout-consent-popup="popup-b"');
+    expect(popupHtml).toContain("Deny and proceed");
+    expect(popupHtml).toContain("Allow and proceed");
+    expect(popupHtml).toContain('data-handout-consent-site-id="22222222-2222-4222-8222-222222222222"');
+    expect(popupHtml).toContain('data-handout-consent-script-src="/track/2026-07-13.v9/script.js"');
+    expect(popupHtml).not.toContain("<script>(function()");
+    expect(PUBLIC_SITE_RUNTIME).toContain("localStorage.setItem(consentStorageKey,JSON.stringify(value))");
+    expect(PUBLIC_SITE_RUNTIME).toContain("data-handout-replay-consent");
+    expect(PUBLIC_SITE_RUNTIME).toContain("handout:tracking-consent-withdrawn");
+    expect(popupHtml).toContain("Privacy choices");
+    expect(popupHtml).toContain('href="https://customer.example/privacy"');
+
+    payload.content.settings.trackingConsentPopup = "none";
+    const immediateHtml = renderPublicSiteHtml(payload);
+    expect(immediateHtml).not.toContain("data-handout-consent-popup");
+    expect(immediateHtml).toContain("data-handout-tracking-v2=");
+  });
+
+  it("fails consent-gated tracking closed without a valid customer privacy policy", () => {
+    const payload = buildPayload();
+    payload.trackingV2 = {
+      version: 2,
+      trackingMode: "events_and_replay",
+      contextToken: "lsv2.context-token-at-least-24",
+      issuedAt: "2026-07-09T12:00:00.000Z",
+      expiresAt: "2026-07-10T12:00:00.000Z",
+    };
+
+    const html = renderPublicSiteHtml(payload);
+    expect(html).not.toContain("data-handout-consent-popup");
+    expect(html).not.toContain("data-handout-tracking-v2=");
+
+    payload.content.settings.trackingPrivacyPolicyUrl = "http://customer.example/privacy";
+    expect(renderPublicSiteHtml(payload)).not.toContain("data-handout-tracking-v2=");
   });
 });
 
@@ -378,7 +568,7 @@ function buildPayload(): PublishedSitePayload {
       publishedVersionId: "33333333-3333-4333-8333-333333333333",
       recipientId: "44444444-4444-4444-8444-444444444444",
       recipientRevision: 1,
-      trackingMode: "events_and_recording",
+      trackingMode: "events",
     },
   };
 }

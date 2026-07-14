@@ -1,9 +1,9 @@
 import { Extension } from "@tiptap/core"
-import { LIGHTSITE_COLLECTION_LIMITS, LIGHTSITE_TEXT_LIMITS } from "@lightsite/domain"
+import { HANDOUT_COLLECTION_LIMITS, HANDOUT_TEXT_LIMITS } from "@handout/domain"
 import { Plugin } from "@tiptap/pm/state"
 
-export const LightsiteNextDocumentLimits = Extension.create({
-  name: "lightsiteNextDocumentLimits",
+export const HandoutNextDocumentLimits = Extension.create({
+  name: "handoutNextDocumentLimits",
 
   addProseMirrorPlugins() {
     return [
@@ -14,7 +14,7 @@ export const LightsiteNextDocumentLimits = Extension.create({
           }
 
           return (
-            transaction.doc.childCount <= LIGHTSITE_COLLECTION_LIMITS.blocksPerTab &&
+            transaction.doc.childCount <= HANDOUT_COLLECTION_LIMITS.blocksPerTab &&
             topLevelBlocksAreWithinTextLimit(transaction.doc)
           )
         },
@@ -31,7 +31,7 @@ function topLevelBlocksAreWithinTextLimit(doc: import("@tiptap/pm/model").Node) 
       return
     }
 
-    if (node.textContent.length > LIGHTSITE_TEXT_LIMITS.blockText) {
+    if (node.textContent.length > HANDOUT_TEXT_LIMITS.blockText) {
       valid = false
     }
   })

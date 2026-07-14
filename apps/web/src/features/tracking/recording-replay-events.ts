@@ -1,7 +1,7 @@
 import type {
   TrackingV2RecordingChunk,
   TrackingV2RecordingManifestResponse,
-} from "@lightsite/tracking-schema"
+} from "@handout/tracking-schema"
 
 export const RRWEB_FULL_SNAPSHOT_EVENT_TYPE = 2
 

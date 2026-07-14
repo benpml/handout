@@ -1,9 +1,9 @@
 import {
-  LIGHTSITE_TEXT_LIMITS,
+  HANDOUT_TEXT_LIMITS,
   clampTextToLimit,
   normalizeWebsiteUrl,
-  type LightsiteTextLimitKey,
-} from "@lightsite/domain"
+  type HandoutTextLimitKey,
+} from "@handout/domain"
 
 export { getRecipientLogoUrl } from "@/lib/recipient-logo"
 
@@ -78,7 +78,7 @@ export function buildRecipientPublicUrl({
   recipient: SiteRecipient
   siteUri: string
 }) {
-  return `https://lightsite.io/${siteUri}/${recipient.linkSlug}`
+  return `https://handout.link/${siteUri}/${recipient.linkSlug}`
 }
 
 export function buildRecipientScreenshotUrl({
@@ -91,7 +91,7 @@ export function buildRecipientScreenshotUrl({
   siteVersion?: string | null
 }) {
   const version = encodeURIComponent(`${siteVersion ?? "published"}.${recipient.updatedAt}`)
-  return `https://lightsite.io/${siteUri}/${recipient.linkSlug}/embed.jpg?v=${version}`
+  return `https://handout.link/${siteUri}/${recipient.linkSlug}/embed.jpg?v=${version}`
 }
 
 export function createRecipientEmailEmbedHtml({
@@ -153,7 +153,7 @@ export function createRecipientSlug(value: string) {
 
 export function normalizeRecipientField(
   value: string,
-  limitKey: Extract<LightsiteTextLimitKey, "recipientCompany" | "recipientName">
+  limitKey: Extract<HandoutTextLimitKey, "recipientCompany" | "recipientName">
 ) {
   return clampTextToLimit(value.trim().replace(/\s+/g, " "), limitKey)
 }
@@ -182,7 +182,7 @@ export function normalizeOptionalRecipientWebsite(value: string):
     }
   }
 
-  if (trimmedValue.length > LIGHTSITE_TEXT_LIMITS.url) {
+  if (trimmedValue.length > HANDOUT_TEXT_LIMITS.url) {
     return {
       ok: false,
       message: "Enter a shorter website URL.",

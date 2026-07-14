@@ -181,94 +181,94 @@ html.gmail-extension-panel #root {
 
 @layer components {
   /* EDITOR CHROME ONLY: recipient-visible tokens and presentation are owned by
-     @lightsite/design-tokens and @lightsite/site-document. Every NodeView must
-     carry its canonical `ls-*` class; do not recreate site styles in this file. */
-  .lightsite-tiptap {
+     @handout/design-tokens and @handout/site-document. Every NodeView must
+     carry its canonical `handout-*` class; do not recreate site styles in this file. */
+  .handout-tiptap {
     @apply min-w-0 text-inherit;
   }
 
-  .lightsite-tiptap .ProseMirror {
+  .handout-tiptap .ProseMirror {
     @apply outline-none;
   }
 
-  .lightsite-tiptap p {
+  .handout-tiptap p {
     @apply m-0;
   }
 
-  .lightsite-tiptap p + p {
+  .handout-tiptap p + p {
     @apply mt-3;
   }
 
-  .lightsite-tiptap strong {
+  .handout-tiptap strong {
     @apply font-semibold;
   }
 
-  .lightsite-variable-token {
+  .handout-variable-token {
     @apply inline-flex items-baseline rounded-md bg-variable-background px-1 font-medium text-variable-foreground;
     font-size: inherit;
     line-height: inherit;
   }
 
-  .lightsite-tiptap .is-editor-empty:first-child::before {
+  .handout-tiptap .is-editor-empty:first-child::before {
     content: attr(data-placeholder);
     @apply pointer-events-none float-left h-0;
     color: var(--muted-faint);
   }
 
-  .lightsite-document-editor {
+  .handout-document-editor {
     @apply min-h-full w-full flex-1 bg-background font-site text-foreground outline-none;
   }
 
-  .lightsite-document-editor > .react-renderer,
-  .lightsite-document-editor > ul,
-  .lightsite-document-editor > ol {
+  .handout-document-editor > .react-renderer,
+  .handout-document-editor > ul,
+  .handout-document-editor > ol {
     @apply mx-auto w-[600px] max-w-full;
   }
 
-  .lightsite-document-editor .ProseMirror-selectednode,
-  .lightsite-document-editor .ProseMirror-selectednoderange {
+  .handout-document-editor .ProseMirror-selectednode,
+  .handout-document-editor .ProseMirror-selectednoderange {
     @apply rounded-[10px] bg-transparent outline-none;
     box-shadow: none;
   }
 
-  .lightsite-document-editor .ProseMirror-selectednode > [data-block-wrapper-type],
-  .lightsite-document-editor .ProseMirror-selectednoderange > [data-block-wrapper-type] {
+  .handout-document-editor .ProseMirror-selectednode > [data-block-wrapper-type],
+  .handout-document-editor .ProseMirror-selectednoderange > [data-block-wrapper-type] {
     @apply relative isolate bg-transparent;
   }
 
-  .lightsite-document-editor .ProseMirror-selectednode > [data-block-wrapper-type]::before,
-  .lightsite-document-editor .ProseMirror-selectednoderange > [data-block-wrapper-type]::before {
+  .handout-document-editor .ProseMirror-selectednode > [data-block-wrapper-type]::before,
+  .handout-document-editor .ProseMirror-selectednoderange > [data-block-wrapper-type]::before {
     content: "";
     @apply pointer-events-none absolute inset-0 rounded-[10px];
     background-color: var(--editing-background);
     z-index: 0;
   }
 
-  .lightsite-document-editor .ProseMirror-selectednode > [data-block-wrapper-type] > *,
-  .lightsite-document-editor .ProseMirror-selectednoderange > [data-block-wrapper-type] > * {
+  .handout-document-editor .ProseMirror-selectednode > [data-block-wrapper-type] > *,
+  .handout-document-editor .ProseMirror-selectednoderange > [data-block-wrapper-type] > * {
     @apply relative z-10;
   }
 
-  .lightsite-document-editor
+  .handout-document-editor
     .ProseMirror-selectednode
     > [data-block-wrapper-type="divider"]::before,
-  .lightsite-document-editor
+  .handout-document-editor
     .ProseMirror-selectednoderange
     > [data-block-wrapper-type="divider"]::before {
     @apply inset-y-2.5;
   }
 
-  .lightsite-document-editor ul.ProseMirror-selectednoderange,
-  .lightsite-document-editor ol.ProseMirror-selectednoderange {
+  .handout-document-editor ul.ProseMirror-selectednoderange,
+  .handout-document-editor ol.ProseMirror-selectednoderange {
     background-color: var(--editing-background);
   }
 
-  .lightsite-document-editor .ProseMirror-dropcursor {
+  .handout-document-editor .ProseMirror-dropcursor {
     border-color: var(--color-indigo-500);
     border-width: 1px;
   }
 
-  .lightsite-editor-marquee {
+  .handout-editor-marquee {
     position: fixed;
     top: 0;
     left: 0;
@@ -280,11 +280,11 @@ html.gmail-extension-panel #root {
     box-shadow: 0 0 0 1px color-mix(in oklab, var(--selection-border) 12%, transparent);
   }
 
-  .lightsite-editor-marquee-active {
+  .handout-editor-marquee-active {
     user-select: none;
   }
 
-  .lightsite-editor-drop-line {
+  .handout-editor-drop-line {
     position: fixed;
     top: 0;
     left: 0;
@@ -295,12 +295,12 @@ html.gmail-extension-panel #root {
     background-color: var(--color-indigo-500);
   }
 
-  .lightsite-editor-block-drag-active {
+  .handout-editor-block-drag-active {
     user-select: none;
     cursor: grabbing;
   }
 
-  .lightsite-document-editor [data-node-view-content] {
+  .handout-document-editor [data-node-view-content] {
     @apply min-w-0 outline-none;
     font: inherit;
     line-height: inherit;
@@ -308,48 +308,48 @@ html.gmail-extension-panel #root {
     white-space: pre-wrap;
   }
 
-  .lightsite-document-editor
+  .handout-document-editor
     [data-block-wrapper-type="icon-list"]
     > [data-node-view-content]
     > [data-node-view-content-react] {
     @apply flex flex-col gap-1.5;
   }
 
-  .lightsite-document-editor [data-node-view-content] p,
-  .lightsite-document-editor [data-node-view-content] div,
-  .lightsite-document-editor [data-node-view-content] span {
+  .handout-document-editor [data-node-view-content] p,
+  .handout-document-editor [data-node-view-content] div,
+  .handout-document-editor [data-node-view-content] span {
     @apply m-0;
     font: inherit;
     line-height: inherit;
     vertical-align: baseline;
   }
 
-  .lightsite-document-editor ul,
-  .lightsite-document-editor ol {
+  .handout-document-editor ul,
+  .handout-document-editor ol {
     @apply my-1 pl-8 text-base leading-6 text-secondary-foreground;
   }
 
-  .lightsite-document-editor ul {
+  .handout-document-editor ul {
     @apply list-disc;
   }
 
-  .lightsite-document-editor ol {
+  .handout-document-editor ol {
     @apply list-decimal;
   }
 
-  .lightsite-document-editor li {
+  .handout-document-editor li {
     @apply pl-1;
   }
 
-  .lightsite-document-editor li p {
+  .handout-document-editor li p {
     @apply m-0;
   }
 
-  .lightsite-document-editor .react-renderer.is-editor-empty {
+  .handout-document-editor .react-renderer.is-editor-empty {
     @apply relative;
   }
 
-  .lightsite-document-editor .react-renderer.is-editor-empty::before {
+  .handout-document-editor .react-renderer.is-editor-empty::before {
     content: attr(data-placeholder);
     @apply pointer-events-none absolute;
     color: var(--muted-faint);
@@ -360,59 +360,59 @@ html.gmail-extension-panel #root {
     white-space: pre-wrap;
   }
 
-  .lightsite-document-editor .react-renderer.node-headingBlock.is-editor-empty::before {
+  .handout-document-editor .react-renderer.node-headingBlock.is-editor-empty::before {
     top: 0.125rem;
     font-weight: 500;
     line-height: 1.75rem;
   }
 
-  .lightsite-document-editor
+  .handout-document-editor
     .react-renderer.node-headingBlock.is-editor-empty[data-placeholder="Heading 1"]::before {
     font-size: 1.25rem;
   }
 
-  .lightsite-document-editor
+  .handout-document-editor
     .react-renderer.node-headingBlock.is-editor-empty[data-placeholder="Heading 2"]::before {
     font-size: 1rem;
   }
 
   [data-editor-page] {
-    --lightsite-editor-fg-strong: var(--foreground);
-    --lightsite-editor-fg: var(--tertiary-foreground);
-    --lightsite-editor-fg-soft: var(--muted-foreground);
-    --lightsite-editor-fg-muted: var(--tertiary-foreground);
-    --lightsite-editor-fg-faint: var(--muted-foreground);
-    --lightsite-editor-surface: var(--popover);
-    --lightsite-editor-surface-muted: var(--muted);
-    --lightsite-editor-surface-hover: var(--accent);
-    --lightsite-editor-border: var(--border);
-    --lightsite-editor-border-strong: var(--border-strong);
-    --lightsite-editor-popover-hover: var(--accent);
-    --lightsite-editor-popover-border: var(--border);
-    --lightsite-editor-popover-separator: var(--border-subtle);
-    --lightsite-editor-popover-muted: var(--muted-foreground);
-    --lightsite-editor-popover-faint: var(--muted-foreground);
-    --lightsite-editor-selection: var(--selection-background);
-    --lightsite-editor-danger: var(--destructive);
-    --lightsite-editor-link: var(--chart-1);
-    --lightsite-editor-drop: var(--selection-border);
+    --handout-editor-fg-strong: var(--foreground);
+    --handout-editor-fg: var(--tertiary-foreground);
+    --handout-editor-fg-soft: var(--muted-foreground);
+    --handout-editor-fg-muted: var(--tertiary-foreground);
+    --handout-editor-fg-faint: var(--muted-foreground);
+    --handout-editor-surface: var(--popover);
+    --handout-editor-surface-muted: var(--muted);
+    --handout-editor-surface-hover: var(--accent);
+    --handout-editor-border: var(--border);
+    --handout-editor-border-strong: var(--border-strong);
+    --handout-editor-popover-hover: var(--accent);
+    --handout-editor-popover-border: var(--border);
+    --handout-editor-popover-separator: var(--border-subtle);
+    --handout-editor-popover-muted: var(--muted-foreground);
+    --handout-editor-popover-faint: var(--muted-foreground);
+    --handout-editor-selection: var(--selection-background);
+    --handout-editor-danger: var(--destructive);
+    --handout-editor-link: var(--chart-1);
+    --handout-editor-drop: var(--selection-border);
   }
 
-  .lightsite-editor {
+  .handout-editor {
     @apply min-h-full font-site;
     background: var(--background);
     color: var(--foreground);
   }
 
-  .lightsite-editor-prosemirror {
+  .handout-editor-prosemirror {
     @apply min-h-full cursor-default px-0 pt-[54px] pb-32 outline-none;
   }
 
-  .lightsite-editor .ProseMirror-focused {
+  .handout-editor .ProseMirror-focused {
     @apply outline-none;
   }
 
-  .lightsite-editor[data-empty-state-active] .ProseMirror > p.lightsite-editor-placeholder-hidden.is-editor-empty {
+  .handout-editor[data-empty-state-active] .ProseMirror > p.handout-editor-placeholder-hidden.is-editor-empty {
     height: 0;
     min-height: 0;
     margin-top: 0;
@@ -425,11 +425,11 @@ html.gmail-extension-panel #root {
     caret-color: transparent;
   }
 
-  .lightsite-editor-page-empty-state {
+  .handout-editor-page-empty-state {
     position: absolute;
-    top: var(--lightsite-empty-top, 220px);
-    left: var(--lightsite-empty-left, 50%);
-    width: var(--lightsite-empty-width, 612px);
+    top: var(--handout-empty-top, 220px);
+    left: var(--handout-empty-left, 50%);
+    width: var(--handout-empty-width, 612px);
     max-width: calc(100% - 104px);
     pointer-events: auto;
     user-select: none;
@@ -437,7 +437,7 @@ html.gmail-extension-panel #root {
     z-index: 1;
   }
 
-  .lightsite-editor-page-empty-state-inner {
+  .handout-editor-page-empty-state-inner {
     display: flex;
     width: min(334px, 100%);
     flex-direction: column;
@@ -448,32 +448,32 @@ html.gmail-extension-panel #root {
     line-height: 24px;
   }
 
-  .lightsite-editor-page-empty-state-instructions {
+  .handout-editor-page-empty-state-instructions {
     width: min(334px, 100%);
   }
 
-  .lightsite-editor-page-empty-state-instructions ul {
+  .handout-editor-page-empty-state-instructions ul {
     margin: 0;
     padding-left: 24px;
     list-style: disc;
     line-height: 2;
   }
 
-  .lightsite-editor-page-empty-state-instructions li {
+  .handout-editor-page-empty-state-instructions li {
     padding-left: 0;
   }
 
-  .lightsite-editor-page-empty-state-heading {
+  .handout-editor-page-empty-state-heading {
     margin: 0;
     font-weight: 600;
     line-height: 24px;
   }
 
-  .lightsite-editor-page-empty-state-instructions .lightsite-editor-page-empty-state-heading {
+  .handout-editor-page-empty-state-instructions .handout-editor-page-empty-state-heading {
     line-height: 2;
   }
 
-  .lightsite-editor-page-empty-state strong {
+  .handout-editor-page-empty-state strong {
     display: inline-flex;
     align-items: center;
     border-radius: var(--radius-sm);
@@ -484,22 +484,22 @@ html.gmail-extension-panel #root {
     line-height: 1.35;
   }
 
-  .lightsite-editor-page-empty-state-section,
-  .lightsite-editor-page-empty-state-items {
+  .handout-editor-page-empty-state-section,
+  .handout-editor-page-empty-state-items {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .lightsite-editor-page-empty-state-section {
+  .handout-editor-page-empty-state-section {
     gap: 12px;
   }
 
-  .lightsite-editor-page-empty-state-items {
+  .handout-editor-page-empty-state-items {
     gap: 12px;
   }
 
-  .lightsite-editor-page-empty-state-item {
+  .handout-editor-page-empty-state-item {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -515,20 +515,20 @@ html.gmail-extension-panel #root {
     transition: color 120ms ease;
   }
 
-  .lightsite-editor-page-empty-state-item:hover,
-  .lightsite-editor-page-empty-state-item:focus-visible {
+  .handout-editor-page-empty-state-item:hover,
+  .handout-editor-page-empty-state-item:focus-visible {
     color: var(--secondary-foreground);
     outline: none;
   }
 
-  .lightsite-editor-page-empty-state-item svg {
+  .handout-editor-page-empty-state-item svg {
     width: 16px;
     height: 16px;
     flex: 0 0 auto;
     stroke-width: 1.75;
   }
 
-  .lightsite-editor-gif-picker[data-slot="dialog-content"] {
+  .handout-editor-gif-picker[data-slot="dialog-content"] {
     background: var(--popover) !important;
     border-color: var(--border) !important;
     color: var(--popover-foreground) !important;
@@ -537,382 +537,382 @@ html.gmail-extension-panel #root {
       0 0 0 1px color-mix(in oklab, var(--foreground) 3%, transparent) inset;
   }
 
-  .lightsite-editor-gif-picker [data-slot="dialog-close"] {
+  .handout-editor-gif-picker [data-slot="dialog-close"] {
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-gif-picker [data-slot="dialog-close"]:hover,
-  .lightsite-editor-gif-picker [data-slot="dialog-close"]:focus-visible {
+  .handout-editor-gif-picker [data-slot="dialog-close"]:hover,
+  .handout-editor-gif-picker [data-slot="dialog-close"]:focus-visible {
     background: var(--accent);
     color: var(--foreground);
   }
 
-  .lightsite-editor-gif-picker-header {
+  .handout-editor-gif-picker-header {
     border-bottom: 1px solid var(--border);
     background: linear-gradient(180deg, var(--accent), var(--popover));
   }
 
-  .lightsite-editor-gif-picker [data-slot="dialog-title"] {
+  .handout-editor-gif-picker [data-slot="dialog-title"] {
     color: var(--foreground);
   }
 
-  .lightsite-editor-gif-picker [data-slot="dialog-description"] {
+  .handout-editor-gif-picker [data-slot="dialog-description"] {
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-gif-picker-header svg {
+  .handout-editor-gif-picker-header svg {
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-gif-picker-search[data-slot="input"] {
+  .handout-editor-gif-picker-search[data-slot="input"] {
     background: var(--input) !important;
     border-color: var(--border) !important;
     color: var(--foreground) !important;
     box-shadow: none !important;
   }
 
-  .lightsite-editor-gif-picker-search[data-slot="input"]::placeholder {
+  .handout-editor-gif-picker-search[data-slot="input"]::placeholder {
     color: var(--muted-foreground);
   }
 
-  .lightsite-editor-gif-picker-search[data-slot="input"]:focus-visible {
+  .handout-editor-gif-picker-search[data-slot="input"]:focus-visible {
     border-color: color-mix(in oklab, var(--ring) 64%, transparent) !important;
     box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 18%, transparent) !important;
   }
 
-  .lightsite-editor-gif-picker-results {
+  .handout-editor-gif-picker-results {
     background: var(--background);
   }
 
-  .lightsite-editor-gif-picker-results [data-giphy-gif],
-  .lightsite-editor-gif-picker-results img {
+  .handout-editor-gif-picker-results [data-giphy-gif],
+  .handout-editor-gif-picker-results img {
     border-radius: 10px;
   }
 
-  .lightsite-editor-gif-picker-empty {
+  .handout-editor-gif-picker-empty {
     background: var(--muted);
     border-color: var(--border);
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-gif-picker-footer {
+  .handout-editor-gif-picker-footer {
     border-top: 1px solid var(--border);
     background: var(--border-subtle);
   }
 
-  .lightsite-editor .lightsite-editor-emoji {
+  .handout-editor .handout-editor-emoji {
     display: inline-flex;
     line-height: 1;
     vertical-align: -0.08em;
   }
 
-  .lightsite-editor .lightsite-editor-emoji img {
+  .handout-editor .handout-editor-emoji img {
     height: 1em;
     width: 1em;
   }
 
-  .lightsite-editor .lightsite-editor-width,
-  .lightsite-editor .react-renderer.node-buttonBlock,
-  .lightsite-editor .react-renderer.node-calendarEmbed,
-  .lightsite-editor .react-renderer.node-videoEmbed,
-  .lightsite-editor .react-renderer.node-gifBlock,
-  .lightsite-editor .react-renderer.node-iconCard,
-  .lightsite-editor .react-renderer.node-imageCard,
-  .lightsite-editor .react-renderer.node-logoGrid,
-  .lightsite-editor .react-renderer.node-pageTitleSection,
-  .lightsite-editor .react-renderer.node-testimonialCard,
-  .lightsite-editor .ProseMirror > [data-lightsite-grid],
-  .lightsite-editor .ProseMirror > .tableWrapper,
-  .lightsite-editor .ProseMirror > table,
-  .lightsite-editor .ProseMirror > [data-lightsite-gif-empty],
-  .lightsite-editor .ProseMirror > [data-lightsite-image-empty],
-  .lightsite-editor .ProseMirror > [data-resize-container][data-node="gifBlock"],
-  .lightsite-editor .ProseMirror > [data-resize-container][data-node="image"],
-  .lightsite-editor .ProseMirror > p,
-  .lightsite-editor .ProseMirror > h1,
-  .lightsite-editor .ProseMirror > h2,
-  .lightsite-editor .ProseMirror > h3,
-  .lightsite-editor .ProseMirror > ul,
-  .lightsite-editor .ProseMirror > ol,
-  .lightsite-editor .ProseMirror > blockquote,
-  .lightsite-editor .ProseMirror > pre,
-  .lightsite-editor .ProseMirror > hr {
+  .handout-editor .handout-editor-width,
+  .handout-editor .react-renderer.node-buttonBlock,
+  .handout-editor .react-renderer.node-calendarEmbed,
+  .handout-editor .react-renderer.node-videoEmbed,
+  .handout-editor .react-renderer.node-gifBlock,
+  .handout-editor .react-renderer.node-iconCard,
+  .handout-editor .react-renderer.node-imageCard,
+  .handout-editor .react-renderer.node-logoGrid,
+  .handout-editor .react-renderer.node-pageTitleSection,
+  .handout-editor .react-renderer.node-testimonialCard,
+  .handout-editor .ProseMirror > [data-handout-grid],
+  .handout-editor .ProseMirror > .tableWrapper,
+  .handout-editor .ProseMirror > table,
+  .handout-editor .ProseMirror > [data-handout-gif-empty],
+  .handout-editor .ProseMirror > [data-handout-image-empty],
+  .handout-editor .ProseMirror > [data-resize-container][data-node="gifBlock"],
+  .handout-editor .ProseMirror > [data-resize-container][data-node="image"],
+  .handout-editor .ProseMirror > p,
+  .handout-editor .ProseMirror > h1,
+  .handout-editor .ProseMirror > h2,
+  .handout-editor .ProseMirror > h3,
+  .handout-editor .ProseMirror > ul,
+  .handout-editor .ProseMirror > ol,
+  .handout-editor .ProseMirror > blockquote,
+  .handout-editor .ProseMirror > pre,
+  .handout-editor .ProseMirror > hr {
     @apply mx-auto w-[612px] max-w-[calc(100%-104px)];
   }
 
-  .lightsite-editor .ProseMirror > p,
-  .lightsite-editor .ProseMirror > h1,
-  .lightsite-editor .ProseMirror > h2,
-  .lightsite-editor .ProseMirror > h3,
-  .lightsite-editor .ProseMirror > ul,
-  .lightsite-editor .ProseMirror > ol,
-  .lightsite-editor .ProseMirror > blockquote,
-  .lightsite-editor .ProseMirror > pre,
-  .lightsite-editor .ProseMirror > .tableWrapper,
-  .lightsite-editor .ProseMirror > table,
-  .lightsite-editor .ProseMirror > [data-lightsite-grid],
-  .lightsite-editor .lightsite-editor-card-content,
-  .lightsite-editor .lightsite-editor-page-title-content,
-  .lightsite-editor .lightsite-editor-testimonial-content,
-  .lightsite-editor [data-lightsite-editor-block-type="icon-list-item"],
-  .lightsite-editor [data-lightsite-editor-block-type="button"] {
+  .handout-editor .ProseMirror > p,
+  .handout-editor .ProseMirror > h1,
+  .handout-editor .ProseMirror > h2,
+  .handout-editor .ProseMirror > h3,
+  .handout-editor .ProseMirror > ul,
+  .handout-editor .ProseMirror > ol,
+  .handout-editor .ProseMirror > blockquote,
+  .handout-editor .ProseMirror > pre,
+  .handout-editor .ProseMirror > .tableWrapper,
+  .handout-editor .ProseMirror > table,
+  .handout-editor .ProseMirror > [data-handout-grid],
+  .handout-editor .handout-editor-card-content,
+  .handout-editor .handout-editor-page-title-content,
+  .handout-editor .handout-editor-testimonial-content,
+  .handout-editor [data-handout-editor-block-type="icon-list-item"],
+  .handout-editor [data-handout-editor-block-type="button"] {
     cursor: text;
   }
 
-  .lightsite-editor .ProseMirror > hr,
-  .lightsite-editor .ProseMirror > [data-lightsite-gif-empty],
-  .lightsite-editor .ProseMirror > [data-lightsite-image-empty],
-  .lightsite-editor .ProseMirror > [data-resize-container][data-node="gifBlock"],
-  .lightsite-editor .ProseMirror > [data-resize-container][data-node="image"],
-  .lightsite-editor .react-renderer.node-gifBlock {
+  .handout-editor .ProseMirror > hr,
+  .handout-editor .ProseMirror > [data-handout-gif-empty],
+  .handout-editor .ProseMirror > [data-handout-image-empty],
+  .handout-editor .ProseMirror > [data-resize-container][data-node="gifBlock"],
+  .handout-editor .ProseMirror > [data-resize-container][data-node="image"],
+  .handout-editor .react-renderer.node-gifBlock {
     cursor: default;
   }
 
-  .lightsite-editor .react-renderer.node-calendarEmbed,
-  .lightsite-editor .react-renderer.node-videoEmbed {
+  .handout-editor .react-renderer.node-calendarEmbed,
+  .handout-editor .react-renderer.node-videoEmbed {
     cursor: default;
   }
 
-  .lightsite-editor .ProseMirror > [data-lightsite-gif-empty],
-  .lightsite-editor .ProseMirror > [data-lightsite-image-empty] {
+  .handout-editor .ProseMirror > [data-handout-gif-empty],
+  .handout-editor .ProseMirror > [data-handout-image-empty] {
     @apply rounded-xl border border-dashed p-0;
     background: var(--muted);
     border-color: var(--border);
   }
 
-  .lightsite-editor
+  .handout-editor
     .ProseMirror
-    > [data-lightsite-image-empty][data-drag-active="true"] {
+    > [data-handout-image-empty][data-drag-active="true"] {
     background: color-mix(in oklab, var(--ring) 14%, transparent);
     border-color: color-mix(in oklab, var(--ring) 78%, transparent);
   }
 
-  .lightsite-editor-image-empty-input {
+  .handout-editor-image-empty-input {
     @apply sr-only;
   }
 
-  .lightsite-editor-gif-empty-button,
-  .lightsite-editor-image-empty-button {
+  .handout-editor-gif-empty-button,
+  .handout-editor-image-empty-button {
     @apply flex min-h-[188px] w-full flex-col items-center justify-center rounded-xl border-0 bg-transparent px-6 py-8 text-center outline-none transition;
     color: var(--muted-foreground);
   }
 
-  .lightsite-editor-gif-empty-button:hover,
-  .lightsite-editor-gif-empty-button:focus-visible,
-  .lightsite-editor-image-empty-button:hover,
-  .lightsite-editor-image-empty-button:focus-visible {
+  .handout-editor-gif-empty-button:hover,
+  .handout-editor-gif-empty-button:focus-visible,
+  .handout-editor-image-empty-button:hover,
+  .handout-editor-image-empty-button:focus-visible {
     background: var(--accent);
     color: var(--foreground);
   }
 
-  .lightsite-editor-gif-empty-title,
-  .lightsite-editor-image-empty-title {
+  .handout-editor-gif-empty-title,
+  .handout-editor-image-empty-title {
     @apply text-sm font-medium leading-5;
     color: var(--foreground);
   }
 
-  .lightsite-editor-gif-empty-description,
-  .lightsite-editor-image-empty-description {
+  .handout-editor-gif-empty-description,
+  .handout-editor-image-empty-description {
     @apply mt-1 text-xs leading-4;
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-calendar-embed-shell {
+  .handout-editor-calendar-embed-shell {
     @apply block;
   }
 
-  .lightsite-editor-video-embed-shell {
+  .handout-editor-video-embed-shell {
     @apply block;
   }
 
-  .lightsite-editor
+  .handout-editor
     .ProseMirror
     > .react-renderer.node-calendarEmbed
-    > .lightsite-editor-calendar-embed-shell,
-  .lightsite-editor
+    > .handout-editor-calendar-embed-shell,
+  .handout-editor
     .ProseMirror
     > .react-renderer.node-videoEmbed
-    > .lightsite-editor-video-embed-shell {
+    > .handout-editor-video-embed-shell {
     padding-top: 8px;
     padding-bottom: 8px;
   }
 
-  .lightsite-editor-calendar-embed-empty,
-  .lightsite-editor-video-embed-empty {
+  .handout-editor-calendar-embed-empty,
+  .handout-editor-video-embed-empty {
     @apply flex min-h-[220px] w-full flex-col items-center justify-center rounded-xl border border-dashed px-6 py-8 text-center outline-none transition;
     background: var(--muted);
     border-color: var(--border);
     color: var(--muted-foreground);
   }
 
-  .lightsite-editor-calendar-embed-empty:hover,
-  .lightsite-editor-calendar-embed-empty:focus-visible,
-  .lightsite-editor-video-embed-empty:hover,
-  .lightsite-editor-video-embed-empty:focus-visible {
+  .handout-editor-calendar-embed-empty:hover,
+  .handout-editor-calendar-embed-empty:focus-visible,
+  .handout-editor-video-embed-empty:hover,
+  .handout-editor-video-embed-empty:focus-visible {
     background: var(--accent);
     color: var(--foreground);
   }
 
-  .lightsite-editor-calendar-embed-empty svg,
-  .lightsite-editor-video-embed-empty svg {
+  .handout-editor-calendar-embed-empty svg,
+  .handout-editor-video-embed-empty svg {
     @apply mb-3 size-5;
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-calendar-embed-empty-title,
-  .lightsite-editor-video-embed-empty-title {
+  .handout-editor-calendar-embed-empty-title,
+  .handout-editor-video-embed-empty-title {
     @apply text-sm font-medium leading-5;
     color: var(--foreground);
   }
 
-  .lightsite-editor-calendar-embed-empty-description,
-  .lightsite-editor-video-embed-empty-description {
+  .handout-editor-calendar-embed-empty-description,
+  .handout-editor-video-embed-empty-description {
     @apply mt-1 text-xs leading-4;
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-calendar-embed,
-  .lightsite-editor-video-embed {
+  .handout-editor-calendar-embed,
+  .handout-editor-video-embed {
     @apply relative overflow-hidden rounded-xl border;
     background: var(--popover);
     border-color: var(--border);
   }
 
-  .lightsite-editor-calendar-embed-toolbar,
-  .lightsite-editor-video-embed-toolbar {
+  .handout-editor-calendar-embed-toolbar,
+  .handout-editor-video-embed-toolbar {
     @apply flex min-h-10 items-center justify-between gap-3 border-b px-3 py-2;
     border-color: var(--border);
     background: var(--muted);
     color: var(--foreground);
   }
 
-  .lightsite-editor-calendar-embed-meta,
-  .lightsite-editor-video-embed-meta {
+  .handout-editor-calendar-embed-meta,
+  .handout-editor-video-embed-meta {
     @apply flex min-w-0 items-center gap-2 text-xs font-medium;
   }
 
-  .lightsite-editor-calendar-embed-meta svg,
-  .lightsite-editor-video-embed-meta svg {
+  .handout-editor-calendar-embed-meta svg,
+  .handout-editor-video-embed-meta svg {
     @apply size-3.5 shrink-0;
   }
 
-  .lightsite-editor-calendar-embed-meta span,
-  .lightsite-editor-video-embed-meta span {
+  .handout-editor-calendar-embed-meta span,
+  .handout-editor-video-embed-meta span {
     @apply truncate;
   }
 
-  .lightsite-editor-calendar-embed-edit,
-  .lightsite-editor-video-embed-edit {
+  .handout-editor-calendar-embed-edit,
+  .handout-editor-video-embed-edit {
     @apply inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium outline-none transition;
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-calendar-embed-edit:hover,
-  .lightsite-editor-calendar-embed-edit:focus-visible,
-  .lightsite-editor-video-embed-edit:hover,
-  .lightsite-editor-video-embed-edit:focus-visible {
+  .handout-editor-calendar-embed-edit:hover,
+  .handout-editor-calendar-embed-edit:focus-visible,
+  .handout-editor-video-embed-edit:hover,
+  .handout-editor-video-embed-edit:focus-visible {
     background: var(--accent);
     color: var(--foreground);
   }
 
-  .lightsite-editor-calendar-embed-edit svg,
-  .lightsite-editor-video-embed-edit svg {
+  .handout-editor-calendar-embed-edit svg,
+  .handout-editor-video-embed-edit svg {
     @apply size-3.5;
   }
 
-  .lightsite-editor-calendar-embed-frame {
+  .handout-editor-calendar-embed-frame {
     @apply block w-full border-0 bg-background;
-    height: var(--lightsite-calendar-embed-height, 420px);
+    height: var(--handout-calendar-embed-height, 420px);
   }
 
-  .lightsite-editor-video-embed-frame {
+  .handout-editor-video-embed-frame {
     @apply block aspect-video w-full border-0 bg-background;
   }
 
-  .lightsite-editor-calendar-embed-resize {
+  .handout-editor-calendar-embed-resize {
     @apply absolute right-3 bottom-1 left-3 h-3 rounded-full border-0 bg-transparent opacity-0 outline-none transition-opacity;
     cursor: ns-resize;
   }
 
-  .lightsite-editor-calendar-embed-resize::before {
+  .handout-editor-calendar-embed-resize::before {
     content: "";
     @apply absolute left-1/2 top-1/2 h-1 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full;
     background: var(--ring);
     box-shadow: 0 1px 4px color-mix(in oklab, var(--foreground) 24%, transparent);
   }
 
-  .lightsite-editor-calendar-embed:hover .lightsite-editor-calendar-embed-resize,
-  .lightsite-editor-calendar-embed:focus-within .lightsite-editor-calendar-embed-resize,
-  .lightsite-editor-calendar-embed[data-resizing="true"] .lightsite-editor-calendar-embed-resize {
+  .handout-editor-calendar-embed:hover .handout-editor-calendar-embed-resize,
+  .handout-editor-calendar-embed:focus-within .handout-editor-calendar-embed-resize,
+  .handout-editor-calendar-embed[data-resizing="true"] .handout-editor-calendar-embed-resize {
     opacity: 1;
   }
 
-  .lightsite-editor-calendar-settings-menu,
-  .lightsite-editor-video-settings-menu {
+  .handout-editor-calendar-settings-menu,
+  .handout-editor-video-settings-menu {
     @apply fixed z-50 w-[320px] overflow-y-auto rounded-lg border p-3 shadow-xl;
     background: var(--popover);
     border-color: var(--border);
     color: var(--popover-foreground);
   }
 
-  .lightsite-editor-calendar-settings-preview,
-  .lightsite-editor-video-settings-preview {
+  .handout-editor-calendar-settings-preview,
+  .handout-editor-video-settings-preview {
     @apply mt-2 flex items-center gap-1.5 text-xs leading-4;
     color: var(--muted-foreground);
   }
 
-  .lightsite-editor-calendar-settings-preview svg,
-  .lightsite-editor-video-settings-preview svg {
+  .handout-editor-calendar-settings-preview svg,
+  .handout-editor-video-settings-preview svg {
     @apply size-3.5 shrink-0;
   }
 
-  .lightsite-editor
+  .handout-editor
     .ProseMirror
-    > [data-lightsite-image-empty][data-upload-error="true"]
-    .lightsite-editor-image-empty-description {
+    > [data-handout-image-empty][data-upload-error="true"]
+    .handout-editor-image-empty-description {
     color: var(--destructive);
   }
 
-  .lightsite-editor .ProseMirror > [data-resize-container][data-node="gifBlock"],
-  .lightsite-editor .ProseMirror > [data-resize-container][data-node="image"] {
+  .handout-editor .ProseMirror > [data-resize-container][data-node="gifBlock"],
+  .handout-editor .ProseMirror > [data-resize-container][data-node="image"] {
     @apply justify-start;
   }
 
-  .lightsite-editor [data-resize-container][data-node="gifBlock"] [data-resize-wrapper],
-  .lightsite-editor [data-resize-container][data-node="image"] [data-resize-wrapper] {
+  .handout-editor [data-resize-container][data-node="gifBlock"] [data-resize-wrapper],
+  .handout-editor [data-resize-container][data-node="image"] [data-resize-wrapper] {
     @apply max-w-full rounded-xl leading-none;
   }
 
-  .lightsite-editor .lightsite-editor-gif,
-  .lightsite-editor .lightsite-editor-image {
+  .handout-editor .handout-editor-gif,
+  .handout-editor .handout-editor-image {
     @apply block h-auto max-w-full rounded-xl border object-contain align-top;
     background: var(--muted);
     border-color: var(--border);
   }
 
-  .lightsite-editor
+  .handout-editor
     [data-resize-container][data-node="gifBlock"]:hover
     [data-resize-wrapper],
-  .lightsite-editor
+  .handout-editor
     [data-resize-container][data-node="gifBlock"].ProseMirror-selectednode
     [data-resize-wrapper],
-  .lightsite-editor
+  .handout-editor
     [data-resize-container][data-node="gifBlock"][data-resize-state="true"]
     [data-resize-wrapper],
-  .lightsite-editor
+  .handout-editor
     [data-resize-container][data-node="image"]:hover
     [data-resize-wrapper],
-  .lightsite-editor
+  .handout-editor
     [data-resize-container][data-node="image"].ProseMirror-selectednode
     [data-resize-wrapper],
-  .lightsite-editor
+  .handout-editor
     [data-resize-container][data-node="image"][data-resize-state="true"]
     [data-resize-wrapper] {
     box-shadow: 0 0 0 1px color-mix(in oklab, var(--ring) 56%, transparent);
   }
 
-  .lightsite-editor [data-resize-container][data-node="gifBlock"] [data-resize-handle],
-  .lightsite-editor [data-resize-container][data-node="image"] [data-resize-handle] {
+  .handout-editor [data-resize-container][data-node="gifBlock"] [data-resize-handle],
+  .handout-editor [data-resize-container][data-node="image"] [data-resize-handle] {
     @apply rounded-full border opacity-0 transition-opacity duration-150;
     background: var(--ring);
     border-color: var(--background);
@@ -922,27 +922,27 @@ html.gmail-extension-panel #root {
     z-index: 2;
   }
 
-  .lightsite-editor [data-resize-container][data-node="gifBlock"]:hover [data-resize-handle],
-  .lightsite-editor
+  .handout-editor [data-resize-container][data-node="gifBlock"]:hover [data-resize-handle],
+  .handout-editor
     [data-resize-container][data-node="gifBlock"].ProseMirror-selectednode
     [data-resize-handle],
-  .lightsite-editor
+  .handout-editor
     [data-resize-container][data-node="gifBlock"][data-resize-state="true"]
     [data-resize-handle],
-  .lightsite-editor [data-resize-container][data-node="image"]:hover [data-resize-handle],
-  .lightsite-editor
+  .handout-editor [data-resize-container][data-node="image"]:hover [data-resize-handle],
+  .handout-editor
     [data-resize-container][data-node="image"].ProseMirror-selectednode
     [data-resize-handle],
-  .lightsite-editor
+  .handout-editor
     [data-resize-container][data-node="image"][data-resize-state="true"]
     [data-resize-handle] {
     opacity: 1;
   }
 
-  .lightsite-editor [data-resize-container][data-node="gifBlock"] [data-resize-handle="left"],
-  .lightsite-editor [data-resize-container][data-node="gifBlock"] [data-resize-handle="right"],
-  .lightsite-editor [data-resize-container][data-node="image"] [data-resize-handle="left"],
-  .lightsite-editor [data-resize-container][data-node="image"] [data-resize-handle="right"] {
+  .handout-editor [data-resize-container][data-node="gifBlock"] [data-resize-handle="left"],
+  .handout-editor [data-resize-container][data-node="gifBlock"] [data-resize-handle="right"],
+  .handout-editor [data-resize-container][data-node="image"] [data-resize-handle="left"],
+  .handout-editor [data-resize-container][data-node="image"] [data-resize-handle="right"] {
     height: 28px;
     width: 8px;
     cursor: ew-resize;
@@ -951,43 +951,43 @@ html.gmail-extension-panel #root {
     transform: translateY(-50%);
   }
 
-  .lightsite-editor [data-resize-container][data-node="gifBlock"] [data-resize-handle="left"],
-  .lightsite-editor [data-resize-container][data-node="image"] [data-resize-handle="left"] {
+  .handout-editor [data-resize-container][data-node="gifBlock"] [data-resize-handle="left"],
+  .handout-editor [data-resize-container][data-node="image"] [data-resize-handle="left"] {
     left: -4px !important;
   }
 
-  .lightsite-editor [data-resize-container][data-node="gifBlock"] [data-resize-handle="right"],
-  .lightsite-editor [data-resize-container][data-node="image"] [data-resize-handle="right"] {
+  .handout-editor [data-resize-container][data-node="gifBlock"] [data-resize-handle="right"],
+  .handout-editor [data-resize-container][data-node="image"] [data-resize-handle="right"] {
     right: -4px !important;
   }
 
-  .lightsite-editor .ProseMirror > * + * {
+  .handout-editor .ProseMirror > * + * {
     margin-top: 20px;
   }
 
-  .lightsite-editor .ProseMirror > .react-renderer.node-iconCard + .react-renderer.node-iconCard,
-  .lightsite-editor .ProseMirror > .react-renderer.node-iconCard + .react-renderer.node-imageCard,
-  .lightsite-editor .ProseMirror > .react-renderer.node-iconCard + .react-renderer.node-testimonialCard,
-  .lightsite-editor .ProseMirror > .react-renderer.node-imageCard + .react-renderer.node-iconCard,
-  .lightsite-editor .ProseMirror > .react-renderer.node-imageCard + .react-renderer.node-imageCard,
-  .lightsite-editor .ProseMirror > .react-renderer.node-imageCard + .react-renderer.node-testimonialCard,
-  .lightsite-editor .ProseMirror > .react-renderer.node-testimonialCard + .react-renderer.node-iconCard,
-  .lightsite-editor .ProseMirror > .react-renderer.node-testimonialCard + .react-renderer.node-imageCard,
-  .lightsite-editor
+  .handout-editor .ProseMirror > .react-renderer.node-iconCard + .react-renderer.node-iconCard,
+  .handout-editor .ProseMirror > .react-renderer.node-iconCard + .react-renderer.node-imageCard,
+  .handout-editor .ProseMirror > .react-renderer.node-iconCard + .react-renderer.node-testimonialCard,
+  .handout-editor .ProseMirror > .react-renderer.node-imageCard + .react-renderer.node-iconCard,
+  .handout-editor .ProseMirror > .react-renderer.node-imageCard + .react-renderer.node-imageCard,
+  .handout-editor .ProseMirror > .react-renderer.node-imageCard + .react-renderer.node-testimonialCard,
+  .handout-editor .ProseMirror > .react-renderer.node-testimonialCard + .react-renderer.node-iconCard,
+  .handout-editor .ProseMirror > .react-renderer.node-testimonialCard + .react-renderer.node-imageCard,
+  .handout-editor
     .ProseMirror
     > .react-renderer.node-testimonialCard
     + .react-renderer.node-testimonialCard {
     margin-top: 0;
   }
 
-  .lightsite-editor .ProseMirror > blockquote,
-  .lightsite-editor .ProseMirror > pre,
-  .lightsite-editor .ProseMirror > ul,
-  .lightsite-editor .ProseMirror > ol {
+  .handout-editor .ProseMirror > blockquote,
+  .handout-editor .ProseMirror > pre,
+  .handout-editor .ProseMirror > ul,
+  .handout-editor .ProseMirror > ol {
     margin-top: 24px;
   }
 
-  .lightsite-editor
+  .handout-editor
     .ProseMirror
     > :is(p, h1, h2, h3, blockquote, ul, ol)
     + :is(
@@ -995,7 +995,7 @@ html.gmail-extension-panel #root {
       .react-renderer.node-imageCard,
       .react-renderer.node-testimonialCard
     ),
-  .lightsite-editor
+  .handout-editor
     .ProseMirror
     > :is(
       .react-renderer.node-iconCard,
@@ -1006,101 +1006,101 @@ html.gmail-extension-panel #root {
     margin-top: 12px;
   }
 
-  .lightsite-editor .ProseMirror > h1 + blockquote,
-  .lightsite-editor .ProseMirror > h1 + pre,
-  .lightsite-editor .ProseMirror > h1 + ul,
-  .lightsite-editor .ProseMirror > h1 + ol {
+  .handout-editor .ProseMirror > h1 + blockquote,
+  .handout-editor .ProseMirror > h1 + pre,
+  .handout-editor .ProseMirror > h1 + ul,
+  .handout-editor .ProseMirror > h1 + ol {
     margin-top: 24px;
   }
 
-  .lightsite-editor .ProseMirror > h1:not(:first-child) {
+  .handout-editor .ProseMirror > h1:not(:first-child) {
     margin-top: 72px;
   }
 
-  .lightsite-editor .ProseMirror > h2:not(:first-child) {
+  .handout-editor .ProseMirror > h2:not(:first-child) {
     margin-top: 50px;
   }
 
-  .lightsite-editor .ProseMirror > h3:not(:first-child) {
+  .handout-editor .ProseMirror > h3:not(:first-child) {
     margin-top: 36px;
   }
 
-  .lightsite-editor .ProseMirror > p {
+  .handout-editor .ProseMirror > p {
     @apply px-0 py-0 text-base leading-[26px];
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor .ProseMirror > h1 {
+  .handout-editor .ProseMirror > h1 {
     @apply px-0 py-0 text-2xl leading-9 font-semibold tracking-normal;
     color: var(--foreground);
   }
 
-  .lightsite-editor .ProseMirror > h2 {
+  .handout-editor .ProseMirror > h2 {
     @apply px-0 py-0 text-xl leading-8 font-semibold tracking-normal;
     color: var(--foreground);
   }
 
-  .lightsite-editor .ProseMirror > h3 {
+  .handout-editor .ProseMirror > h3 {
     @apply px-0 py-0 text-base leading-[26px] font-semibold tracking-normal;
     color: var(--foreground);
   }
 
-  .lightsite-editor .ProseMirror > ul,
-  .lightsite-editor .ProseMirror > ol {
+  .handout-editor .ProseMirror > ul,
+  .handout-editor .ProseMirror > ol {
     @apply py-0 pl-6 text-base leading-[26px];
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor .ProseMirror > ul[data-type="taskList"] {
+  .handout-editor .ProseMirror > ul[data-type="taskList"] {
     @apply list-none pl-0;
   }
 
-  .lightsite-editor .ProseMirror > ul {
+  .handout-editor .ProseMirror > ul {
     @apply list-disc;
   }
 
-  .lightsite-editor .ProseMirror ul[data-lightsite-icon-list],
-  .lightsite-editor .ProseMirror li[data-lightsite-icon-list-item] {
+  .handout-editor .ProseMirror ul[data-handout-icon-list],
+  .handout-editor .ProseMirror li[data-handout-icon-list-item] {
     @apply list-none;
   }
 
-  .lightsite-editor .ProseMirror ul[data-lightsite-icon-list] {
+  .handout-editor .ProseMirror ul[data-handout-icon-list] {
     @apply pl-0;
   }
 
-  .lightsite-editor .ProseMirror li[data-lightsite-icon-list-item]::marker {
+  .handout-editor .ProseMirror li[data-handout-icon-list-item]::marker {
     content: "";
   }
 
-  .lightsite-editor .ProseMirror > ol {
+  .handout-editor .ProseMirror > ol {
     @apply list-decimal;
   }
 
-  .lightsite-editor .ProseMirror li p {
+  .handout-editor .ProseMirror li p {
     @apply m-0;
   }
 
-  .lightsite-editor .ProseMirror > ul[data-lightsite-icon-list] > li {
+  .handout-editor .ProseMirror > ul[data-handout-icon-list] > li {
     @apply relative py-0 pl-0;
   }
 
-  .lightsite-editor .ProseMirror > ul[data-lightsite-icon-list] > li + li {
+  .handout-editor .ProseMirror > ul[data-handout-icon-list] > li + li {
     margin-top: 6px;
   }
 
-  .lightsite-editor [data-lightsite-grid] {
+  .handout-editor [data-handout-grid] {
     @apply flex flex-col gap-3;
     container-type: inline-size;
   }
 
-  .lightsite-editor [data-lightsite-grid-row] {
+  .handout-editor [data-handout-grid-row] {
     display: grid;
-    grid-template-columns: repeat(var(--lightsite-grid-columns, 2), minmax(0, 1fr));
+    grid-template-columns: repeat(var(--handout-grid-columns, 2), minmax(0, 1fr));
     column-gap: 12px;
     row-gap: 12px;
   }
 
-  .lightsite-editor [data-lightsite-grid-cell] {
+  .handout-editor [data-handout-grid-cell] {
     @apply min-w-0 rounded-lg border border-dashed p-2 transition;
     background: transparent;
     border-color: transparent;
@@ -1108,379 +1108,379 @@ html.gmail-extension-panel #root {
     min-height: 38px;
   }
 
-  .lightsite-editor [data-lightsite-grid-cell]:hover,
-  .lightsite-editor [data-lightsite-grid-cell]:focus-within {
+  .handout-editor [data-handout-grid-cell]:hover,
+  .handout-editor [data-handout-grid-cell]:focus-within {
     background: var(--muted);
     border-color: var(--border);
   }
 
-  .lightsite-editor [data-lightsite-grid-cell] > .react-renderer {
+  .handout-editor [data-handout-grid-cell] > .react-renderer {
     @apply m-0 w-full max-w-full min-w-0;
   }
 
-  .lightsite-editor
-    [data-lightsite-grid-cell]
+  .handout-editor
+    [data-handout-grid-cell]
     > .react-renderer
-    > [data-lightsite-editor-block] {
+    > [data-handout-editor-block] {
     margin: 0;
     padding-top: 0;
     padding-bottom: 0;
   }
 
-  .lightsite-editor [data-lightsite-grid-cell] > p.lightsite-editor-placeholder-hidden {
+  .handout-editor [data-handout-grid-cell] > p.handout-editor-placeholder-hidden {
     display: none;
   }
 
-  .lightsite-editor [data-lightsite-grid-cell] > :not(:last-child) {
+  .handout-editor [data-handout-grid-cell] > :not(:last-child) {
     margin-bottom: 12px;
   }
 
-  .lightsite-editor [data-lightsite-grid-cell] > p.lightsite-editor-placeholder-hidden {
+  .handout-editor [data-handout-grid-cell] > p.handout-editor-placeholder-hidden {
     margin-bottom: 0;
   }
 
-  .lightsite-editor
-    [data-lightsite-grid-cell]
+  .handout-editor
+    [data-handout-grid-cell]
     > .react-renderer.node-imageCard
-    > .lightsite-editor-image-card-shell,
-  .lightsite-editor
-    [data-lightsite-grid-cell]
+    > .handout-editor-image-card-shell,
+  .handout-editor
+    [data-handout-grid-cell]
     > .react-renderer.node-testimonialCard
-    > .lightsite-editor-testimonial-card-shell,
-  .lightsite-editor
-    [data-lightsite-grid-cell]
+    > .handout-editor-testimonial-card-shell,
+  .handout-editor
+    [data-handout-grid-cell]
     > .react-renderer.node-calendarEmbed
-    > .lightsite-editor-calendar-embed-shell,
-  .lightsite-editor
-    [data-lightsite-grid-cell]
+    > .handout-editor-calendar-embed-shell,
+  .handout-editor
+    [data-handout-grid-cell]
     > .react-renderer.node-videoEmbed
-    > .lightsite-editor-video-embed-shell,
-  .lightsite-editor
-    [data-lightsite-grid-cell]
+    > .handout-editor-video-embed-shell,
+  .handout-editor
+    [data-handout-grid-cell]
     > .react-renderer.node-iconCard
-    > [data-lightsite-editor-block-type="icon-card"] {
+    > [data-handout-editor-block-type="icon-card"] {
     @apply py-0;
     margin: 0;
   }
 
-  .lightsite-editor
-    [data-lightsite-grid-cell]
+  .handout-editor
+    [data-handout-grid-cell]
     > .react-renderer.node-iconCard
-    > [data-lightsite-editor-block-type="icon-card"]
+    > [data-handout-editor-block-type="icon-card"]
     > div {
     @apply p-3;
   }
 
-  .lightsite-editor [data-lightsite-grid-cell] > p {
+  .handout-editor [data-handout-grid-cell] > p {
     @apply m-0 px-0 py-0 text-base leading-[26px];
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor [data-lightsite-grid-cell] > h1 {
+  .handout-editor [data-handout-grid-cell] > h1 {
     @apply m-0 px-0 py-0 text-2xl leading-9 font-semibold tracking-normal;
     color: var(--foreground);
   }
 
-  .lightsite-editor [data-lightsite-grid-cell] > h2 {
+  .handout-editor [data-handout-grid-cell] > h2 {
     @apply m-0 px-0 py-0 text-xl leading-8 font-semibold tracking-normal;
     color: var(--foreground);
   }
 
-  .lightsite-editor [data-lightsite-grid-cell] > h3 {
+  .handout-editor [data-handout-grid-cell] > h3 {
     @apply m-0 px-0 py-0 text-base leading-[26px] font-semibold tracking-normal;
     color: var(--foreground);
   }
 
-  .lightsite-editor [data-lightsite-grid-cell] > ul,
-  .lightsite-editor [data-lightsite-grid-cell] > ol {
+  .handout-editor [data-handout-grid-cell] > ul,
+  .handout-editor [data-handout-grid-cell] > ol {
     @apply my-0 py-0 pl-6 text-base leading-[26px];
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor [data-lightsite-grid-cell] > ul {
+  .handout-editor [data-handout-grid-cell] > ul {
     @apply list-disc;
   }
 
-  .lightsite-editor [data-lightsite-grid-cell] > ol {
+  .handout-editor [data-handout-grid-cell] > ol {
     @apply list-decimal;
   }
 
-  .lightsite-editor [data-lightsite-grid-cell] > ul[data-type="taskList"] {
+  .handout-editor [data-handout-grid-cell] > ul[data-type="taskList"] {
     @apply list-none pl-0;
   }
 
-  .lightsite-editor [data-lightsite-grid-cell] > blockquote {
+  .handout-editor [data-handout-grid-cell] > blockquote {
     @apply m-0 border-l-4 py-1.5 pr-0 pl-4 text-base leading-[26px];
     border-color: var(--border);
     color: var(--muted-foreground);
   }
 
-  .lightsite-editor [data-lightsite-grid-cell] > pre {
+  .handout-editor [data-handout-grid-cell] > pre {
     @apply m-0 overflow-x-auto rounded-md border px-4 py-4 text-sm leading-6;
     background: var(--muted);
     border-color: var(--border);
     color: var(--foreground);
   }
 
-  .lightsite-editor .tableWrapper {
+  .handout-editor .tableWrapper {
     @apply overflow-x-auto rounded-xl border;
     background: var(--card);
     border-color: var(--border);
   }
 
-  .lightsite-editor .lightsite-editor-table,
-  .lightsite-editor .tableWrapper > table {
+  .handout-editor .handout-editor-table,
+  .handout-editor .tableWrapper > table {
     @apply w-full border-separate border-spacing-0 text-sm leading-5;
     color: var(--foreground);
   }
 
-  .lightsite-editor .lightsite-editor-table :where(th, td),
-  .lightsite-editor .tableWrapper > table :where(th, td) {
+  .handout-editor .handout-editor-table :where(th, td),
+  .handout-editor .tableWrapper > table :where(th, td) {
     @apply min-w-28 border-0 border-r border-b px-3 py-2 text-left align-top;
     border-color: var(--border);
   }
 
-  .lightsite-editor .lightsite-editor-table tr > :last-child,
-  .lightsite-editor .tableWrapper > table tr > :last-child {
+  .handout-editor .handout-editor-table tr > :last-child,
+  .handout-editor .tableWrapper > table tr > :last-child {
     border-right-width: 0;
   }
 
-  .lightsite-editor .lightsite-editor-table tr:last-child > :where(th, td),
-  .lightsite-editor .tableWrapper > table tr:last-child > :where(th, td) {
+  .handout-editor .handout-editor-table tr:last-child > :where(th, td),
+  .handout-editor .tableWrapper > table tr:last-child > :where(th, td) {
     border-bottom-width: 0;
   }
 
-  .lightsite-editor .lightsite-editor-table th,
-  .lightsite-editor .tableWrapper > table th {
+  .handout-editor .handout-editor-table th,
+  .handout-editor .tableWrapper > table th {
     @apply font-semibold;
     background: var(--table-header-background);
     color: var(--foreground);
   }
 
-  .lightsite-editor .lightsite-editor-table td,
-  .lightsite-editor .tableWrapper > table td {
+  .handout-editor .handout-editor-table td,
+  .handout-editor .tableWrapper > table td {
     background: var(--card);
   }
 
-  .lightsite-editor .lightsite-editor-table :where(th, td) > *,
-  .lightsite-editor .tableWrapper > table :where(th, td) > * {
+  .handout-editor .handout-editor-table :where(th, td) > *,
+  .handout-editor .tableWrapper > table :where(th, td) > * {
     @apply m-0;
   }
 
-  .lightsite-editor .lightsite-editor-table :where(th, td).selectedCell,
-  .lightsite-editor .tableWrapper > table :where(th, td).selectedCell {
+  .handout-editor .handout-editor-table :where(th, td).selectedCell,
+  .handout-editor .tableWrapper > table :where(th, td).selectedCell {
     background: var(--selection-background);
   }
 
-  .lightsite-editor .column-resize-handle {
+  .handout-editor .column-resize-handle {
     @apply pointer-events-none absolute top-0 bottom-0 w-1;
     background: var(--ring);
     right: -2px;
   }
 
-  .lightsite-editor.resize-cursor,
-  .lightsite-editor .resize-cursor {
+  .handout-editor.resize-cursor,
+  .handout-editor .resize-cursor {
     cursor: col-resize;
   }
 
-  .lightsite-editor [data-lightsite-grid-cell] > .tableWrapper {
+  .handout-editor [data-handout-grid-cell] > .tableWrapper {
     @apply m-0 w-full max-w-full;
   }
 
   @container (max-width: 520px) {
-    .lightsite-editor [data-lightsite-grid-row] {
+    .handout-editor [data-handout-grid-row] {
       grid-template-columns: minmax(0, 1fr);
     }
   }
 
-  .lightsite-editor-icon-list-item {
+  .handout-editor-icon-list-item {
     cursor: text;
   }
 
-  .lightsite-editor-icon-list-inner {
+  .handout-editor-icon-list-inner {
     @apply grid grid-cols-[24px_minmax(0,1fr)] items-start gap-2;
   }
 
-  .lightsite-editor-icon-bullet {
+  .handout-editor-icon-bullet {
     @apply mt-[3px] flex size-5 shrink-0 items-center justify-center rounded-md border border-transparent bg-transparent p-0 outline-none transition;
   }
 
-  .lightsite-editor-icon-bullet:hover,
-  .lightsite-editor-icon-bullet:focus-visible,
-  .lightsite-editor-icon-list-item.has-focus .lightsite-editor-icon-bullet {
-    border-color: color-mix(in oklab, var(--lightsite-editor-icon-color) 32%, transparent);
-    background: color-mix(in oklab, var(--lightsite-editor-icon-color) 14%, transparent);
-    color: color-mix(in oklab, var(--lightsite-editor-icon-color) 86%, white);
+  .handout-editor-icon-bullet:hover,
+  .handout-editor-icon-bullet:focus-visible,
+  .handout-editor-icon-list-item.has-focus .handout-editor-icon-bullet {
+    border-color: color-mix(in oklab, var(--handout-editor-icon-color) 32%, transparent);
+    background: color-mix(in oklab, var(--handout-editor-icon-color) 14%, transparent);
+    color: color-mix(in oklab, var(--handout-editor-icon-color) 86%, white);
   }
 
-  .lightsite-editor-icon-bullet svg {
+  .handout-editor-icon-bullet svg {
     @apply size-3.5;
   }
 
-  .lightsite-editor-icon-list-content {
+  .handout-editor-icon-list-content {
     @apply min-w-0 text-base leading-[26px] outline-none;
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-icon-list-content > p {
+  .handout-editor-icon-list-content > p {
     @apply m-0;
   }
 
-  .lightsite-editor-icon-card-picker-anchor {
+  .handout-editor-icon-card-picker-anchor {
     @apply relative mb-3 w-fit;
   }
 
-  .lightsite-editor-icon-card-button {
+  .handout-editor-icon-card-button {
     @apply flex size-8 items-center justify-center rounded-lg border border-transparent p-0 outline-none transition;
     background: var(--accent);
-    color: color-mix(in oklab, var(--lightsite-editor-icon-color) 86%, white);
+    color: color-mix(in oklab, var(--handout-editor-icon-color) 86%, white);
   }
 
-  .lightsite-editor-icon-card-button:hover,
-  .lightsite-editor-icon-card-button:focus-visible,
-  .lightsite-editor-icon-card-button[aria-expanded="true"] {
-    border-color: color-mix(in oklab, var(--lightsite-editor-icon-color) 32%, transparent);
-    background: color-mix(in oklab, var(--lightsite-editor-icon-color) 14%, var(--accent));
+  .handout-editor-icon-card-button:hover,
+  .handout-editor-icon-card-button:focus-visible,
+  .handout-editor-icon-card-button[aria-expanded="true"] {
+    border-color: color-mix(in oklab, var(--handout-editor-icon-color) 32%, transparent);
+    background: color-mix(in oklab, var(--handout-editor-icon-color) 14%, var(--accent));
   }
 
-  .lightsite-editor-icon-picker {
-    --lightsite-editor-icon-picker-height: 278px;
+  .handout-editor-icon-picker {
+    --handout-editor-icon-picker-height: 278px;
     @apply absolute left-0 top-7 z-50 flex h-auto w-[256px] items-stretch overflow-hidden rounded-lg border p-0 shadow-xl;
     background: var(--popover);
     border-color: var(--border);
     color: var(--popover-foreground);
   }
 
-  .lightsite-editor-icon-color-rail {
+  .handout-editor-icon-color-rail {
     @apply flex w-[38px] shrink-0 flex-col items-center gap-1.5 overflow-hidden py-3;
     border-right: 1px solid var(--border);
   }
 
-  .lightsite-editor-icon-scroll {
+  .handout-editor-icon-scroll {
     @apply min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-1.5 py-3;
-    max-height: var(--lightsite-editor-icon-picker-height);
+    max-height: var(--handout-editor-icon-picker-height);
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
   }
 
-  .lightsite-editor-icon-scroll::-webkit-scrollbar {
+  .handout-editor-icon-scroll::-webkit-scrollbar {
     width: 6px;
   }
 
-  .lightsite-editor-icon-scroll::-webkit-scrollbar-thumb {
+  .handout-editor-icon-scroll::-webkit-scrollbar-thumb {
     background: var(--border);
     border-radius: 999px;
   }
 
-  .lightsite-editor-icon-picker-grid {
+  .handout-editor-icon-picker-grid {
     @apply grid gap-1;
     grid-template-columns: repeat(7, 26px);
   }
 
-  .lightsite-editor-icon-picker-button {
+  .handout-editor-icon-picker-button {
     @apply flex size-[26px] items-center justify-center rounded-md border border-transparent bg-transparent p-0 outline-none transition;
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-icon-picker-button:hover,
-  .lightsite-editor-icon-picker-button:focus-visible,
-  .lightsite-editor-icon-picker-button-active {
+  .handout-editor-icon-picker-button:hover,
+  .handout-editor-icon-picker-button:focus-visible,
+  .handout-editor-icon-picker-button-active {
     background: var(--accent);
     color: var(--foreground);
   }
 
-  .lightsite-editor-icon-picker-button-active {
+  .handout-editor-icon-picker-button-active {
     border-color: color-mix(in oklab, var(--ring) 34%, transparent);
   }
 
-  .lightsite-editor-icon-picker-button svg,
-  .lightsite-editor-icon-bullet svg,
-  .lightsite-editor-icon-card-button svg {
+  .handout-editor-icon-picker-button svg,
+  .handout-editor-icon-bullet svg,
+  .handout-editor-icon-card-button svg {
     display: block;
     flex: none;
     overflow: visible;
     shape-rendering: auto;
   }
 
-  .lightsite-editor-icon-picker-card {
+  .handout-editor-icon-picker-card {
     @apply top-10;
   }
 
-  .lightsite-editor-icon-color-button {
+  .handout-editor-icon-color-button {
     @apply flex size-5 shrink-0 items-center justify-center rounded-full border border-transparent p-0 outline-none transition;
-    background: var(--lightsite-editor-icon-color);
+    background: var(--handout-editor-icon-color);
   }
 
-  .lightsite-editor-icon-color-button:hover,
-  .lightsite-editor-icon-color-button:focus-visible,
-  .lightsite-editor-icon-color-button-active {
+  .handout-editor-icon-color-button:hover,
+  .handout-editor-icon-color-button:focus-visible,
+  .handout-editor-icon-color-button-active {
     border-color: color-mix(in oklab, var(--foreground) 78%, transparent);
     box-shadow:
       0 0 0 2px var(--popover),
-      0 0 0 3px color-mix(in oklab, var(--lightsite-editor-icon-color) 68%, white);
+      0 0 0 3px color-mix(in oklab, var(--handout-editor-icon-color) 68%, white);
   }
 
-  .lightsite-editor-icon-color-neutral {
-    --lightsite-editor-icon-color: var(--muted-foreground);
-    color: var(--lightsite-editor-icon-color);
+  .handout-editor-icon-color-neutral {
+    --handout-editor-icon-color: var(--muted-foreground);
+    color: var(--handout-editor-icon-color);
   }
 
-  .lightsite-editor-icon-color-purple {
-    --lightsite-editor-icon-color: var(--purple-foreground);
-    color: var(--lightsite-editor-icon-color);
+  .handout-editor-icon-color-purple {
+    --handout-editor-icon-color: var(--purple-foreground);
+    color: var(--handout-editor-icon-color);
   }
 
-  .lightsite-editor-icon-color-blue {
-    --lightsite-editor-icon-color: var(--blue-foreground);
-    color: var(--lightsite-editor-icon-color);
+  .handout-editor-icon-color-blue {
+    --handout-editor-icon-color: var(--blue-foreground);
+    color: var(--handout-editor-icon-color);
   }
 
-  .lightsite-editor-icon-color-cyan {
-    --lightsite-editor-icon-color: var(--cyan-foreground);
-    color: var(--lightsite-editor-icon-color);
+  .handout-editor-icon-color-cyan {
+    --handout-editor-icon-color: var(--cyan-foreground);
+    color: var(--handout-editor-icon-color);
   }
 
-  .lightsite-editor-icon-color-teal {
-    --lightsite-editor-icon-color: var(--teal-foreground);
-    color: var(--lightsite-editor-icon-color);
+  .handout-editor-icon-color-teal {
+    --handout-editor-icon-color: var(--teal-foreground);
+    color: var(--handout-editor-icon-color);
   }
 
-  .lightsite-editor-icon-color-green {
-    --lightsite-editor-icon-color: var(--green-foreground);
-    color: var(--lightsite-editor-icon-color);
+  .handout-editor-icon-color-green {
+    --handout-editor-icon-color: var(--green-foreground);
+    color: var(--handout-editor-icon-color);
   }
 
-  .lightsite-editor-icon-color-yellow {
-    --lightsite-editor-icon-color: var(--yellow-foreground);
-    color: var(--lightsite-editor-icon-color);
+  .handout-editor-icon-color-yellow {
+    --handout-editor-icon-color: var(--yellow-foreground);
+    color: var(--handout-editor-icon-color);
   }
 
-  .lightsite-editor-icon-color-orange {
-    --lightsite-editor-icon-color: var(--orange-foreground);
-    color: var(--lightsite-editor-icon-color);
+  .handout-editor-icon-color-orange {
+    --handout-editor-icon-color: var(--orange-foreground);
+    color: var(--handout-editor-icon-color);
   }
 
-  .lightsite-editor-icon-color-red {
-    --lightsite-editor-icon-color: var(--red-foreground);
-    color: var(--lightsite-editor-icon-color);
+  .handout-editor-icon-color-red {
+    --handout-editor-icon-color: var(--red-foreground);
+    color: var(--handout-editor-icon-color);
   }
 
-  .lightsite-editor-icon-color-pink {
-    --lightsite-editor-icon-color: var(--pink-foreground);
-    color: var(--lightsite-editor-icon-color);
+  .handout-editor-icon-color-pink {
+    --handout-editor-icon-color: var(--pink-foreground);
+    color: var(--handout-editor-icon-color);
   }
 
-  .lightsite-editor-testimonial-card-shell {
+  .handout-editor-testimonial-card-shell {
     container-type: inline-size;
     cursor: default;
   }
 
-  .lightsite-editor-testimonial-card[data-drag-active="true"] {
+  .handout-editor-testimonial-card[data-drag-active="true"] {
     background: color-mix(in oklab, var(--ring) 10%, var(--card));
     border-color: color-mix(in oklab, var(--ring) 72%, var(--border));
   }
 
-  .lightsite-editor-testimonial-avatar {
+  .handout-editor-testimonial-avatar {
     @apply relative flex size-10 items-center justify-center overflow-hidden border p-0 outline-none transition;
     align-self: start;
     background: var(--muted);
@@ -1492,75 +1492,75 @@ html.gmail-extension-panel #root {
     grid-row: 1 / span 2;
   }
 
-  .lightsite-editor-testimonial-avatar:not([data-has-image="true"]) {
+  .handout-editor-testimonial-avatar:not([data-has-image="true"]) {
     border-style: dashed;
   }
 
-  .lightsite-editor-testimonial-avatar:hover,
-  .lightsite-editor-testimonial-avatar:focus-visible {
+  .handout-editor-testimonial-avatar:hover,
+  .handout-editor-testimonial-avatar:focus-visible {
     background: var(--accent);
     border-color: var(--border);
     color: var(--foreground);
   }
 
-  .lightsite-editor-testimonial-avatar[data-has-image="true"] {
+  .handout-editor-testimonial-avatar[data-has-image="true"] {
     border-style: solid;
     background: transparent;
   }
 
-  .lightsite-editor-testimonial-avatar-img {
+  .handout-editor-testimonial-avatar-img {
     @apply block size-full object-cover;
   }
 
-  .lightsite-editor-testimonial-content {
+  .handout-editor-testimonial-content {
     display: contents;
     cursor: text;
   }
 
-  .lightsite-editor-testimonial-content > [data-node-view-content-react] {
+  .handout-editor-testimonial-content > [data-node-view-content-react] {
     display: contents;
   }
 
-  .lightsite-editor-testimonial-card[data-upload-error="true"]
-    .lightsite-editor-testimonial-avatar {
+  .handout-editor-testimonial-card[data-upload-error="true"]
+    .handout-editor-testimonial-avatar {
     color: var(--destructive);
     border-color: color-mix(in oklab, var(--destructive) 58%, transparent);
   }
 
-  .lightsite-editor-image-card-shell {
+  .handout-editor-image-card-shell {
     container-type: inline-size;
     cursor: default;
   }
 
-  .lightsite-editor-page-title-logo-fallback {
+  .handout-editor-page-title-logo-fallback {
     font-size: 16px;
     font-weight: 600;
     line-height: 1;
   }
 
-  .lightsite-editor
+  .handout-editor
     .ProseMirror
     > .react-renderer.node-imageCard
-    > .lightsite-editor-image-card-shell {
+    > .handout-editor-image-card-shell {
     padding-top: 8px;
     padding-bottom: 8px;
   }
 
-  .lightsite-editor .ProseMirror > .react-renderer.node-iconCard > [data-lightsite-editor-block],
-  .lightsite-editor
+  .handout-editor .ProseMirror > .react-renderer.node-iconCard > [data-handout-editor-block],
+  .handout-editor
     .ProseMirror
     > .react-renderer.node-testimonialCard
-    > .lightsite-editor-testimonial-card-shell,
-  .lightsite-editor
+    > .handout-editor-testimonial-card-shell,
+  .handout-editor
     .ProseMirror
     > .react-renderer.node-logoGrid
-    > .lightsite-editor-logo-grid-shell,
-  .lightsite-editor .ProseMirror > .react-renderer.node-buttonBlock > [data-lightsite-editor-block] {
+    > .handout-editor-logo-grid-shell,
+  .handout-editor .ProseMirror > .react-renderer.node-buttonBlock > [data-handout-editor-block] {
     padding-top: 8px;
     padding-bottom: 8px;
   }
 
-  .lightsite-editor-logo-grid-shell {
+  .handout-editor-logo-grid-shell {
     width: 100%;
     min-width: 0;
     max-width: 100%;
@@ -1568,16 +1568,16 @@ html.gmail-extension-panel #root {
     cursor: default;
   }
 
-  .lightsite-editor-logo-grid-item[data-drag-active="true"] {
+  .handout-editor-logo-grid-item[data-drag-active="true"] {
     background: color-mix(in oklab, var(--ring) 10%, var(--background));
     border-color: color-mix(in oklab, var(--ring) 72%, var(--border));
   }
 
-  .lightsite-editor-logo-grid-item {
+  .handout-editor-logo-grid-item {
     position: relative;
   }
 
-  .lightsite-editor-logo-grid-logo-button {
+  .handout-editor-logo-grid-logo-button {
     display: flex;
     width: 40px;
     height: 40px;
@@ -1594,24 +1594,24 @@ html.gmail-extension-panel #root {
       color 120ms ease;
   }
 
-  .lightsite-editor-logo-grid-item:not([data-has-logo="true"])
-    .lightsite-editor-logo-grid-logo-button {
+  .handout-editor-logo-grid-item:not([data-has-logo="true"])
+    .handout-editor-logo-grid-logo-button {
     border: 1px dashed var(--border);
     background: var(--secondary);
     color: var(--muted-foreground);
   }
 
-  .lightsite-editor-logo-grid-item[data-has-logo="true"] .lightsite-editor-logo-grid-logo-button {
+  .handout-editor-logo-grid-item[data-has-logo="true"] .handout-editor-logo-grid-logo-button {
     border: 0;
     background: transparent;
   }
 
-  .lightsite-editor-logo-grid-logo-button:hover,
-  .lightsite-editor-logo-grid-logo-button:focus-visible {
+  .handout-editor-logo-grid-logo-button:hover,
+  .handout-editor-logo-grid-logo-button:focus-visible {
     box-shadow: 0 0 0 2px color-mix(in oklab, var(--ring) 62%, transparent);
   }
 
-  .lightsite-editor-logo-grid-menu {
+  .handout-editor-logo-grid-menu {
     position: absolute;
     top: 58px;
     left: 50%;
@@ -1631,7 +1631,7 @@ html.gmail-extension-panel #root {
       0 0 0 1px color-mix(in oklab, var(--foreground) 3%, transparent) inset;
   }
 
-  .lightsite-editor-logo-grid-menu-item {
+  .handout-editor-logo-grid-menu-item {
     display: flex;
     min-height: 34px;
     width: 100%;
@@ -1651,30 +1651,30 @@ html.gmail-extension-panel #root {
       color 120ms ease;
   }
 
-  .lightsite-editor-logo-grid-menu-item:hover,
-  .lightsite-editor-logo-grid-menu-item:focus-visible {
+  .handout-editor-logo-grid-menu-item:hover,
+  .handout-editor-logo-grid-menu-item:focus-visible {
     background: var(--accent);
     color: var(--foreground);
   }
 
-  .lightsite-editor-logo-grid-menu-item svg {
+  .handout-editor-logo-grid-menu-item svg {
     flex-shrink: 0;
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-logo-grid-menu-separator {
+  .handout-editor-logo-grid-menu-separator {
     height: 1px;
     margin: 4px;
     background: var(--border-subtle);
   }
 
-  .lightsite-editor-logo-grid-domain-form {
+  .handout-editor-logo-grid-domain-form {
     display: grid;
     gap: 8px;
     padding: 6px 4px 4px;
   }
 
-  .lightsite-editor-logo-grid-domain-label {
+  .handout-editor-logo-grid-domain-label {
     padding: 0 4px;
     color: var(--tertiary-foreground);
     font-size: 12px;
@@ -1682,7 +1682,7 @@ html.gmail-extension-panel #root {
     line-height: 16px;
   }
 
-  .lightsite-editor-logo-grid-domain-control {
+  .handout-editor-logo-grid-domain-control {
     display: flex;
     height: 36px;
     align-items: center;
@@ -1694,12 +1694,12 @@ html.gmail-extension-panel #root {
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-logo-grid-domain-control:focus-within {
+  .handout-editor-logo-grid-domain-control:focus-within {
     border-color: color-mix(in oklab, var(--ring) 72%, var(--popover));
     box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 18%, transparent);
   }
 
-  .lightsite-editor-logo-grid-domain-input {
+  .handout-editor-logo-grid-domain-input {
     min-width: 0;
     flex: 1;
     border: 0;
@@ -1710,31 +1710,31 @@ html.gmail-extension-panel #root {
     outline: none;
   }
 
-  .lightsite-editor-logo-grid-domain-input::placeholder {
+  .handout-editor-logo-grid-domain-input::placeholder {
     color: var(--muted-foreground);
   }
 
-  .lightsite-editor-logo-grid-domain-input:disabled {
+  .handout-editor-logo-grid-domain-input:disabled {
     cursor: progress;
     opacity: 0.72;
   }
 
-  .lightsite-editor-logo-grid-domain-error {
+  .handout-editor-logo-grid-domain-error {
     margin: -2px 4px 0;
     color: var(--destructive);
     font-size: 12px;
     line-height: 16px;
   }
 
-  .lightsite-editor-logo-grid-domain-actions {
+  .handout-editor-logo-grid-domain-actions {
     display: flex;
     justify-content: flex-end;
     gap: 6px;
     padding-top: 2px;
   }
 
-  .lightsite-editor-logo-grid-domain-cancel,
-  .lightsite-editor-logo-grid-domain-submit {
+  .handout-editor-logo-grid-domain-cancel,
+  .handout-editor-logo-grid-domain-submit {
     height: 32px;
     border: 0;
     border-radius: var(--radius-md);
@@ -1749,34 +1749,34 @@ html.gmail-extension-panel #root {
       opacity 120ms ease;
   }
 
-  .lightsite-editor-logo-grid-domain-cancel {
+  .handout-editor-logo-grid-domain-cancel {
     background: transparent;
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-logo-grid-domain-cancel:hover,
-  .lightsite-editor-logo-grid-domain-cancel:focus-visible {
+  .handout-editor-logo-grid-domain-cancel:hover,
+  .handout-editor-logo-grid-domain-cancel:focus-visible {
     background: var(--accent);
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-logo-grid-domain-submit {
+  .handout-editor-logo-grid-domain-submit {
     background: var(--primary);
     color: var(--primary-foreground);
   }
 
-  .lightsite-editor-logo-grid-domain-submit:hover,
-  .lightsite-editor-logo-grid-domain-submit:focus-visible {
+  .handout-editor-logo-grid-domain-submit:hover,
+  .handout-editor-logo-grid-domain-submit:focus-visible {
     opacity: 0.9;
   }
 
-  .lightsite-editor-logo-grid-domain-cancel:disabled,
-  .lightsite-editor-logo-grid-domain-submit:disabled {
+  .handout-editor-logo-grid-domain-cancel:disabled,
+  .handout-editor-logo-grid-domain-submit:disabled {
     cursor: progress;
     opacity: 0.62;
   }
 
-  .lightsite-editor-logo-grid-img {
+  .handout-editor-logo-grid-img {
     display: block;
     max-width: 40px;
     max-height: 40px;
@@ -1785,17 +1785,17 @@ html.gmail-extension-panel #root {
     object-fit: contain;
   }
 
-  .lightsite-editor-logo-grid-title-content {
+  .handout-editor-logo-grid-title-content {
     width: 100%;
     min-width: 0;
     cursor: text;
   }
 
-  .lightsite-editor-logo-grid-title-content > [data-node-view-content-react] {
+  .handout-editor-logo-grid-title-content > [data-node-view-content-react] {
     display: block;
   }
 
-  .lightsite-editor-logo-grid-title-content [data-lightsite-logo-grid-title] {
+  .handout-editor-logo-grid-title-content [data-handout-logo-grid-title] {
     margin: 0;
     min-height: 24px;
     min-width: 0;
@@ -1809,11 +1809,11 @@ html.gmail-extension-panel #root {
     outline: none;
   }
 
-  .lightsite-editor-logo-grid-title-content [data-lightsite-logo-grid-title].is-empty::before {
+  .handout-editor-logo-grid-title-content [data-handout-logo-grid-title].is-empty::before {
     color: var(--muted-faint);
   }
 
-  .lightsite-editor-logo-grid-remove {
+  .handout-editor-logo-grid-remove {
     position: absolute;
     top: 6px;
     right: 6px;
@@ -1833,28 +1833,28 @@ html.gmail-extension-panel #root {
       opacity 120ms ease;
   }
 
-  .lightsite-editor-logo-grid-item:hover .lightsite-editor-logo-grid-remove,
-  .lightsite-editor-logo-grid-remove:focus-visible {
+  .handout-editor-logo-grid-item:hover .handout-editor-logo-grid-remove,
+  .handout-editor-logo-grid-remove:focus-visible {
     opacity: 1;
   }
 
-  .lightsite-editor-logo-grid-remove:hover {
+  .handout-editor-logo-grid-remove:hover {
     background: var(--secondary);
     color: var(--foreground);
   }
 
-  .lightsite-editor-image-card-media {
+  .handout-editor-image-card-media {
     @apply relative flex w-full items-center justify-center overflow-hidden border;
     background: var(--muted);
     border-color: var(--border);
     border-radius: 10px;
   }
 
-  .lightsite-editor-image-card-media:not([data-has-image="true"]) {
+  .handout-editor-image-card-media:not([data-has-image="true"]) {
     aspect-ratio: 14 / 9;
   }
 
-  .lightsite-editor-image-card-media[data-has-image="true"] {
+  .handout-editor-image-card-media[data-has-image="true"] {
     align-self: center;
     background: transparent;
     border: 0;
@@ -1863,249 +1863,249 @@ html.gmail-extension-panel #root {
     min-height: 0;
   }
 
-  .lightsite-editor-image-card-media[data-has-image-ratio="true"] {
+  .handout-editor-image-card-media[data-has-image-ratio="true"] {
     display: grid;
   }
 
-  .lightsite-editor-image-card-media[data-drag-active="true"] {
+  .handout-editor-image-card-media[data-drag-active="true"] {
     background: color-mix(in oklab, var(--ring) 14%, transparent);
     border-color: color-mix(in oklab, var(--ring) 78%, transparent);
   }
 
-  .lightsite-editor-image-card-img {
+  .handout-editor-image-card-img {
     @apply block h-auto w-full object-contain;
     border-radius: 10px;
     line-height: 0;
   }
 
-  .lightsite-editor-image-card-replace-button {
+  .handout-editor-image-card-replace-button {
     @apply block h-auto w-full border-0 bg-transparent p-0 text-left outline-none;
     border-radius: 10px;
     cursor: pointer;
     line-height: 0;
   }
 
-  .lightsite-editor-image-card-media[data-has-image-ratio="true"]
-    .lightsite-editor-image-card-replace-button {
+  .handout-editor-image-card-media[data-has-image-ratio="true"]
+    .handout-editor-image-card-replace-button {
     @apply h-full;
   }
 
-  .lightsite-editor-image-card-media[data-has-image-ratio="true"]
-    .lightsite-editor-image-card-img {
+  .handout-editor-image-card-media[data-has-image-ratio="true"]
+    .handout-editor-image-card-img {
     @apply h-full object-cover;
   }
 
-  .lightsite-editor-image-card-replace-button:hover,
-  .lightsite-editor-image-card-replace-button:focus-visible {
+  .handout-editor-image-card-replace-button:hover,
+  .handout-editor-image-card-replace-button:focus-visible {
     box-shadow: 0 0 0 2px color-mix(in oklab, var(--ring) 62%, transparent);
   }
 
-  .lightsite-editor-image-card-empty-button {
+  .handout-editor-image-card-empty-button {
     min-height: 100%;
     border-radius: 10px;
     padding: 16px;
   }
 
-  .lightsite-editor-image-card-media[data-upload-error="true"]
-    .lightsite-editor-image-empty-description {
+  .handout-editor-image-card-media[data-upload-error="true"]
+    .handout-editor-image-empty-description {
     color: var(--destructive);
   }
 
-  .lightsite-editor-image-card-content {
+  .handout-editor-image-card-content {
     @apply w-full;
     cursor: text;
   }
 
-  .lightsite-editor-image-card-cta:hover,
-  .lightsite-editor-image-card-cta:focus-visible {
+  .handout-editor-image-card-cta:hover,
+  .handout-editor-image-card-cta:focus-visible {
     background: var(--accent);
     border-color: var(--border);
     color: var(--accent-foreground);
   }
 
-  .lightsite-editor-button-block[data-link-empty="true"] {
+  .handout-editor-button-block[data-link-empty="true"] {
     box-shadow:
       0 0 0 1px color-mix(in oklab, var(--primary) 18%, transparent),
       0 0 0 3px color-mix(in oklab, var(--ring) 10%, transparent);
   }
 
-  .lightsite-editor-button-block {
+  .handout-editor-button-block {
     cursor: pointer;
     outline: none;
   }
 
-  .lightsite-editor-button-label {
+  .handout-editor-button-label {
     @apply inline-block min-w-5 max-w-full outline-none;
     cursor: text;
   }
 
-  .lightsite-editor-button-settings {
+  .handout-editor-button-settings {
     @apply fixed z-50 w-[320px] overflow-y-auto rounded-lg border p-3 shadow-xl;
     background: var(--popover);
     border-color: var(--border);
     color: var(--popover-foreground);
   }
 
-  .lightsite-editor-button-settings-label {
+  .handout-editor-button-settings-label {
     @apply mb-1.5 block text-xs font-medium leading-4;
     color: var(--muted-foreground);
   }
 
-  .lightsite-editor-button-settings-field + .lightsite-editor-button-settings-label {
+  .handout-editor-button-settings-field + .handout-editor-button-settings-label {
     @apply mt-3;
   }
 
-  .lightsite-editor-button-settings-error + .lightsite-editor-button-settings-label {
+  .handout-editor-button-settings-error + .handout-editor-button-settings-label {
     @apply mt-3;
   }
 
-  .lightsite-editor-button-settings-field {
+  .handout-editor-button-settings-field {
     @apply flex h-9 items-center gap-2 rounded-md border px-2;
     background: var(--input);
     border-color: var(--border);
   }
 
-  .lightsite-editor-button-settings-field-textarea {
+  .handout-editor-button-settings-field-textarea {
     @apply h-auto items-start py-2;
   }
 
-  .lightsite-editor-button-settings-field:focus-within {
+  .handout-editor-button-settings-field:focus-within {
     border-color: color-mix(in oklab, var(--ring) 72%, var(--popover));
     box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 18%, var(--popover));
   }
 
-  .lightsite-editor-button-settings-field svg {
+  .handout-editor-button-settings-field svg {
     @apply size-4 shrink-0;
     color: var(--muted-foreground);
   }
 
-  .lightsite-editor-button-settings-field input {
+  .handout-editor-button-settings-field input {
     @apply h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-sm outline-none;
     color: var(--popover-foreground);
   }
 
-  .lightsite-editor-button-settings-field textarea {
+  .handout-editor-button-settings-field textarea {
     @apply min-h-16 min-w-0 flex-1 resize-none border-0 bg-transparent p-0 text-sm leading-5 outline-none;
     color: var(--popover-foreground);
   }
 
-  .lightsite-editor-button-settings-field input::placeholder,
-  .lightsite-editor-button-settings-field textarea::placeholder {
+  .handout-editor-button-settings-field input::placeholder,
+  .handout-editor-button-settings-field textarea::placeholder {
     color: var(--muted-foreground);
   }
 
-  .lightsite-editor-button-settings-error {
+  .handout-editor-button-settings-error {
     @apply mt-1 text-xs leading-4;
     color: var(--destructive);
   }
 
-  .lightsite-editor-button-settings-toggle {
+  .handout-editor-button-settings-toggle {
     @apply mt-3 flex w-full items-center gap-2 rounded-md border-0 bg-transparent px-2 py-2 text-left outline-none transition;
     color: var(--popover-foreground);
   }
 
-  .lightsite-editor-button-settings-toggle:hover,
-  .lightsite-editor-button-settings-toggle:focus-visible,
-  .lightsite-editor-button-settings-toggle[aria-pressed="true"] {
+  .handout-editor-button-settings-toggle:hover,
+  .handout-editor-button-settings-toggle:focus-visible,
+  .handout-editor-button-settings-toggle[aria-pressed="true"] {
     background: var(--accent);
     color: var(--popover-foreground);
   }
 
-  .lightsite-editor-button-settings-toggle > svg {
+  .handout-editor-button-settings-toggle > svg {
     @apply size-4 shrink-0;
   }
 
-  .lightsite-editor-button-settings-toggle-copy {
+  .handout-editor-button-settings-toggle-copy {
     @apply flex min-w-0 flex-1 flex-col;
   }
 
-  .lightsite-editor-button-settings-toggle-copy span:first-child {
+  .handout-editor-button-settings-toggle-copy span:first-child {
     @apply text-sm font-medium leading-5;
   }
 
-  .lightsite-editor-button-settings-toggle-copy span:last-child {
+  .handout-editor-button-settings-toggle-copy span:last-child {
     @apply text-xs leading-4;
     color: var(--muted-foreground);
   }
 
-  .lightsite-editor-button-settings-switch {
+  .handout-editor-button-settings-switch {
     @apply relative h-5 w-9 shrink-0 rounded-full transition;
     background: var(--input);
   }
 
-  .lightsite-editor-button-settings-switch::after {
+  .handout-editor-button-settings-switch::after {
     content: "";
     @apply absolute top-0.5 left-0.5 size-4 rounded-full transition;
     background: var(--popover);
   }
 
-  .lightsite-editor-button-settings-switch-on {
+  .handout-editor-button-settings-switch-on {
     background: var(--primary);
   }
 
-  .lightsite-editor-button-settings-switch-on::after {
+  .handout-editor-button-settings-switch-on::after {
     transform: translateX(16px);
   }
 
-  .lightsite-editor-button-settings-actions {
+  .handout-editor-button-settings-actions {
     @apply mt-3 flex justify-end gap-1;
   }
 
-  .lightsite-editor-button-settings-action {
+  .handout-editor-button-settings-action {
     @apply h-8 rounded-md border-0 bg-transparent px-2.5 text-sm font-medium outline-none transition;
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-button-settings-action:hover,
-  .lightsite-editor-button-settings-action:focus-visible {
+  .handout-editor-button-settings-action:hover,
+  .handout-editor-button-settings-action:focus-visible {
     background: var(--accent);
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-button-settings-action-primary {
+  .handout-editor-button-settings-action-primary {
     background: var(--primary);
     color: var(--primary-foreground);
   }
 
-  .lightsite-editor-button-settings-action-primary:hover,
-  .lightsite-editor-button-settings-action-primary:focus-visible {
+  .handout-editor-button-settings-action-primary:hover,
+  .handout-editor-button-settings-action-primary:focus-visible {
     background: color-mix(in oklab, var(--primary) 88%, var(--background));
     color: var(--primary-foreground);
   }
 
-  .lightsite-editor .ProseMirror ul[data-type="taskList"] > li {
+  .handout-editor .ProseMirror ul[data-type="taskList"] > li {
     @apply flex items-start gap-2;
   }
 
-  .lightsite-editor .ProseMirror ul[data-type="taskList"] > li > label {
+  .handout-editor .ProseMirror ul[data-type="taskList"] > li > label {
     @apply flex h-[26px] shrink-0 items-center;
   }
 
-  .lightsite-editor .ProseMirror ul[data-type="taskList"] > li > label input {
+  .handout-editor .ProseMirror ul[data-type="taskList"] > li > label input {
     @apply size-4 cursor-pointer rounded border;
     accent-color: var(--ring);
   }
 
-  .lightsite-editor .ProseMirror ul[data-type="taskList"] > li > div {
+  .handout-editor .ProseMirror ul[data-type="taskList"] > li > div {
     @apply min-w-0 flex-1;
   }
 
-  .lightsite-editor .ProseMirror ul[data-type="taskList"] > li[data-checked="true"] > div {
+  .handout-editor .ProseMirror ul[data-type="taskList"] > li[data-checked="true"] > div {
     color: var(--tertiary-foreground);
     text-decoration: line-through;
   }
 
-  .lightsite-editor .ProseMirror a {
+  .handout-editor .ProseMirror a {
     @apply underline underline-offset-2;
     color: var(--chart-1);
   }
 
-  .lightsite-editor .ProseMirror a.lightsite-editor-image-card-cta {
+  .handout-editor .ProseMirror a.handout-editor-image-card-cta {
     color: var(--foreground);
     text-decoration-line: none;
   }
 
-  .lightsite-editor .ProseMirror code {
+  .handout-editor .ProseMirror code {
     @apply inline rounded-md border px-1.5 py-0.5 font-mono text-[0.875em] font-medium tracking-normal;
     background: var(--muted);
     border-color: var(--border);
@@ -2113,30 +2113,30 @@ html.gmail-extension-panel #root {
     line-height: calc(1em + 4px);
   }
 
-  .lightsite-editor .ProseMirror > blockquote {
+  .handout-editor .ProseMirror > blockquote {
     @apply border-l-4 py-1.5 pr-0 pl-4 text-base leading-[26px];
     border-color: var(--border);
     color: var(--muted-foreground);
   }
 
-  .lightsite-editor .ProseMirror > blockquote p {
+  .handout-editor .ProseMirror > blockquote p {
     @apply m-0;
   }
 
-  .lightsite-editor .ProseMirror > pre {
+  .handout-editor .ProseMirror > pre {
     @apply overflow-x-auto rounded-md border px-4 py-4 text-sm leading-6;
     background: var(--muted);
     border-color: var(--border);
     color: var(--foreground);
   }
 
-  .lightsite-editor .ProseMirror > pre code {
+  .handout-editor .ProseMirror > pre code {
     @apply block rounded-none border-0 bg-transparent p-0 text-[inherit] font-normal;
     color: inherit;
     line-height: inherit;
   }
 
-  .lightsite-editor .ProseMirror > hr {
+  .handout-editor .ProseMirror > hr {
     @apply h-6 border-0 p-0;
     background: linear-gradient(
       to bottom,
@@ -2149,8 +2149,8 @@ html.gmail-extension-panel #root {
     margin-bottom: 0;
   }
 
-  .lightsite-editor .ProseMirror > hr.ProseMirror-selectednode,
-  .lightsite-editor .ProseMirror > hr.ProseMirror-selectednoderange {
+  .handout-editor .ProseMirror > hr.ProseMirror-selectednode,
+  .handout-editor .ProseMirror > hr.ProseMirror-selectednoderange {
     background:
       linear-gradient(
         to bottom,
@@ -2162,58 +2162,58 @@ html.gmail-extension-panel #root {
       var(--selection-background);
   }
 
-  .lightsite-editor .is-empty::before {
+  .handout-editor .is-empty::before {
     content: attr(data-placeholder);
     @apply pointer-events-none float-left h-0;
     color: var(--muted-faint);
   }
 
-  .lightsite-editor[data-editor-mode="preview"] .is-empty::before,
-  .lightsite-editor[data-editor-mode="preview"]
-    .lightsite-editor-card-placeholder-empty::before,
-  .lightsite-editor[data-editor-mode="preview"]
-    [data-lightsite-logo-grid-title].is-empty::before {
+  .handout-editor[data-editor-mode="preview"] .is-empty::before,
+  .handout-editor[data-editor-mode="preview"]
+    .handout-editor-card-placeholder-empty::before,
+  .handout-editor[data-editor-mode="preview"]
+    [data-handout-logo-grid-title].is-empty::before {
     content: none;
     display: none;
   }
 
-  .lightsite-editor[data-editor-mode="preview"] .ProseMirror {
+  .handout-editor[data-editor-mode="preview"] .ProseMirror {
     cursor: default;
     user-select: text;
   }
 
-  .lightsite-editor[data-editor-mode="preview"] .ProseMirror-selectednode,
-  .lightsite-editor[data-editor-mode="preview"] .ProseMirror-selectednoderange,
-  .lightsite-editor[data-editor-mode="preview"] .has-focus {
+  .handout-editor[data-editor-mode="preview"] .ProseMirror-selectednode,
+  .handout-editor[data-editor-mode="preview"] .ProseMirror-selectednoderange,
+  .handout-editor[data-editor-mode="preview"] .has-focus {
     background: transparent;
   }
 
-  .lightsite-editor[data-editor-mode="preview"] .ProseMirror > [data-lightsite-gif-empty],
-  .lightsite-editor[data-editor-mode="preview"] .ProseMirror > [data-lightsite-image-empty],
-  .lightsite-editor[data-editor-mode="preview"] .lightsite-editor-image-card-media:not([data-has-image="true"]),
-  .lightsite-editor[data-editor-mode="preview"] .lightsite-editor-calendar-embed-empty,
-  .lightsite-editor[data-editor-mode="preview"] .lightsite-editor-video-embed-empty {
+  .handout-editor[data-editor-mode="preview"] .ProseMirror > [data-handout-gif-empty],
+  .handout-editor[data-editor-mode="preview"] .ProseMirror > [data-handout-image-empty],
+  .handout-editor[data-editor-mode="preview"] .handout-editor-image-card-media:not([data-has-image="true"]),
+  .handout-editor[data-editor-mode="preview"] .handout-editor-calendar-embed-empty,
+  .handout-editor[data-editor-mode="preview"] .handout-editor-video-embed-empty {
     display: none;
   }
 
-  .lightsite-editor[data-editor-mode="preview"] [data-resize-handle],
-  .lightsite-editor[data-editor-mode="preview"] .lightsite-editor-image-card-replace-button:hover,
-  .lightsite-editor[data-editor-mode="preview"] .lightsite-editor-image-card-replace-button:focus-visible {
+  .handout-editor[data-editor-mode="preview"] [data-resize-handle],
+  .handout-editor[data-editor-mode="preview"] .handout-editor-image-card-replace-button:hover,
+  .handout-editor[data-editor-mode="preview"] .handout-editor-image-card-replace-button:focus-visible {
     box-shadow: none;
   }
 
-  .lightsite-editor[data-editor-mode="preview"] .lightsite-editor-button-block,
-  .lightsite-editor[data-editor-mode="preview"] .lightsite-editor-button-label {
+  .handout-editor[data-editor-mode="preview"] .handout-editor-button-block,
+  .handout-editor[data-editor-mode="preview"] .handout-editor-button-label {
     cursor: pointer;
   }
 
-  .lightsite-editor .lightsite-editor-card-placeholder-empty::before {
+  .handout-editor .handout-editor-card-placeholder-empty::before {
     color: var(--muted-faint);
   }
 
-  .lightsite-editor
-    .lightsite-editor-logo-grid-title-content
-    [data-lightsite-logo-grid-title].is-empty::before {
+  .handout-editor
+    .handout-editor-logo-grid-title-content
+    [data-handout-logo-grid-title].is-empty::before {
     display: block;
     float: none;
     height: 0;
@@ -2221,53 +2221,53 @@ html.gmail-extension-panel #root {
     color: var(--muted-faint);
   }
 
-  .lightsite-editor .ProseMirror-selectednode,
-  .lightsite-editor .ProseMirror-selectednoderange {
+  .handout-editor .ProseMirror-selectednode,
+  .handout-editor .ProseMirror-selectednoderange {
     @apply rounded-lg outline-none;
     background: var(--selection-background);
   }
 
-  .lightsite-editor .ProseMirror-noderangeselection::selection {
+  .handout-editor .ProseMirror-noderangeselection::selection {
     background: transparent;
   }
 
-  .lightsite-editor .has-focus:not(.ProseMirror-selectednode):not(.ProseMirror-selectednoderange) {
+  .handout-editor .has-focus:not(.ProseMirror-selectednode):not(.ProseMirror-selectednoderange) {
     background: transparent;
   }
 
-  .lightsite-editor .ProseMirror-dropcursor {
+  .handout-editor .ProseMirror-dropcursor {
     border-color: var(--selection-border);
     border-width: 1px;
   }
 
-  .lightsite-editor .lightsite-editor-marquee-active {
+  .handout-editor .handout-editor-marquee-active {
     @apply cursor-default select-none;
   }
 
-  .lightsite-editor-marquee-box {
+  .handout-editor-marquee-box {
     @apply pointer-events-none fixed z-40 rounded-sm border;
     background: var(--selection-background);
     border-color: var(--selection-border);
     box-shadow: 0 0 0 1px var(--selection-background);
   }
 
-  .lightsite-editor-hero-content > h1 {
+  .handout-editor-hero-content > h1 {
     @apply m-0 text-[38px] leading-[42px] font-medium tracking-normal;
   }
 
-  .lightsite-editor-hero-content > p {
+  .handout-editor-hero-content > p {
     @apply mt-3 text-base leading-6 text-muted-foreground;
   }
 
-  .lightsite-editor .lightsite-editor-image-card-cta {
+  .handout-editor .handout-editor-image-card-cta {
     text-decoration-line: none;
   }
 
-  .lightsite-editor-variable-wrapper {
+  .handout-editor-variable-wrapper {
     @apply relative inline-flex align-baseline;
   }
 
-  .lightsite-editor-variable-token {
+  .handout-editor-variable-token {
     @apply inline-flex h-[1.45em] max-w-[280px] items-center gap-1 rounded-md border px-1 align-baseline text-[0.92em] font-medium outline-none transition;
     background: var(--variable-background);
     border-color: var(--variable-border);
@@ -2276,60 +2276,60 @@ html.gmail-extension-panel #root {
     line-height: inherit;
   }
 
-  .lightsite-editor-variable-token:hover,
-  .lightsite-editor-variable-token:focus-visible {
+  .handout-editor-variable-token:hover,
+  .handout-editor-variable-token:focus-visible {
     background: var(--variable-background-hover);
   }
 
-  .lightsite-editor-variable-token svg {
+  .handout-editor-variable-token svg {
     @apply size-3.5 shrink-0;
   }
 
-  .lightsite-editor-variable-token span {
+  .handout-editor-variable-token span {
     @apply truncate;
   }
 
-  .lightsite-editor-variable-popover {
+  .handout-editor-variable-popover {
     @apply absolute top-[calc(100%+6px)] left-0 z-50 grid w-[320px] gap-3 rounded-lg border p-3 text-sm shadow-xl;
     background: var(--popover);
     border-color: var(--border);
     color: var(--popover-foreground);
   }
 
-  .lightsite-editor-variable-popover-header {
+  .handout-editor-variable-popover-header {
     @apply flex min-w-0 items-center justify-between gap-2;
   }
 
-  .lightsite-editor-variable-popover-title {
+  .handout-editor-variable-popover-title {
     @apply inline-flex min-w-0 items-center gap-1.5 text-sm font-semibold leading-5;
     color: var(--popover-foreground);
   }
 
-  .lightsite-editor-variable-popover-title svg {
+  .handout-editor-variable-popover-title svg {
     @apply size-4 shrink-0;
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-variable-popover-delete {
+  .handout-editor-variable-popover-delete {
     @apply inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md border-0 bg-transparent px-2 text-xs font-medium outline-none transition;
     color: var(--destructive);
   }
 
-  .lightsite-editor-variable-popover-delete:hover,
-  .lightsite-editor-variable-popover-delete:focus-visible {
+  .handout-editor-variable-popover-delete:hover,
+  .handout-editor-variable-popover-delete:focus-visible {
     background: var(--accent);
   }
 
-  .lightsite-editor-variable-popover-delete svg {
+  .handout-editor-variable-popover-delete svg {
     @apply size-3.5;
   }
 
-  .lightsite-editor-variable-field {
+  .handout-editor-variable-field {
     @apply grid gap-1.5 text-xs font-medium;
     color: var(--muted-foreground);
   }
 
-  .lightsite-editor-variable-control[data-slot] {
+  .handout-editor-variable-control[data-slot] {
     border-radius: var(--radius-md) !important;
     border-color: var(--border) !important;
     background: var(--input) !important;
@@ -2338,429 +2338,429 @@ html.gmail-extension-panel #root {
     font-size: 0.875rem !important;
   }
 
-  .lightsite-editor-variable-control[data-slot="input"] {
+  .handout-editor-variable-control[data-slot="input"] {
     height: 36px !important;
     padding: 0 8px !important;
   }
 
-  .lightsite-editor-variable-control[data-slot="textarea"] {
+  .handout-editor-variable-control[data-slot="textarea"] {
     padding: 8px !important;
   }
 
-  .lightsite-editor-variable-control[data-slot]::placeholder {
+  .handout-editor-variable-control[data-slot]::placeholder {
     color: var(--muted-foreground);
   }
 
-  .lightsite-editor-variable-control[data-slot]:focus,
-  .lightsite-editor-variable-control[data-slot]:focus-visible {
+  .handout-editor-variable-control[data-slot]:focus,
+  .handout-editor-variable-control[data-slot]:focus-visible {
     border-color: color-mix(in oklab, var(--ring) 72%, var(--popover)) !important;
     box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 18%, var(--popover)) !important;
   }
 
-  .lightsite-editor-variable-popover-actions {
+  .handout-editor-variable-popover-actions {
     @apply flex justify-end gap-1.5;
   }
 
-  .lightsite-editor-variable-popover-note {
+  .handout-editor-variable-popover-note {
     @apply text-sm;
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-variable-create {
+  .handout-editor-variable-create {
     @apply fixed z-50 w-[416px] overflow-y-auto rounded-lg border p-3 text-sm shadow-xl;
     background: var(--popover);
     border-color: var(--border);
     color: var(--popover-foreground);
   }
 
-  .lightsite-editor-variable-cancel[data-slot="button"] {
+  .handout-editor-variable-cancel[data-slot="button"] {
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-variable-cancel[data-slot="button"]:hover,
-  .lightsite-editor-variable-cancel[data-slot="button"]:focus-visible {
+  .handout-editor-variable-cancel[data-slot="button"]:hover,
+  .handout-editor-variable-cancel[data-slot="button"]:focus-visible {
     background: var(--accent);
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-variable-create-header {
+  .handout-editor-variable-create-header {
     @apply flex items-center gap-1.5 text-sm font-medium;
     color: var(--popover-foreground);
   }
 
-  .lightsite-editor-variable-create-header svg {
+  .handout-editor-variable-create-header svg {
     @apply size-4;
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-variable-create-description {
+  .handout-editor-variable-create-description {
     @apply -mt-1 text-sm leading-5;
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-variable-create-error {
+  .handout-editor-variable-create-error {
     @apply text-xs leading-4;
     color: var(--destructive);
   }
 
-  .lightsite-editor-drag-handle {
+  .handout-editor-drag-handle {
     @apply z-50 flex h-8 w-12 -translate-x-0.5 cursor-grab items-center justify-start rounded-md bg-transparent active:cursor-grabbing;
     color: var(--muted-foreground);
   }
 
-  .lightsite-editor-side-button {
+  .handout-editor-side-button {
     @apply flex size-6 items-center justify-center rounded-md border-0 bg-transparent p-0 opacity-70 transition-opacity;
     color: inherit;
   }
 
-  .lightsite-editor-side-button:hover,
-  .lightsite-editor-side-button:focus-visible {
+  .handout-editor-side-button:hover,
+  .handout-editor-side-button:focus-visible {
     background: var(--accent);
     color: var(--foreground);
     opacity: 1;
   }
 
-  .lightsite-editor-side-button svg {
+  .handout-editor-side-button svg {
     @apply size-3.5;
   }
 
-  .lightsite-editor-block-menu {
+  .handout-editor-block-menu {
     @apply fixed z-50 max-h-[min(480px,calc(100vh-24px))] w-[278px] overflow-y-auto rounded-lg border p-1 shadow-xl;
     background: var(--popover);
     border-color: var(--border);
     color: var(--popover-foreground);
   }
 
-  .lightsite-editor-block-menu-label {
+  .handout-editor-block-menu-label {
     @apply px-2 py-1.5 text-xs font-medium leading-4;
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-block-menu-item {
+  .handout-editor-block-menu-item {
     @apply flex min-h-8 w-full items-center gap-1.5 rounded-md border-0 bg-transparent px-2 py-1.5 text-left outline-none;
     color: var(--foreground);
   }
 
-  .lightsite-editor-block-menu-item:hover,
-  .lightsite-editor-block-menu-item:focus-visible {
+  .handout-editor-block-menu-item:hover,
+  .handout-editor-block-menu-item:focus-visible {
     background: var(--accent);
     color: var(--foreground);
   }
 
-  .lightsite-editor-block-menu-item[data-active="true"] {
+  .handout-editor-block-menu-item[data-active="true"] {
     color: var(--foreground);
   }
 
-  .lightsite-editor-block-menu-item svg {
+  .handout-editor-block-menu-item svg {
     @apply size-4 shrink-0;
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-block-menu-item-copy {
+  .handout-editor-block-menu-item-copy {
     @apply flex min-w-0 flex-1 items-center;
   }
 
-  .lightsite-editor-block-menu-item-label {
+  .handout-editor-block-menu-item-label {
     @apply truncate text-sm leading-5;
   }
 
-  .lightsite-editor-block-menu-item-check {
+  .handout-editor-block-menu-item-check {
     color: var(--ring);
   }
 
-  .lightsite-editor-block-menu-switch {
+  .handout-editor-block-menu-switch {
     @apply relative h-5 w-9 shrink-0 rounded-full transition;
     background: var(--border);
   }
 
-  .lightsite-editor-block-menu-switch::after {
+  .handout-editor-block-menu-switch::after {
     content: "";
     @apply absolute top-0.5 left-0.5 size-4 rounded-full transition;
     background: var(--popover);
     box-shadow: 0 0 0 1px var(--border);
   }
 
-  .lightsite-editor-block-menu-switch-on {
+  .handout-editor-block-menu-switch-on {
     background: var(--primary);
   }
 
-  .lightsite-editor-block-menu-switch-on::after {
+  .handout-editor-block-menu-switch-on::after {
     transform: translateX(16px);
   }
 
-  .lightsite-editor-block-menu-item-danger {
+  .handout-editor-block-menu-item-danger {
     color: var(--destructive);
   }
 
-  .lightsite-editor-block-menu-item-danger:hover,
-  .lightsite-editor-block-menu-item-danger:focus-visible {
+  .handout-editor-block-menu-item-danger:hover,
+  .handout-editor-block-menu-item-danger:focus-visible {
     color: var(--destructive);
   }
 
-  .lightsite-editor-block-menu-item-danger svg {
+  .handout-editor-block-menu-item-danger svg {
     color: var(--destructive);
   }
 
-  .lightsite-editor-block-menu-separator {
+  .handout-editor-block-menu-separator {
     @apply my-1 h-px;
     background: var(--border-subtle);
   }
 
-  .lightsite-editor-block-menu-url-form {
+  .handout-editor-block-menu-url-form {
     @apply px-2 py-2;
   }
 
-  .lightsite-editor-block-menu-url-input {
+  .handout-editor-block-menu-url-input {
     @apply h-8 w-full rounded-md border bg-transparent px-2 text-sm outline-none;
     border-color: var(--border);
     color: var(--popover-foreground);
   }
 
-  .lightsite-editor-block-menu-url-input::placeholder {
+  .handout-editor-block-menu-url-input::placeholder {
     color: var(--muted-foreground);
   }
 
-  .lightsite-editor-block-menu-url-input:focus-visible {
+  .handout-editor-block-menu-url-input:focus-visible {
     border-color: color-mix(in oklab, var(--ring) 70%, transparent);
     box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 20%, transparent);
   }
 
-  .lightsite-editor-block-menu-url-error {
+  .handout-editor-block-menu-url-error {
     @apply mt-1 text-xs leading-4;
     color: var(--destructive);
   }
 
-  .lightsite-editor-block-menu-url-actions {
+  .handout-editor-block-menu-url-actions {
     @apply mt-2 flex items-center justify-end gap-1;
   }
 
-  .lightsite-editor-block-menu-url-button {
+  .handout-editor-block-menu-url-button {
     @apply h-7 rounded-md border-0 bg-transparent px-2 text-xs font-medium outline-none;
     color: var(--muted-foreground);
   }
 
-  .lightsite-editor-block-menu-url-button-cancel {
+  .handout-editor-block-menu-url-button-cancel {
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-block-menu-url-button:hover,
-  .lightsite-editor-block-menu-url-button:focus-visible {
+  .handout-editor-block-menu-url-button:hover,
+  .handout-editor-block-menu-url-button:focus-visible {
     background: var(--accent);
     color: var(--foreground);
   }
 
-  .lightsite-editor-block-menu-url-button-cancel:hover,
-  .lightsite-editor-block-menu-url-button-cancel:focus-visible {
+  .handout-editor-block-menu-url-button-cancel:hover,
+  .handout-editor-block-menu-url-button-cancel:focus-visible {
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-bubble-menu-shell {
+  .handout-editor-bubble-menu-shell {
     @apply relative;
   }
 
-  .lightsite-editor-bubble-menu {
+  .handout-editor-bubble-menu {
     @apply flex items-center gap-0.5 rounded-lg bg-popover p-1 text-popover-foreground shadow-xl ring-1 ring-foreground/10;
   }
 
-  .lightsite-editor-bubble-menu-separator {
+  .handout-editor-bubble-menu-separator {
     @apply mx-0.5 h-5 w-px;
     background: var(--border-subtle);
   }
 
-  .lightsite-editor-color-trigger-glyph {
+  .handout-editor-color-trigger-glyph {
     @apply relative flex size-5 items-center justify-center rounded-full text-sm font-medium leading-none;
-    color: var(--lightsite-editor-current-text-color);
-    background: var(--lightsite-editor-current-highlight-color);
+    color: var(--handout-editor-current-text-color);
+    background: var(--handout-editor-current-highlight-color);
     box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--border) 80%, transparent);
   }
 
-  .lightsite-editor-bubble-panel {
+  .handout-editor-bubble-panel {
     @apply absolute top-[calc(100%+6px)] z-50 max-h-[min(420px,calc(100vh-24px))] overflow-y-auto rounded-lg bg-popover p-1 text-popover-foreground shadow-xl ring-1 ring-foreground/10;
   }
 
-  .lightsite-editor-bubble-panel-type,
-  .lightsite-editor-bubble-panel-more {
+  .handout-editor-bubble-panel-type,
+  .handout-editor-bubble-panel-more {
     @apply left-0 w-[278px];
   }
 
-  .lightsite-editor-bubble-panel-row {
+  .handout-editor-bubble-panel-row {
     @apply flex min-h-8 w-full items-center gap-1.5 rounded-md border-0 bg-transparent px-2 py-1.5 text-left text-popover-foreground/80 outline-none transition-colors;
   }
 
-  .lightsite-editor-bubble-panel-row:hover,
-  .lightsite-editor-bubble-panel-row:focus-visible,
-  .lightsite-editor-bubble-panel-row[data-active="true"] {
+  .handout-editor-bubble-panel-row:hover,
+  .handout-editor-bubble-panel-row:focus-visible,
+  .handout-editor-bubble-panel-row[data-active="true"] {
     @apply bg-accent text-accent-foreground;
   }
 
-  .lightsite-editor-bubble-panel-row:disabled {
+  .handout-editor-bubble-panel-row:disabled {
     @apply cursor-default opacity-45;
   }
 
-  .lightsite-editor-bubble-panel-row-icon {
+  .handout-editor-bubble-panel-row-icon {
     @apply size-4 shrink-0;
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-bubble-panel-row-copy {
+  .handout-editor-bubble-panel-row-copy {
     @apply flex min-w-0 flex-1 items-center;
   }
 
-  .lightsite-editor-bubble-panel-row-label {
+  .handout-editor-bubble-panel-row-label {
     @apply truncate text-sm leading-5;
   }
 
-  .lightsite-editor-bubble-panel-row-check {
+  .handout-editor-bubble-panel-row-check {
     @apply size-4 shrink-0;
     color: var(--ring);
   }
 
-  .lightsite-editor-color-panel {
+  .handout-editor-color-panel {
     @apply right-0 w-[196px] p-3;
   }
 
-  .lightsite-editor-color-section + .lightsite-editor-color-section {
+  .handout-editor-color-section + .handout-editor-color-section {
     @apply mt-4;
   }
 
-  .lightsite-editor-color-section-label {
+  .handout-editor-color-section-label {
     @apply mb-2 text-xs font-medium leading-4 text-muted-foreground;
   }
 
-  .lightsite-editor-color-grid {
+  .handout-editor-color-grid {
     @apply grid gap-2;
     grid-template-columns: repeat(5, 1.75rem);
   }
 
-  .lightsite-editor-text-color-button,
-  .lightsite-editor-highlight-color-button {
+  .handout-editor-text-color-button,
+  .handout-editor-highlight-color-button {
     @apply flex size-7 items-center justify-center rounded-full border-0 bg-transparent p-0 text-sm font-medium outline-none transition;
   }
 
-  .lightsite-editor-text-color-button {
-    color: var(--lightsite-editor-color-value);
-    box-shadow: inset 0 0 0 1.5px var(--lightsite-editor-color-ring);
+  .handout-editor-text-color-button {
+    color: var(--handout-editor-color-value);
+    box-shadow: inset 0 0 0 1.5px var(--handout-editor-color-ring);
   }
 
-  .lightsite-editor-highlight-color-button {
-    background: var(--lightsite-editor-highlight-swatch);
-    box-shadow: inset 0 0 0 1px var(--lightsite-editor-highlight-border);
+  .handout-editor-highlight-color-button {
+    background: var(--handout-editor-highlight-swatch);
+    box-shadow: inset 0 0 0 1px var(--handout-editor-highlight-border);
   }
 
-  .lightsite-editor-highlight-color-button[data-empty="true"] {
+  .handout-editor-highlight-color-button[data-empty="true"] {
     @apply relative overflow-hidden;
     background: transparent;
     box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--popover-foreground) 54%, transparent);
   }
 
-  .lightsite-editor-highlight-color-button[data-empty="true"]::after {
+  .handout-editor-highlight-color-button[data-empty="true"]::after {
     content: "";
     @apply absolute left-1/2 top-1/2 h-px w-5 -translate-x-1/2 -translate-y-1/2 rotate-[-35deg] rounded-full;
     background: var(--border);
   }
 
-  .lightsite-editor-text-color-button:hover,
-  .lightsite-editor-text-color-button:focus-visible,
-  .lightsite-editor-text-color-button[data-active="true"],
-  .lightsite-editor-highlight-color-button:hover,
-  .lightsite-editor-highlight-color-button:focus-visible,
-  .lightsite-editor-highlight-color-button[data-active="true"] {
+  .handout-editor-text-color-button:hover,
+  .handout-editor-text-color-button:focus-visible,
+  .handout-editor-text-color-button[data-active="true"],
+  .handout-editor-highlight-color-button:hover,
+  .handout-editor-highlight-color-button:focus-visible,
+  .handout-editor-highlight-color-button[data-active="true"] {
     box-shadow:
       0 0 0 2px var(--popover),
       0 0 0 4px color-mix(in oklab, var(--ring) 70%, transparent);
   }
 
-  .lightsite-editor-link-panel {
+  .handout-editor-link-panel {
     @apply left-1/2 w-[300px] -translate-x-1/2;
   }
 
-  .lightsite-editor-link-panel-label {
+  .handout-editor-link-panel-label {
     @apply mb-1.5 block px-1 text-xs font-medium text-muted-foreground;
   }
 
-  .lightsite-editor-link-panel-field {
+  .handout-editor-link-panel-field {
     @apply h-10 rounded-lg border-border bg-muted/50;
   }
 
-  .lightsite-editor-link-editor-icon {
+  .handout-editor-link-editor-icon {
     @apply size-4 shrink-0 text-muted-foreground;
   }
 
-  .lightsite-editor-link-panel-actions {
+  .handout-editor-link-panel-actions {
     @apply mt-2 flex items-center justify-end gap-1;
   }
 
-  .lightsite-editor-suggestion-menu {
+  .handout-editor-suggestion-menu {
     @apply flex max-h-72 w-[300px] flex-col gap-0.5 overflow-auto rounded-lg border p-1 shadow-xl;
     background: var(--popover);
     border-color: var(--border);
     color: var(--popover-foreground);
   }
 
-  .lightsite-editor-suggestion-category {
+  .handout-editor-suggestion-category {
     @apply px-2 py-1.5 text-xs font-medium leading-4;
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-suggestion-category[data-separated="true"] {
+  .handout-editor-suggestion-category[data-separated="true"] {
     @apply mt-1 pt-2;
     border-top: 1px solid var(--border);
   }
 
-  .lightsite-editor-suggestion-item {
+  .handout-editor-suggestion-item {
     @apply flex min-h-8 w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-left outline-none;
     color: var(--foreground);
   }
 
-  .lightsite-editor-suggestion-leading {
+  .handout-editor-suggestion-leading {
     @apply flex size-5 shrink-0 items-center justify-center text-base leading-none;
   }
 
-  .lightsite-editor-suggestion-icon {
+  .handout-editor-suggestion-icon {
     @apply flex size-4 shrink-0 items-center justify-center;
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-suggestion-icon svg {
+  .handout-editor-suggestion-icon svg {
     @apply size-4;
   }
 
-  .lightsite-editor-suggestion-copy {
+  .handout-editor-suggestion-copy {
     @apply flex min-w-0 flex-1 items-center;
   }
 
-  .lightsite-editor-suggestion-item:hover,
-  .lightsite-editor-suggestion-item:focus-visible,
-  .lightsite-editor-suggestion-item[data-active="true"] {
+  .handout-editor-suggestion-item:hover,
+  .handout-editor-suggestion-item:focus-visible,
+  .handout-editor-suggestion-item[data-active="true"] {
     background: var(--accent);
     color: var(--foreground);
   }
 
-  .lightsite-editor-suggestion-item[data-tone="primary"] {
+  .handout-editor-suggestion-item[data-tone="primary"] {
     color: var(--foreground);
   }
 
-  .lightsite-editor-suggestion-item[data-tone="primary"] .lightsite-editor-suggestion-icon {
+  .handout-editor-suggestion-item[data-tone="primary"] .handout-editor-suggestion-icon {
     color: var(--tertiary-foreground);
   }
 
-  .lightsite-editor-suggestion-item[data-tone="primary"] .lightsite-editor-suggestion-icon svg {
+  .handout-editor-suggestion-item[data-tone="primary"] .handout-editor-suggestion-icon svg {
     @apply size-4;
   }
 
-  .lightsite-editor-suggestion-item[data-tone="variable"] .lightsite-editor-suggestion-icon {
+  .handout-editor-suggestion-item[data-tone="variable"] .handout-editor-suggestion-icon {
     color: var(--variable-foreground);
   }
 
-  .lightsite-editor-suggestion-item[data-tone="variable"] .lightsite-editor-suggestion-icon svg {
+  .handout-editor-suggestion-item[data-tone="variable"] .handout-editor-suggestion-icon svg {
     @apply size-4;
   }
 
-  .lightsite-editor-suggestion-label {
+  .handout-editor-suggestion-label {
     @apply text-sm leading-5;
   }
 
-  .lightsite-editor-suggestion-empty {
+  .handout-editor-suggestion-empty {
     @apply text-xs leading-4;
     color: var(--tertiary-foreground);
   }

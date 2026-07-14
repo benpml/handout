@@ -1,9 +1,9 @@
 import { useEffect } from "react";
-import { buildPublicScreenshotPath } from "@lightsite/site-document/renderer";
+import { buildPublicScreenshotPath } from "@handout/site-document/renderer";
 
 import type { PublishedSitePayload } from "./types";
 
-export function getResolvedMetadata(payload: PublishedSitePayload, origin = "https://lightsite.app") {
+export function getResolvedMetadata(payload: PublishedSitePayload, origin = "https://handout.app") {
   const canonicalPath = [
     "",
     payload.workspace.slug,
@@ -53,20 +53,20 @@ export function usePublicMetadata(payload: PublishedSitePayload) {
 export function usePublicUnavailableMetadata() {
   useEffect(() => {
     const canonicalUrl = window.location.href;
-    const fallbackImageUrl = new URL("/lightsite-logo.svg", window.location.origin).toString();
+    const fallbackImageUrl = new URL("/handout-logo.svg", window.location.origin).toString();
 
-    document.title = "Page unavailable | Lightsite";
+    document.title = "Page unavailable | Handout";
     setLinkTag("canonical", canonicalUrl);
     setMetaTag("robots", "noindex,nofollow");
-    setMetaTag("description", "This Lightsite page is unavailable.");
-    setMetaProperty("og:title", "Page unavailable | Lightsite");
-    setMetaProperty("og:description", "This Lightsite page is unavailable.");
+    setMetaTag("description", "This Handout page is unavailable.");
+    setMetaProperty("og:title", "Page unavailable | Handout");
+    setMetaProperty("og:description", "This Handout page is unavailable.");
     setMetaProperty("og:image", fallbackImageUrl);
     setMetaProperty("og:url", canonicalUrl);
     setMetaProperty("og:type", "website");
     setMetaTag("twitter:card", "summary_large_image");
-    setMetaTag("twitter:title", "Page unavailable | Lightsite");
-    setMetaTag("twitter:description", "This Lightsite page is unavailable.");
+    setMetaTag("twitter:title", "Page unavailable | Handout");
+    setMetaTag("twitter:description", "This Handout page is unavailable.");
     setMetaTag("twitter:image", fallbackImageUrl);
   }, []);
 }

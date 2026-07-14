@@ -25,20 +25,20 @@ type GridContext = {
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
-    lightsiteNextGrid: {
-      addLightsiteNextGridColumn: (pos: number | undefined, placement: GridPlacement) => ReturnType
-      addLightsiteNextGridRow: (pos: number | undefined, placement: GridPlacement) => ReturnType
-      deleteLightsiteNextGridColumn: (
+    handoutNextGrid: {
+      addHandoutNextGridColumn: (pos: number | undefined, placement: GridPlacement) => ReturnType
+      addHandoutNextGridRow: (pos: number | undefined, placement: GridPlacement) => ReturnType
+      deleteHandoutNextGridColumn: (
         pos?: number,
         placement?: GridDeletePlacement
       ) => ReturnType
-      deleteLightsiteNextGridRow: (pos?: number, placement?: GridDeletePlacement) => ReturnType
+      deleteHandoutNextGridRow: (pos?: number, placement?: GridDeletePlacement) => ReturnType
     }
   }
 }
 
-export const LightsiteNextGridCommands = Extension.create({
-  name: "lightsiteNextGridCommands",
+export const HandoutNextGridCommands = Extension.create({
+  name: "handoutNextGridCommands",
 
   addProseMirrorPlugins() {
     return [
@@ -56,7 +56,7 @@ export const LightsiteNextGridCommands = Extension.create({
 
   addCommands() {
     return {
-      addLightsiteNextGridColumn:
+      addHandoutNextGridColumn:
         (pos, placement) =>
         ({ state, dispatch, view }) => {
           const context = resolveGridContext(state, pos)
@@ -99,7 +99,7 @@ export const LightsiteNextGridCommands = Extension.create({
 
           return true
         },
-      addLightsiteNextGridRow:
+      addHandoutNextGridRow:
         (pos, placement) =>
         ({ state, dispatch, view }) => {
           const context = resolveGridContext(state, pos)
@@ -121,7 +121,7 @@ export const LightsiteNextGridCommands = Extension.create({
 
           return true
         },
-      deleteLightsiteNextGridColumn:
+      deleteHandoutNextGridColumn:
         (pos, placement = "current") =>
         ({ state, dispatch, view }) => {
           const context = resolveGridContext(state, pos)
@@ -176,7 +176,7 @@ export const LightsiteNextGridCommands = Extension.create({
 
           return true
         },
-      deleteLightsiteNextGridRow:
+      deleteHandoutNextGridRow:
         (pos, placement = "current") =>
         ({ state, dispatch, view }) => {
           const context = resolveGridContext(state, pos)

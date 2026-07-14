@@ -1,5 +1,5 @@
-import { normalizeWebsiteDomain } from "@lightsite/domain";
-import { normalizePublishedSitePayload } from "@lightsite/content-schema";
+import { normalizeWebsiteDomain } from "@handout/domain";
+import { normalizePublishedSitePayload } from "@handout/content-schema";
 import { Router, type Response } from "express";
 
 import { asyncHandler } from "../http/async-handler";

@@ -1,8 +1,8 @@
 import { GiphyFetch, type GifsResult } from "@giphy/js-fetch-api"
 
-export type LightsiteGiphyGif = GifsResult["data"][number]
+export type HandoutGiphyGif = GifsResult["data"][number]
 
-export type LightsiteGifSelection = {
+export type HandoutGifSelection = {
   alt: string
   giphyId: string
   height: number | null
@@ -14,13 +14,13 @@ export type LightsiteGifSelection = {
 const GIPHY_API_KEY = import.meta.env.VITE_GIPHY_API_KEY?.trim() ?? ""
 const MAX_GIF_WIDTH = 612
 
-export const hasLightsiteGiphyApiKey = GIPHY_API_KEY.length > 0
-export const lightsiteGiphyAttributionAssetPath = "/editor-assets/giphy-powered-by-dark.png"
-export const lightsiteGiphyClient = hasLightsiteGiphyApiKey ? new GiphyFetch(GIPHY_API_KEY) : null
-export const lightsiteGiphyPageSize = 24
+export const hasHandoutGiphyApiKey = GIPHY_API_KEY.length > 0
+export const handoutGiphyAttributionAssetPath = "/editor-assets/giphy-powered-by-dark.png"
+export const handoutGiphyClient = hasHandoutGiphyApiKey ? new GiphyFetch(GIPHY_API_KEY) : null
+export const handoutGiphyPageSize = 24
 
-export function createLightsiteGiphyFetchGifs(query: string) {
-  if (!lightsiteGiphyClient) {
+export function createHandoutGiphyFetchGifs(query: string) {
+  if (!handoutGiphyClient) {
     throw new Error("Missing GIPHY API key")
   }
 
@@ -28,21 +28,21 @@ export function createLightsiteGiphyFetchGifs(query: string) {
 
   return (offset: number) =>
     trimmedQuery
-      ? lightsiteGiphyClient.search(trimmedQuery, {
-          limit: lightsiteGiphyPageSize,
+      ? handoutGiphyClient.search(trimmedQuery, {
+          limit: handoutGiphyPageSize,
           offset,
           rating: "g",
           type: "gifs",
         })
-      : lightsiteGiphyClient.trending({
-          limit: lightsiteGiphyPageSize,
+      : handoutGiphyClient.trending({
+          limit: handoutGiphyPageSize,
           offset,
           rating: "g",
           type: "gifs",
         })
 }
 
-export function createLightsiteGifSelection(gif: LightsiteGiphyGif): LightsiteGifSelection {
+export function createHandoutGifSelection(gif: HandoutGiphyGif): HandoutGifSelection {
   const images = gif.images as unknown as
     | Record<
         string,

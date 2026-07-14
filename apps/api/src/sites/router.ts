@@ -17,7 +17,7 @@ import {
   updateSiteRequestSchema,
   validateSiteContentRequestSchema,
   validateSiteContentResponseSchema,
-} from "@lightsite/contracts";
+} from "@handout/contracts";
 import { Router, type Request } from "express";
 import { getAgentAuthContext } from "../auth/agent-auth";
 import type { CurrentActor, CurrentActorProvider } from "../auth/current-actor";

@@ -1,6 +1,6 @@
-# Lightsite
+# Handout
 
-Lightsite is a lightweight sales one-page site builder for creating editable one-pagers that sales teams can send to prospects.
+Handout is a lightweight sales one-page site builder for creating editable one-pagers that sales teams can send to prospects.
 
 ## Stack
 
@@ -43,7 +43,7 @@ pnpm db:studio
 
 ## Postgres Architecture
 
-Lightsite uses one real Postgres database as the source of truth for app data, published-site state, and tracking analytics. The app connects through `DATABASE_URL`; local development uses the Compose service in `compose.yml`, while production should use a managed Postgres provider.
+Handout uses one real Postgres database as the source of truth for app data, published-site state, and tracking analytics. The app connects through `DATABASE_URL`; local development uses the Compose service in `compose.yml`, while production should use a managed Postgres provider.
 
 Recommended defaults:
 

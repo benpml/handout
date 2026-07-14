@@ -7,14 +7,15 @@ import {
   workspaces,
   type Database,
   type SiteContent,
-} from "@lightsite/db";
+} from "@handout/db";
 import {
   getSiteMetadata,
+  getSiteVariableValues,
   normalizeSiteContent,
   PUBLIC_SITE_PAYLOAD_SCHEMA_VERSION,
   type PublishedSitePayload,
-} from "@lightsite/site-document";
-import type { TrackingV2TrackingMode } from "@lightsite/tracking-schema";
+} from "@handout/site-document";
+import type { TrackingV2TrackingMode } from "@handout/tracking-schema";
 
 export type PublicSiteLookupInput = {
   workspaceSlug: string;
@@ -166,8 +167,13 @@ function buildPublicSitePayload(
   }
 
   const content = normalizeSiteContent(record.version.content, record.site.name);
-  const metadata = getSiteMetadata(content, record.site.name);
-  const trackingMode: TrackingV2TrackingMode = "events_and_recording";
+  const variableValues = getSiteVariableValues(content, {
+    recipientCompany: variant?.recipientCompany,
+    recipientName: variant?.recipientName,
+    variableValues: variant?.variableValues,
+  });
+  const metadata = getSiteMetadata(content, record.site.name, variableValues);
+  const trackingMode: TrackingV2TrackingMode = "events";
 
   return {
     schemaVersion: PUBLIC_SITE_PAYLOAD_SCHEMA_VERSION,

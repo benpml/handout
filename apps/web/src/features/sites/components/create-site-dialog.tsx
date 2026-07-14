@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
 import { IconCirclePlus } from "@tabler/icons-react"
-import { LIGHTSITE_TEXT_LIMITS } from "@lightsite/domain"
+import { HANDOUT_TEXT_LIMITS } from "@handout/domain"
 
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -91,7 +91,7 @@ export function CreateSiteDialog({
               <FieldLabel htmlFor="site-name">Site name</FieldLabel>
               <Input
                 id="site-name"
-                maxLength={LIGHTSITE_TEXT_LIMITS.siteName}
+                maxLength={HANDOUT_TEXT_LIMITS.siteName}
                 value={name}
                 onChange={(event) => {
                   setName(event.target.value)

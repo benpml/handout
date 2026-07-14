@@ -15,9 +15,10 @@ describe("public site screenshot route", () => {
       workspaceId: "11111111-1111-4111-8111-111111111111",
       siteId: "22222222-2222-4222-8222-222222222222",
       publishedVersionId: "33333333-3333-4333-8333-333333333333",
+      manifestId: "55555555-5555-4555-8555-555555555555",
       recipientId: "44444444-4444-4444-8444-444444444444",
       recipientRevision: 7,
-      trackingMode: "events_and_recording",
+      trackingMode: "events",
     });
     const recordSlackShare = vi.fn(async (_input: Parameters<TrackingV2Service["recordSlackShare"]>[0]) => ({ recorded: true }));
     const app = createScreenshotTestApp({ bootstrap, contextTokens, recordSlackShare });
@@ -46,9 +47,10 @@ describe("public site screenshot route", () => {
       workspaceId: "11111111-1111-4111-8111-111111111111",
       siteId: "22222222-2222-4222-8222-222222222222",
       publishedVersionId: "33333333-3333-4333-8333-333333333333",
+      manifestId: "55555555-5555-4555-8555-555555555555",
       recipientId: "44444444-4444-4444-8444-444444444444",
       recipientRevision: 7,
-      trackingMode: "events_and_recording",
+      trackingMode: "events",
     });
     const recordSlackShare = vi.fn(async (_input: Parameters<TrackingV2Service["recordSlackShare"]>[0]) => ({ recorded: true }));
     const app = createScreenshotTestApp({ bootstrap, contextTokens, recordSlackShare });
@@ -67,9 +69,10 @@ describe("public site screenshot route", () => {
       workspaceId: "11111111-1111-4111-8111-111111111111",
       siteId: "22222222-2222-4222-8222-222222222222",
       publishedVersionId: "33333333-3333-4333-8333-333333333333",
+      manifestId: "55555555-5555-4555-8555-555555555555",
       recipientId: "44444444-4444-4444-8444-444444444444",
       recipientRevision: 7,
-      trackingMode: "events_and_recording",
+      trackingMode: "events",
     });
     const app = createScreenshotTestApp({
       bootstrap,
@@ -112,7 +115,7 @@ function createScreenshotTestApp(input: {
   } as unknown as TrackingV2Service;
   const app = express();
   app.use(createPublicSiteDocumentRouter({
-    publicSiteOrigin: "https://lightsite.test",
+    publicSiteOrigin: "https://handout.test",
     publicSiteService,
     screenshotService,
     trackingContextTokens: input.contextTokens,

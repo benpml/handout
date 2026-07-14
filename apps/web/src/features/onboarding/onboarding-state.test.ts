@@ -5,7 +5,7 @@ import {
   getDefaultWorkspaceName,
   resolveOnboardingStep,
 } from "./onboarding-state"
-import type { AppBootstrapResponse } from "@lightsite/contracts"
+import type { AppBootstrapResponse } from "@handout/contracts"
 
 function buildBootstrap(
   overrides: Partial<AppBootstrapResponse> = {},

@@ -1,7 +1,7 @@
 import { Extension } from "@tiptap/core"
 import { NodeSelection, TextSelection } from "@tiptap/pm/state"
 
-export type LightsiteNextVideoEmbedSettingsTarget = {
+export type HandoutNextVideoEmbedSettingsTarget = {
   mode: "create" | "edit"
   pos: number
   provider: string
@@ -9,8 +9,8 @@ export type LightsiteNextVideoEmbedSettingsTarget = {
 }
 
 type VideoEmbedSettingsStorage = {
-  openSettings: (target: LightsiteNextVideoEmbedSettingsTarget) => void
-  subscribe: (listener: (target: LightsiteNextVideoEmbedSettingsTarget) => void) => () => void
+  openSettings: (target: HandoutNextVideoEmbedSettingsTarget) => void
+  subscribe: (listener: (target: HandoutNextVideoEmbedSettingsTarget) => void) => () => void
 }
 
 type VideoEmbedAttrs = {
@@ -20,25 +20,25 @@ type VideoEmbedAttrs = {
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
-    lightsiteNextVideoEmbedSettings: {
-      openLightsiteNextVideoEmbedSettings: (
+    handoutNextVideoEmbedSettings: {
+      openHandoutNextVideoEmbedSettings: (
         pos?: number,
-        mode?: LightsiteNextVideoEmbedSettingsTarget["mode"]
+        mode?: HandoutNextVideoEmbedSettingsTarget["mode"]
       ) => ReturnType
-      removeLightsiteNextVideoEmbedDraft: (pos: number) => ReturnType
-      setLightsiteNextVideoEmbedAttrs: (pos: number, attrs: VideoEmbedAttrs) => ReturnType
+      removeHandoutNextVideoEmbedDraft: (pos: number) => ReturnType
+      setHandoutNextVideoEmbedAttrs: (pos: number, attrs: VideoEmbedAttrs) => ReturnType
     }
   }
 }
 
-export const LightsiteNextVideoEmbedSettings = Extension.create<
+export const HandoutNextVideoEmbedSettings = Extension.create<
   Record<string, never>,
   VideoEmbedSettingsStorage
 >({
-  name: "lightsiteNextVideoEmbedSettings",
+  name: "handoutNextVideoEmbedSettings",
 
   addStorage() {
-    const listeners = new Set<(target: LightsiteNextVideoEmbedSettingsTarget) => void>()
+    const listeners = new Set<(target: HandoutNextVideoEmbedSettingsTarget) => void>()
 
     return {
       openSettings: (target) => {
@@ -56,7 +56,7 @@ export const LightsiteNextVideoEmbedSettings = Extension.create<
 
   addCommands() {
     return {
-      openLightsiteNextVideoEmbedSettings:
+      openHandoutNextVideoEmbedSettings:
         (pos, mode = "edit") =>
         ({ state, dispatch }) => {
           const target = resolveVideoEmbedTarget(state, pos)
@@ -82,7 +82,7 @@ export const LightsiteNextVideoEmbedSettings = Extension.create<
 
           return true
         },
-      removeLightsiteNextVideoEmbedDraft:
+      removeHandoutNextVideoEmbedDraft:
         (pos) =>
         ({ state, dispatch, view }) => {
           const node = state.doc.nodeAt(pos)
@@ -109,7 +109,7 @@ export const LightsiteNextVideoEmbedSettings = Extension.create<
 
           return true
         },
-      setLightsiteNextVideoEmbedAttrs:
+      setHandoutNextVideoEmbedAttrs:
         (pos, attrs) =>
         ({ state, dispatch, view }) => {
           const node = state.doc.nodeAt(pos)

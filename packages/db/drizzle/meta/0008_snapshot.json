@@ -906,7 +906,7 @@
           "type": "jsonb",
           "primaryKey": false,
           "notNull": true,
-          "default": "'{\"schemaVersion\":3,\"themeMode\":\"dark\",\"settings\":{\"allowSearchIndexing\":false},\"variables\":[{\"id\":\"recipient_website\",\"key\":\"recipient_website\",\"label\":\"Recipient website\",\"type\":\"url\",\"defaultValue\":\"\"}],\"pages\":[{\"id\":\"page-overview\",\"name\":\"Untitled Lightsite\",\"slug\":\"untitled-lightsite\",\"status\":\"visible\",\"sortOrder\":0,\"document\":{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\"}]}}],\"sidebar\":{\"sections\":{\"tabs\":{\"label\":\"Tabs\"},\"links\":{\"label\":\"Links\"},\"nextSteps\":{\"label\":\"Next steps\"}},\"links\":[],\"nextSteps\":[]}}'::jsonb"
+          "default": "'{\"schemaVersion\":3,\"themeMode\":\"dark\",\"settings\":{\"allowSearchIndexing\":false},\"variables\":[{\"id\":\"recipient_website\",\"key\":\"recipient_website\",\"label\":\"Recipient website\",\"type\":\"url\",\"defaultValue\":\"\"}],\"pages\":[{\"id\":\"page-overview\",\"name\":\"Untitled Handout\",\"slug\":\"untitled-handout\",\"status\":\"visible\",\"sortOrder\":0,\"document\":{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\"}]}}],\"sidebar\":{\"sections\":{\"tabs\":{\"label\":\"Tabs\"},\"links\":{\"label\":\"Links\"},\"nextSteps\":{\"label\":\"Next steps\"}},\"links\":[],\"nextSteps\":[]}}'::jsonb"
         },
         "draft_revision": {
           "name": "draft_revision",
@@ -2316,7 +2316,7 @@
           "type": "varchar(40)",
           "primaryKey": false,
           "notNull": true,
-          "default": "'lightsite-minimal-v1'"
+          "default": "'handout-minimal-v1'"
         },
         "runtime_version": {
           "name": "runtime_version",

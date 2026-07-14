@@ -1,8 +1,8 @@
 import {
-  lightsiteDarkTokens,
-  lightsiteFoundationTokens,
-  lightsiteLightTokens,
-} from "@lightsite/design-tokens"
+  handoutDarkTokens,
+  handoutFoundationTokens,
+  handoutLightTokens,
+} from "@handout/design-tokens"
 
 type TokenMap = Readonly<Record<string, string>>
 
@@ -26,11 +26,11 @@ export type TokenModeValue = {
 }
 
 const foundationColors = Object.fromEntries(
-  Object.entries(lightsiteFoundationTokens).filter(([name]) => name.startsWith("neutral-")),
+  Object.entries(handoutFoundationTokens).filter(([name]) => name.startsWith("neutral-")),
 ) as TokenMap
 
-const lightColors = lightsiteLightTokens as TokenMap
-const darkColors = lightsiteDarkTokens as TokenMap
+const lightColors = handoutLightTokens as TokenMap
+const darkColors = handoutDarkTokens as TokenMap
 
 export const baseColorTokens: BaseColorToken[] = Object.entries(foundationColors).map(
   ([name, value]) => ({

@@ -2,9 +2,9 @@
 
 ## Product Contract
 
-Lightsite has three workspace plans:
+Handout has three workspace plans:
 
-- Free: try Lightsite for free, create up to 10 draft sites, upgrade only when publishing.
+- Free: try Handout for free, create up to 10 draft sites, upgrade only when publishing.
 - Core: $49 per user per month, or $39 per user per month when billed annually. Includes unlimited published sites and unlimited recipients, subject to abuse guardrails.
 - Pro: $89 per user per month, or $69 per user per month when billed annually. Includes Core plus unlimited session replays and API access. Pro remains backend-supported but hidden from primary UI until those features ship.
 

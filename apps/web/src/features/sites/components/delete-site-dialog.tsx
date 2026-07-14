@@ -1,6 +1,6 @@
 import { useId, useState } from "react"
 import { IconX } from "@tabler/icons-react"
-import { LIGHTSITE_TEXT_LIMITS } from "@lightsite/domain"
+import { HANDOUT_TEXT_LIMITS } from "@handout/domain"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import {
@@ -65,7 +65,7 @@ export function DeleteSiteDialog({
             </FieldLabel>
             <Input
               id={inputId}
-              maxLength={LIGHTSITE_TEXT_LIMITS.deleteConfirmation}
+              maxLength={HANDOUT_TEXT_LIMITS.deleteConfirmation}
               value={confirmation}
               onChange={(event) => {
                 setConfirmation(event.target.value)

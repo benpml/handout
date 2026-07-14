@@ -103,16 +103,16 @@ export type WorkspaceInviteRecord = {
 export const currentUser: CurrentUser = {
   id: "user-ben",
   name: "Ben Segarra",
-  email: "ben@lightsite.app",
+  email: "ben@handout.app",
   initials: "BS",
 }
 
 export const workspaces: WorkspaceSummary[] = [
   {
-    id: "workspace-lightsite",
-    name: "Lightsite",
-    slug: "lightsite",
-    websiteDomain: "lightsite.app",
+    id: "workspace-handout",
+    name: "Handout",
+    slug: "handout",
+    websiteDomain: "handout.app",
     initials: "LS",
     role: "admin",
   },
@@ -262,7 +262,7 @@ export const teamMembers: TeamMemberRecord[] = [
   {
     id: "member-ben",
     name: "Ben Segarra",
-    email: "ben@lightsite.app",
+    email: "ben@handout.app",
     role: "admin",
     avatar: "BS",
     joinedAt: "Jan 8",
@@ -272,7 +272,7 @@ export const teamMembers: TeamMemberRecord[] = [
   {
     id: "member-maya",
     name: "Maya Patel",
-    email: "maya@lightsite.app",
+    email: "maya@handout.app",
     role: "user",
     avatar: "MP",
     joinedAt: "Jan 10",
@@ -281,7 +281,7 @@ export const teamMembers: TeamMemberRecord[] = [
   {
     id: "member-rina",
     name: "Rina Cohen",
-    email: "rina@lightsite.app",
+    email: "rina@handout.app",
     role: "user",
     avatar: "RC",
     joinedAt: "Jan 14",
@@ -292,7 +292,7 @@ export const teamMembers: TeamMemberRecord[] = [
 export const workspaceInvites: WorkspaceInviteRecord[] = [
   {
     id: "invite-1",
-    email: "sam@lightsite.app",
+    email: "sam@handout.app",
     role: "user",
     status: "pending",
     invitedBy: "Ben",
@@ -300,7 +300,7 @@ export const workspaceInvites: WorkspaceInviteRecord[] = [
   },
   {
     id: "invite-2",
-    email: "ops@lightsite.app",
+    email: "ops@handout.app",
     role: "user",
     status: "send_failed",
     invitedBy: "Ben",

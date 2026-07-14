@@ -30,7 +30,7 @@ describe("public site API client", () => {
 
     await expect(
       getPublicSitePayload({
-        workspaceSlug: "lightsite",
+        workspaceSlug: "handout",
         siteSlug: "rollout-brief",
         variantSlug: "mira",
       }),
@@ -45,7 +45,7 @@ describe("public site API client", () => {
         },
       },
     })
-    expect(fetch).toHaveBeenCalledWith("/api/public/sites/lightsite/rollout-brief/mira", {
+    expect(fetch).toHaveBeenCalledWith("/api/public/sites/handout/rollout-brief/mira", {
       credentials: "omit",
       headers: {
         accept: "application/json",

@@ -38,8 +38,8 @@ const blockMarqueeSelectionControllers = new WeakMap<
   BlockMarqueeSelectionController
 >()
 
-export const LightsiteNextBlockMarqueeSelection = Extension.create({
-  name: "lightsiteNextBlockMarqueeSelection",
+export const HandoutNextBlockMarqueeSelection = Extension.create({
+  name: "handoutNextBlockMarqueeSelection",
 
   onDestroy() {
     const controller = blockMarqueeSelectionControllers.get(this.editor.view)
@@ -227,7 +227,7 @@ function createBlockMarqueeSelectionController(view: EditorView): BlockMarqueeSe
     if (!marquee.active) {
       marquee.active = true
       marquee.overlay = createMarqueeOverlay(view)
-      view.dom.classList.add("lightsite-editor-marquee-active")
+      view.dom.classList.add("handout-editor-marquee-active")
     }
 
     const rect = normalizeRect(marquee.origin, { x: event.clientX, y: event.clientY })
@@ -268,7 +268,7 @@ function createBlockMarqueeSelectionController(view: EditorView): BlockMarqueeSe
   const cleanupMarquee = () => {
     marquee?.overlay?.remove()
     marquee = null
-    view.dom.classList.remove("lightsite-editor-marquee-active")
+    view.dom.classList.remove("handout-editor-marquee-active")
     window.removeEventListener("pointermove", handlePointerMove, true)
     window.removeEventListener("pointerup", handlePointerUp, true)
     window.removeEventListener("pointercancel", handlePointerCancel, true)
@@ -314,7 +314,7 @@ function canStartMarquee(view: EditorView, event: MouseEvent) {
 
   if (
     target.closest(
-      "[data-lightsite-editor-block-plus], [data-lightsite-editor-block-handle], .lightsite-editor-block-menu, .lightsite-editor-button-settings, .lightsite-editor-suggestion-menu, .lightsite-editor-bubble-menu"
+      "[data-handout-editor-block-plus], [data-handout-editor-block-handle], .handout-editor-block-menu, .handout-editor-button-settings, .handout-editor-suggestion-menu, .handout-editor-bubble-menu"
     )
   ) {
     return false
@@ -332,7 +332,7 @@ function canStartMarquee(view: EditorView, event: MouseEvent) {
 function createMarqueeOverlay(view: EditorView) {
   const overlay = document.createElement("div")
 
-  overlay.className = "lightsite-editor-marquee-box"
+  overlay.className = "handout-editor-marquee-box"
   view.dom.closest("[data-editor-page]")?.append(overlay)
 
   return overlay

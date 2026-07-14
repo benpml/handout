@@ -20,8 +20,8 @@ import type * as Y from "yjs"
 
 import {
   editorUniqueIdNodeTypes,
-  type LightsiteVariableOption,
-  type LightsiteVariableValueMap,
+  type HandoutVariableOption,
+  type HandoutVariableValueMap,
 } from "../schema"
 import {
   ButtonBlock,
@@ -48,33 +48,33 @@ import {
   TestimonialQuote,
 } from "../nodes/blocks"
 import { CalendarEmbed } from "../nodes/calendar-embed"
-import { LightsiteGif } from "../nodes/lightsite-gif"
-import { LightsiteImage } from "../nodes/lightsite-image"
+import { HandoutGif } from "../nodes/handout-gif"
+import { HandoutImage } from "../nodes/handout-image"
 import { VideoEmbed } from "../nodes/video-embed"
 import { VariableToken } from "../nodes/variable-token"
-import { LightsiteNextBlockCommands } from "./block-commands"
-import { LightsiteNextBlockMarqueeSelection } from "./block-marquee-selection"
-import { LightsiteNextBlockSelection } from "./block-selection"
-import { LightsiteNextButtonSettings } from "./button-settings"
-import { LightsiteNextCalendarEmbedSettings } from "./calendar-embed-settings"
-import { LightsiteNextCardNavigation } from "./card-navigation"
-import { LightsiteNextDocumentLimits } from "./document-limits"
-import { LightsiteNextGifPicker } from "./gif-picker"
-import { LightsiteNextGridCommands } from "./grid-commands"
-import { LightsiteNextImageCardButtonSettings } from "./image-card-button-settings"
-import { LightsiteNextMarkdownShortcuts } from "./markdown-shortcuts"
-import { LightsitePaletteColorMigration } from "./palette-color-migration"
-import { LightsiteNextSelectionCleanup } from "./selection-cleanup"
-import { LightsiteNextVideoEmbedSettings } from "./video-embed-settings"
+import { HandoutNextBlockCommands } from "./block-commands"
+import { HandoutNextBlockMarqueeSelection } from "./block-marquee-selection"
+import { HandoutNextBlockSelection } from "./block-selection"
+import { HandoutNextButtonSettings } from "./button-settings"
+import { HandoutNextCalendarEmbedSettings } from "./calendar-embed-settings"
+import { HandoutNextCardNavigation } from "./card-navigation"
+import { HandoutNextDocumentLimits } from "./document-limits"
+import { HandoutNextGifPicker } from "./gif-picker"
+import { HandoutNextGridCommands } from "./grid-commands"
+import { HandoutNextImageCardButtonSettings } from "./image-card-button-settings"
+import { HandoutNextMarkdownShortcuts } from "./markdown-shortcuts"
+import { HandoutPaletteColorMigration } from "./palette-color-migration"
+import { HandoutNextSelectionCleanup } from "./selection-cleanup"
+import { HandoutNextVideoEmbedSettings } from "./video-embed-settings"
 import {
-  createLightsiteNextEmojiSuggestion,
-  LightsiteNextSlashCommands,
-  LightsiteNextVariables,
+  createHandoutNextEmojiSuggestion,
+  HandoutNextSlashCommands,
+  HandoutNextVariables,
 } from "./suggestion-menu"
 
 export function createEditorExtensions(
-  variables: LightsiteVariableOption[],
-  variableValues: LightsiteVariableValueMap = {},
+  variables: HandoutVariableOption[],
+  variableValues: HandoutVariableValueMap = {},
   activeVariantId = "default",
   pageTitleContext: {
     workspaceLogoUrl?: string | null
@@ -114,22 +114,22 @@ export function createEditorExtensions(
     Placeholder.configure({
       emptyNodeClass: ({ editor, hasAnchor, node, pos }) => {
         if (node.type.name === "buttonBlock") {
-          return "lightsite-editor-placeholder-hidden"
+          return "handout-editor-placeholder-hidden"
         }
 
         if (!hasAnchor && isRedundantGridCellParagraph(editor.state.doc, node.type.name, pos)) {
-          return "lightsite-editor-placeholder-hidden"
+          return "handout-editor-placeholder-hidden"
         }
 
         if (isEmptyPageScaffoldParagraph(editor.state.doc, node.type.name)) {
-          return "lightsite-editor-placeholder-hidden"
+          return "handout-editor-placeholder-hidden"
         }
 
         if (isAlwaysVisiblePlaceholderNode(editor.state.doc, node.type.name, pos)) {
-          return "is-empty lightsite-editor-card-placeholder-empty"
+          return "is-empty handout-editor-card-placeholder-empty"
         }
 
-        return hasAnchor ? "is-empty" : "lightsite-editor-placeholder-hidden"
+        return hasAnchor ? "is-empty" : "handout-editor-placeholder-hidden"
       },
       includeChildren: true,
       showOnlyCurrent: false,
@@ -218,18 +218,18 @@ export function createEditorExtensions(
     Highlight.configure({
       multicolor: true,
     }),
-    LightsitePaletteColorMigration,
+    HandoutPaletteColorMigration,
     Typography,
     Emoji.configure({
       enableEmoticons: true,
       HTMLAttributes: {
-        class: "lightsite-editor-emoji",
+        class: "handout-editor-emoji",
       },
-      suggestion: createLightsiteNextEmojiSuggestion(),
+      suggestion: createHandoutNextEmojiSuggestion(),
     }),
-    LightsiteImage.configure({
+    HandoutImage.configure({
       HTMLAttributes: {
-        class: "lightsite-editor-image",
+        class: "handout-editor-image",
         loading: "lazy",
       },
       resize: {
@@ -240,9 +240,9 @@ export function createEditorExtensions(
         alwaysPreserveAspectRatio: true,
       },
     }),
-    LightsiteGif.configure({
+    HandoutGif.configure({
       HTMLAttributes: {
-        class: "lightsite-editor-gif",
+        class: "handout-editor-gif",
         loading: "lazy",
       },
       resize: {
@@ -287,7 +287,7 @@ export function createEditorExtensions(
         allowTableNodeSelection: true,
         cellMinWidth: 120,
         HTMLAttributes: {
-          class: "lightsite-editor-table",
+          class: "handout-editor-table",
         },
         lastColumnResizable: true,
         renderWrapper: true,
@@ -295,17 +295,17 @@ export function createEditorExtensions(
       },
       tableCell: {
         HTMLAttributes: {
-          class: "lightsite-editor-table-cell",
+          class: "handout-editor-table-cell",
         },
       },
       tableHeader: {
         HTMLAttributes: {
-          class: "lightsite-editor-table-header",
+          class: "handout-editor-table-header",
         },
       },
       tableRow: {
         HTMLAttributes: {
-          class: "lightsite-editor-table-row",
+          class: "handout-editor-table-row",
         },
       },
     }),
@@ -334,21 +334,21 @@ export function createEditorExtensions(
     ButtonBlock,
     CalendarEmbed,
     VideoEmbed,
-    LightsiteNextBlockCommands,
-    LightsiteNextButtonSettings,
-    LightsiteNextCalendarEmbedSettings,
-    LightsiteNextVideoEmbedSettings,
-    LightsiteNextImageCardButtonSettings,
-    LightsiteNextGifPicker,
-    LightsiteNextGridCommands,
-    LightsiteNextBlockMarqueeSelection,
-    LightsiteNextBlockSelection,
-    LightsiteNextCardNavigation,
-    LightsiteNextMarkdownShortcuts,
-    LightsiteNextSelectionCleanup,
-    LightsiteNextDocumentLimits,
-    LightsiteNextSlashCommands,
-    LightsiteNextVariables.configure({
+    HandoutNextBlockCommands,
+    HandoutNextButtonSettings,
+    HandoutNextCalendarEmbedSettings,
+    HandoutNextVideoEmbedSettings,
+    HandoutNextImageCardButtonSettings,
+    HandoutNextGifPicker,
+    HandoutNextGridCommands,
+    HandoutNextBlockMarqueeSelection,
+    HandoutNextBlockSelection,
+    HandoutNextCardNavigation,
+    HandoutNextMarkdownShortcuts,
+    HandoutNextSelectionCleanup,
+    HandoutNextDocumentLimits,
+    HandoutNextSlashCommands,
+    HandoutNextVariables.configure({
       activeVariantId,
       values: variableValues,
       variables,

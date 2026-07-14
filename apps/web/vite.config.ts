@@ -7,8 +7,8 @@ import path from 'node:path'
 export default defineConfig(({ mode }) => {
   const envDir = path.resolve(__dirname, '../..')
   const env = loadEnv(mode, envDir, '')
-  const apiProxyTarget = process.env.LIGHTSITE_API_PROXY_TARGET?.trim()
-    || env.LIGHTSITE_API_PROXY_TARGET?.trim()
+  const apiProxyTarget = process.env.HANDOUT_API_PROXY_TARGET?.trim()
+    || env.HANDOUT_API_PROXY_TARGET?.trim()
     || 'http://localhost:3011'
   const collaborationProxyTarget = apiProxyTarget.replace(/^http/, 'ws')
 

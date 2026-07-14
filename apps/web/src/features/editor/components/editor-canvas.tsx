@@ -1,6 +1,6 @@
 import { EditorContent, useEditorState } from "@tiptap/react"
 import type { Editor } from "@tiptap/react"
-import { SITE_DOCUMENT_CSS } from "@lightsite/site-document"
+import { SITE_DOCUMENT_CSS } from "@handout/site-document"
 
 import { EditorBlockControls } from "./block-controls"
 import { EditorButtonSettingsPopover } from "./button-settings-popover"
@@ -37,10 +37,10 @@ export function EditorCanvas({ editor, emptyStateFallbackKind, mode }: EditorCan
       data-editor-mode={mode}
       className="relative h-full min-h-0 min-w-0 overflow-auto bg-background text-foreground"
     >
-      <style data-lightsite-site-document-styles="">{SITE_DOCUMENT_CSS}</style>
+      <style data-handout-site-document-styles="">{SITE_DOCUMENT_CSS}</style>
       <EditorContent
         editor={editor}
-        className="lightsite-editor ls-document-editor min-h-full min-w-0 w-full"
+        className="handout-editor handout-document-editor min-h-full min-w-0 w-full"
         data-empty-state-active={isEditing && emptyStateKind ? "" : undefined}
         data-editor-mode={mode}
       />

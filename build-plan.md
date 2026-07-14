@@ -1,4 +1,4 @@
-# Lightsite Build Plan
+# Handout Build Plan
 
 This document turns `app-spec.md` into an implementation plan for three agents working in parallel.
 
@@ -200,7 +200,7 @@ Acceptance:
 - Preserve/extend app shell and sidebar from the Figma implementation.
 - Keep `components/ui` as primitive layer.
 - Keep product components out of `components/ui`.
-- Ensure design-system route shows primitives, states, and Lightsite component examples.
+- Ensure design-system route shows primitives, states, and Handout component examples.
 - Set up route groups for authenticated app, editor, public preview/internal test route, and design system.
 - Set up TanStack Query client and API client shell.
 - Add global loading/error/permission state patterns.
@@ -748,7 +748,7 @@ Acceptance:
 
 ## Phase 9: Production Hardening
 
-Goal: Lightsite can be used by real teams with observable, recoverable failures.
+Goal: Handout can be used by real teams with observable, recoverable failures.
 
 ### Track 1
 

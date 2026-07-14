@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { SITE_DOCUMENT_PROSEMIRROR_SCHEMA } from "@lightsite/site-document"
+import { SITE_DOCUMENT_PROSEMIRROR_SCHEMA } from "@handout/site-document"
 import { EditorState, TextSelection } from "@tiptap/pm/state"
 
 import { createDeleteEmptyButtonBlockTransaction } from "./block-selection"

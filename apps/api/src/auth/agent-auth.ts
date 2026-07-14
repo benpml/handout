@@ -12,8 +12,8 @@ export type AgentAuthContext = {
 };
 
 export function getAgentAuthContext(request: Request): AgentAuthContext | null {
-  const expectedToken = process.env.LIGHTSITE_AGENT_API_TOKEN;
-  const workspaceId = process.env.LIGHTSITE_AGENT_WORKSPACE_ID;
+  const expectedToken = process.env.HANDOUT_AGENT_API_TOKEN;
+  const workspaceId = process.env.HANDOUT_AGENT_WORKSPACE_ID;
 
   if (!expectedToken || !workspaceId) {
     return null;
@@ -30,15 +30,15 @@ export function getAgentAuthContext(request: Request): AgentAuthContext | null {
 
   return {
     actor: {
-      userId: process.env.LIGHTSITE_AGENT_USER_ID ?? "lightsite_agent",
-      email: process.env.LIGHTSITE_AGENT_EMAIL ?? "agent@lightsite.app",
+      userId: process.env.HANDOUT_AGENT_USER_ID ?? "handout_agent",
+      email: process.env.HANDOUT_AGENT_EMAIL ?? "agent@handout.app",
       emailVerified: true,
-      name: process.env.LIGHTSITE_AGENT_NAME ?? "Lightsite Agent",
+      name: process.env.HANDOUT_AGENT_NAME ?? "Handout Agent",
     },
     workspace: {
       id: workspaceId,
       plan: resolveAgentWorkspacePlan(),
-      role: process.env.LIGHTSITE_AGENT_WORKSPACE_ROLE === "user" ? "user" : "admin",
+      role: process.env.HANDOUT_AGENT_WORKSPACE_ROLE === "user" ? "user" : "admin",
     },
   };
 }
@@ -51,7 +51,7 @@ function secureEquals(left: string, right: string) {
 }
 
 function resolveAgentWorkspacePlan(): AgentAuthContext["workspace"]["plan"] {
-  const plan = process.env.LIGHTSITE_AGENT_WORKSPACE_PLAN;
+  const plan = process.env.HANDOUT_AGENT_WORKSPACE_PLAN;
 
   return plan === "free" || plan === "pro" ? plan : "core";
 }

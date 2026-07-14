@@ -1,1062 +1,338 @@
 import { describe, expect, it } from "vitest";
-import {
-  TRACKING_V2_SCRIPT_VERSION,
-  type TrackingV2ContextTokenPayload,
-  type TrackingV2EventBatch,
-  type TrackingV2SessionStartRequest,
-} from "@lightsite/tracking-schema";
+import { createDefaultSiteContent, PUBLIC_SITE_PAYLOAD_SCHEMA_VERSION, type PublishedSitePayload } from "@handout/site-document";
+import type { TrackingV2ContextTokenPayload, TrackingV2EventBatch } from "@handout/tracking-schema";
 import {
   createMemoryTrackingV2Repository,
-  type MemoryTrackingV2RepositoryInput,
+  type TrackingV2ManifestRecord,
   type TrackingV2ResolvedContext,
 } from "./repository";
+import { createTrackingV2Service, TrackingV2InvalidIpRangeError } from "./service";
+import type { TrackingV2RecordingService } from "./recording-service";
 import {
-  createTrackingV2Service,
-  hashEventToken,
-  TrackingV2InvalidContextError,
-} from "./service";
-import {
-  createMemoryTrackingV2RecordingObjectStore,
-  type TrackingV2RecordingObjectStore,
-} from "./recording-object-store";
-import type {
-  TrackingSuppressionDecisionInput,
-  TrackingSuppressionService,
+  createMemoryTrackingSuppressionRepository,
+  createTrackingSuppressionService,
 } from "./suppression";
 
-const tokenSecret = "tracking-v2-event-token-secret-at-least-32-chars";
-const markerHashSecret = "tracking-v2-marker-hash-secret-at-least-32-chars";
-const now = new Date("2026-07-09T12:00:00.000Z");
+const now = new Date("2026-07-12T12:00:00.000Z");
+const tokenSecret = "tracking-v2-test-secret-that-is-long-enough";
+const workspaceId = "11111111-1111-4111-8111-111111111111";
+const siteId = "22222222-2222-4222-8222-222222222222";
+const publishedVersionId = "33333333-3333-4333-8333-333333333333";
+const recipientId = "44444444-4444-4444-8444-444444444444";
+const manifestId = "55555555-5555-4555-8555-555555555555";
 
-const context: TrackingV2ContextTokenPayload = {
-  version: 2,
-  keyId: "test-key",
-  workspaceId: "11111111-1111-4111-8111-111111111111",
-  siteId: "22222222-2222-4222-8222-222222222222",
-  publishedVersionId: "33333333-3333-4333-8333-333333333333",
-  recipientId: "44444444-4444-4444-8444-444444444444",
+const manifest: TrackingV2ManifestRecord = {
+  id: manifestId,
+  workspaceId,
+  siteId,
+  publishedVersionId,
+  recipientId,
   recipientRevision: 3,
-  trackingMode: "events",
-  issuedAt: "2026-07-09T11:55:00.000Z",
-  expiresAt: "2026-07-10T11:55:00.000Z",
-};
-const recordingContext: TrackingV2ContextTokenPayload = {
-  ...context,
-  trackingMode: "events_and_recording",
+  schemaVersion: 1,
+  sourceHash: "a".repeat(64),
+  payload: {
+    schemaVersion: 1,
+    siteLabel: "Taylor proposal",
+    pages: [
+      { id: "page-overview", label: "Overview" },
+      { id: "page-pricing", label: "Pricing" },
+    ],
+    elements: [
+      {
+        id: "button-book-demo",
+        pageId: "page-overview",
+        eventType: "button_click",
+        kind: "button",
+        label: "Book a demo",
+        destinationKind: "external_web",
+        destinationHost: "calendar.example",
+      },
+      {
+        id: "sidebar-proposal-link",
+        pageId: null,
+        eventType: "link_click",
+        kind: "sidebar_link",
+        label: "Proposal",
+        destinationKind: "external_web",
+        destinationHost: "example.com",
+      },
+    ],
+  },
+  createdAt: now,
 };
 
 const resolvedContext: TrackingV2ResolvedContext = {
-  workspaceId: context.workspaceId,
-  siteId: context.siteId,
-  publishedVersionId: context.publishedVersionId,
-  recipientId: context.recipientId,
-  recipientRevision: context.recipientRevision,
+  workspaceId,
+  siteId,
+  publishedVersionId,
+  manifestId,
+  recipientId,
+  recipientRevision: 3,
   workspaceStatus: "active",
+  workspacePlan: "pro",
   siteStatus: "published",
   recipientStatus: "active",
 };
 
-function startRequest(): TrackingV2SessionStartRequest {
-  return {
-    contextToken: "context_token_that_is_long_enough",
-    startedAt: now.toISOString(),
-    page: {
-      path: "/brief?secret=value",
-      title: "Recipient brief",
-      referrerHost: "workspace.slack.com",
-    },
-    viewport: {
-      width: 1440,
-      height: 900,
-    },
-    device: {
-      deviceId: "device_abc123",
-      timezone: "America/New_York",
-      locale: "en-US",
-      userAgent:
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/126.0 Safari/537.36",
-    },
-  };
-}
+const context: TrackingV2ContextTokenPayload = {
+  version: 2,
+  keyId: "default",
+  workspaceId,
+  siteId,
+  publishedVersionId,
+  manifestId,
+  recipientId,
+  recipientRevision: 3,
+  trackingMode: "events",
+  issuedAt: "2026-07-12T11:00:00.000Z",
+  expiresAt: "2026-07-13T11:00:00.000Z",
+};
 
-function eventBatch(sessionId: string, eventToken: string): TrackingV2EventBatch {
-  return {
-    batchId: "batch_abc123",
-    sessionId,
-    eventToken,
-    scriptVersion: TRACKING_V2_SCRIPT_VERSION,
-    sentAt: now.toISOString(),
-    events: [
-      {
-        eventId: "event_visit_1",
-        type: "site_visit",
-        occurredAt: now.toISOString(),
-        sequence: 0,
-        page: {
-          path: "/brief",
-          title: "Recipient brief",
-          referrerHost: null,
-        },
-        viewport: {
-          width: 1440,
-          height: 900,
-        },
-      },
-      {
-        eventId: "event_link_1",
-        type: "link_click",
-        occurredAt: now.toISOString(),
-        sequence: 1,
-        element: {
-          kind: "sidebar_link",
-          id: "proposal",
-          label: "Proposal",
-          href: "https://example.com/proposal",
-        },
-      },
-      {
-        eventId: "event_tab_1",
-        type: "tab_switch",
-        occurredAt: now.toISOString(),
-        sequence: 2,
-        element: {
-          kind: "tab",
-          id: "pricing",
-          label: "Pricing",
-        },
-        fromTabLabel: "Overview",
-      },
-    ],
-  };
-}
-
-function createSuppressionService(suppressed = false): TrackingSuppressionService & {
-  decisions: TrackingSuppressionDecisionInput[];
-} {
-  const decisions: TrackingSuppressionDecisionInput[] = [];
-
-  return {
-    decisions,
-    async recordWorkspaceUserMarkers() {
-      return { markerCount: 0 };
-    },
-    async evaluateRecipientVisit(input) {
-      decisions.push(input);
-
-      return {
-        suppressed,
-        reason: suppressed ? "suppression_marker" : null,
-        matchedMarkerTypes: suppressed ? ["device_id"] : [],
-        internalIpRange: null,
-      };
-    },
-  };
-}
-
-function createService(input: {
-  recordingObjectStore?: TrackingV2RecordingObjectStore | null;
-  suppressed?: boolean;
-  settings?: MemoryTrackingV2RepositoryInput["settings"];
-  contexts?: TrackingV2ResolvedContext[];
-  now?: () => Date;
-} = {}) {
+function harness(input: { internalRange?: boolean; enabled?: boolean; replay?: boolean } = {}) {
   const repository = createMemoryTrackingV2Repository({
-    contexts: input.contexts ?? [resolvedContext],
-    settings: input.settings,
+    contexts: [resolvedContext],
+    manifests: [manifest],
+    settings: input.enabled === undefined && !input.replay ? [] : [{
+      workspaceId,
+      siteId,
+      recipientId: null,
+      scope: "site",
+      enabled: input.enabled ?? true,
+      eventRetentionDays: 90,
+      ...(input.replay ? {
+        recordingEnabled: true,
+        recordingRetentionDays: 14 as const,
+        maxRecordingDurationSeconds: 600,
+        recordingTermsVersion: "2026-07-13.1",
+        recordingTermsAcceptedAt: now,
+        recordingTermsAcceptedByUserId: "user-admin",
+      } : {}),
+    }],
   });
-  const suppressionService = createSuppressionService(input.suppressed);
+  const suppressionRepository = createMemoryTrackingSuppressionRepository({
+    ranges: input.internalRange ? [{
+      id: "66666666-6666-4666-8666-666666666666",
+      workspaceId,
+      label: "Office",
+      ipRange: "203.0.113.8",
+    }] : [],
+  });
   const service = createTrackingV2Service({
     repository,
-    recordingObjectStore: input.recordingObjectStore,
-    suppressionService,
+    suppressionService: createTrackingSuppressionService({ repository: suppressionRepository }),
     tokenSecret,
-    markerHashSecret,
-    now: input.now ?? (() => now),
-    randomId: () => "fixed-session-id",
-    randomToken: () => "fixed-event-token",
+    recordingService: input.replay ? {} as TrackingV2RecordingService : undefined,
+    now: () => now,
   });
-
-  return { repository, service, suppressionService };
+  return { repository, service };
 }
 
-describe("createTrackingV2Service", () => {
-  it("starts an accepted session and stores only hashed device/IP identifiers", async () => {
-    const { repository, service, suppressionService } = createService();
-    const response = await service.startSession({
-      context,
-      request: startRequest(),
-      requestSnapshot: {
-        ipAddress: "203.0.113.10",
-        userAgent: null,
-        city: "Tampa",
-        region: "FL",
-        countryCode: "us",
-      },
-    });
+async function start(service: ReturnType<typeof harness>["service"], ipAddress = "203.0.113.9") {
+  return service.startSession({
+    context,
+    request: {
+      contextToken: "opaque_context_token_long_enough",
+      requestId: "request-session-one",
+      startedAt: now.toISOString(),
+      initialPageId: "page-overview",
+    },
+    requestSnapshot: {
+      ipAddress,
+      userAgent: "Mozilla/5.0 (Macintosh) AppleWebKit Chrome/140.0 Safari/537.36",
+      city: " Tampa ",
+      region: "FL",
+      countryCode: "us",
+    },
+  });
+}
 
-    expect(response).toMatchObject({
-      accepted: true,
-      eventsAccepted: true,
-      recordingAccepted: false,
-      sessionId: "session_fixed-session-id",
-      eventToken: "event_fixed-event-token",
-    });
-    expect(repository.createSessionInputs).toHaveLength(1);
+describe("tracking v2 service", () => {
+  it("issues replay context only for equal consent choices and a valid customer privacy policy", async () => {
+    const { service } = harness({ replay: true });
+    const payload = publicPayload();
+
+    await expect(service.preparePublicContext(payload)).resolves.toMatchObject({ trackingMode: "events_and_replay" });
+
+    payload.content.settings.trackingConsentPopup = "popup-a";
+    await expect(service.preparePublicContext(payload)).resolves.toMatchObject({ trackingMode: "events" });
+
+    payload.content.settings.trackingConsentPopup = "popup-b";
+    payload.content.settings.trackingPrivacyPolicyUrl = "http://customer.example/privacy";
+    await expect(service.preparePublicContext(payload)).resolves.toMatchObject({ trackingMode: "events" });
+  });
+
+  it("creates an idempotent event-only session without persisting IP or device identity", async () => {
+    const { repository, service } = harness();
+    const first = await start(service);
+    const second = await start(service);
+
+    expect(first).toEqual(second);
+    expect(first.accepted).toBe(true);
+    expect(repository.sessions).toHaveLength(1);
+    expect(repository.events.filter((event) => event.type === "site_visit")).toHaveLength(1);
     expect(repository.createSessionInputs[0]).toMatchObject({
-      publicSessionId: "session_fixed-session-id",
-      workspaceId: context.workspaceId,
-      ipAddress: "203.0.113.10",
       city: "Tampa",
       region: "FL",
       countryCode: "US",
       deviceType: "desktop",
       osName: "macOS",
       browserName: "Chrome",
-      initialPath: "/brief",
+      initialPageId: "page-overview",
+      initialPageLabel: "Overview",
     });
-    expect(repository.createSessionInputs[0]!.deviceIdHash).toHaveLength(64);
-    expect(repository.createSessionInputs[0]!.deviceIdHash).not.toContain("device_abc123");
-    expect(repository.createSessionInputs[0]!.ipAddressHash).toHaveLength(64);
-    expect(suppressionService.decisions[0]).toMatchObject({
-      workspaceId: context.workspaceId,
-      ipAddress: "203.0.113.10",
-      deviceId: "device_abc123",
-    });
+    expect(repository.createSessionInputs[0]).not.toHaveProperty("ipAddress");
+    expect(repository.createSessionInputs[0]).not.toHaveProperty("deviceId");
+    expect(repository.createSessionInputs[0]).not.toHaveProperty("userAgent");
+    expect(repository.createSessionInputs[0]).not.toHaveProperty("path");
   });
 
-  it("returns disabled without creating a session when context is not current", async () => {
-    const { repository, service } = createService({ contexts: [] });
+  it("suppresses configured internal networks and disabled sites before creating a session", async () => {
+    const internal = harness({ internalRange: true });
+    expect(await start(internal.service, "203.0.113.8")).toMatchObject({ accepted: false, reason: "suppressed" });
+    expect(internal.repository.sessions.size).toBe(0);
 
-    await expect(
-      service.startSession({
-        context,
-        request: startRequest(),
-        requestSnapshot: {
-          ipAddress: "203.0.113.10",
-          userAgent: null,
-          city: null,
-          region: null,
-          countryCode: null,
-        },
-      }),
-    ).resolves.toEqual({
-      accepted: false,
-      eventsAccepted: false,
-      recordingAccepted: false,
-      reason: "disabled",
-      recording: {
-        enabled: false,
-        maxDurationMs: 600_000,
-      },
-    });
-    expect(repository.sessions.size).toBe(0);
+    const disabled = harness({ enabled: false });
+    expect(await start(disabled.service)).toMatchObject({ accepted: false, reason: "disabled" });
+    expect(disabled.repository.sessions.size).toBe(0);
   });
 
-  it("returns suppressed without creating a session when suppression matches", async () => {
-    const { repository, service } = createService({ suppressed: true });
+  it("normalizes, deduplicates, lists, and removes internal network controls", async () => {
+    const { service } = harness();
+    const created = await service.createInternalIpRange({
+      workspaceId,
+      userId: "user-admin",
+      range: { label: "Office", cidr: "203.0.113.8" },
+    });
+    expect(created).toMatchObject({ label: "Office", cidr: "203.0.113.8/32", enabled: true });
 
-    const response = await service.startSession({
-      context,
-      request: startRequest(),
-      requestSnapshot: {
-        ipAddress: "203.0.113.10",
-        userAgent: null,
-        city: null,
-        region: null,
-        countryCode: null,
-      },
+    const updated = await service.createInternalIpRange({
+      workspaceId,
+      userId: "user-admin",
+      range: { label: "Main office", cidr: "203.0.113.8/32" },
     });
-
-    expect(response).toMatchObject({
-      accepted: false,
-      reason: "suppressed",
-    });
-    expect(repository.sessions.size).toBe(0);
-  });
-
-  it("honors disabled recipient settings", async () => {
-    const { repository, service } = createService({
-      settings: [
-        {
-          workspaceId: context.workspaceId,
-          siteId: context.siteId,
-          recipientId: context.recipientId,
-          scope: "recipient",
-          enabled: false,
-          captureIpAddress: true,
-          rawIpRetentionDays: 30,
-          eventRetentionDays: 365,
-          recordingEnabled: false,
-          recordingRetentionDays: 30,
-          maxRecordingDurationSeconds: 600,
-        },
-      ],
-    });
-
-    const response = await service.startSession({
-      context,
-      request: startRequest(),
-      requestSnapshot: {
-        ipAddress: "203.0.113.10",
-        userAgent: null,
-        city: null,
-        region: null,
-        countryCode: null,
-      },
-    });
-
-    expect(response).toMatchObject({
-      accepted: false,
-      reason: "disabled",
-    });
-    expect(repository.sessions.size).toBe(0);
-  });
-
-  it("issues recording upload tokens only when context, settings, and storage allow it", async () => {
-    const recordingObjectStore = createMemoryTrackingV2RecordingObjectStore();
-    const { repository, service } = createService({
-      recordingObjectStore,
-      settings: [
-        {
-          workspaceId: context.workspaceId,
-          siteId: context.siteId,
-          recipientId: context.recipientId,
-          scope: "recipient",
-          enabled: true,
-          captureIpAddress: true,
-          rawIpRetentionDays: 30,
-          eventRetentionDays: 365,
-          recordingEnabled: true,
-          recordingRetentionDays: 30,
-          maxRecordingDurationSeconds: 120,
-        },
-      ],
-    });
-
-    const response = await service.startSession({
-      context: recordingContext,
-      request: startRequest(),
-      requestSnapshot: {
-        ipAddress: "203.0.113.10",
-        userAgent: null,
-        city: null,
-        region: null,
-        countryCode: null,
-      },
-    });
-
-    expect(response).toMatchObject({
-      accepted: true,
-      recordingAccepted: true,
-      recording: {
-        enabled: true,
-        maxDurationMs: 120_000,
-        uploadToken: expect.any(String),
-      },
-    });
-    if (!response.accepted || !response.recording.enabled) {
-      throw new Error("Expected recording to be accepted.");
-    }
-
-    expect(repository.recordings.size).toBe(1);
-    const [recording] = [...repository.recordings.values()];
-    if (!recording) {
-      throw new Error("Expected recording to be stored.");
-    }
-    expect(recording).toMatchObject({
-      publicSessionId: response.sessionId,
-      status: "pending",
-      maxDurationMs: 120_000,
-    });
-    expect(recording.uploadTokenHash).not.toContain(response.recording.uploadToken);
-  });
-
-  it("stores, dedupes, completes, and reads recording chunks", async () => {
-    const recordingObjectStore = createMemoryTrackingV2RecordingObjectStore();
-    const { repository, service } = createService({
-      recordingObjectStore,
-      settings: [
-        {
-          workspaceId: context.workspaceId,
-          siteId: context.siteId,
-          recipientId: context.recipientId,
-          scope: "recipient",
-          enabled: true,
-          captureIpAddress: true,
-          rawIpRetentionDays: 30,
-          eventRetentionDays: 365,
-          recordingEnabled: true,
-          recordingRetentionDays: 30,
-          maxRecordingDurationSeconds: 600,
-        },
-      ],
-    });
-    const session = await service.startSession({
-      context: recordingContext,
-      request: startRequest(),
-      requestSnapshot: {
-        ipAddress: "203.0.113.10",
-        userAgent: null,
-        city: null,
-        region: null,
-        countryCode: null,
-      },
-    });
-
-    if (!session.accepted || !session.recording.enabled) {
-      throw new Error("Expected recording to be accepted.");
-    }
-
-    const chunk = {
-      schemaVersion: 3 as const,
-      sessionId: session.sessionId,
-      sequence: 0,
-      events: [
-        {
-          type: 2,
-          timestamp: Date.parse("2026-07-09T12:00:01.000Z"),
-          data: {},
-        },
-        {
-          type: 3,
-          timestamp: Date.parse("2026-07-09T12:00:04.000Z"),
-          data: { source: 1, positions: [] },
-        },
-      ],
-      compressed: false as const,
-    };
-
-    await expect(
-      service.recordRecordingChunk({
-        recordingId: session.recording.recordingId,
-        uploadToken: session.recording.uploadToken,
-        chunk,
-      }),
-    ).resolves.toMatchObject({
-      accepted: true,
-      duplicate: false,
-      sequence: 0,
-    });
-    await expect(
-      service.recordRecordingChunk({
-        recordingId: session.recording.recordingId,
-        uploadToken: session.recording.uploadToken,
-        chunk,
-      }),
-    ).resolves.toMatchObject({
-      accepted: true,
-      duplicate: true,
-      sequence: 0,
-    });
-    await expect(
-      service.completeRecording({
-        recordingId: session.recording.recordingId,
-        uploadToken: session.recording.uploadToken,
-        complete: {
-          schemaVersion: 3,
-          sessionId: session.sessionId,
-          finalSequence: 0,
-          endedAt: "2026-07-09T12:00:05.000Z",
-          stopReason: "ended",
-        },
-      }),
-    ).resolves.toEqual({
-      completed: true,
-      status: "available",
-    });
-
-    const manifest = await service.getRecordingManifest({
-      workspaceId: context.workspaceId,
-      sessionId: session.sessionId,
-    });
-    expect(manifest).toMatchObject({
-      recordingId: session.recording.recordingId,
-      sessionId: session.sessionId,
-      status: "available",
-      chunkCount: 1,
-      eventCount: 2,
-      durationMs: 3_000,
-      chunks: [
-        {
-          sequence: 0,
-          eventCount: 2,
-          firstEventAt: "2026-07-09T12:00:01.000Z",
-          lastEventAt: "2026-07-09T12:00:04.000Z",
-        },
-      ],
-    });
-    const object = await service.getRecordingChunkObject({
-      workspaceId: context.workspaceId,
-      recordingId: session.recording.recordingId,
-      sequence: 0,
-    });
-    expect(object?.contentType).toContain("application/json");
-    expect(object?.body.toString("utf8")).toContain("\"type\":2");
-    expect(recordingObjectStore.objects.size).toBe(1);
-    const [storedObject] = recordingObjectStore.objects.values();
-    expect(storedObject?.contentType).toBe("application/gzip");
-    expect(storedObject?.body.byteLength).toBeLessThan(object?.body.byteLength ?? 0);
-    expect(repository.recordingUsage.get(`${context.workspaceId}:2026-07-09`)).toMatchObject({
-      recordingCount: 1,
-    });
-  });
-
-  it("fails cleanly when recording stops before any chunk is accepted", async () => {
-    const recordingObjectStore = createMemoryTrackingV2RecordingObjectStore();
-    const { repository, service } = createService({
-      recordingObjectStore,
-      settings: [
-        {
-          workspaceId: context.workspaceId,
-          siteId: context.siteId,
-          recipientId: context.recipientId,
-          scope: "recipient",
-          enabled: true,
-          captureIpAddress: true,
-          rawIpRetentionDays: 30,
-          eventRetentionDays: 365,
-          recordingEnabled: true,
-          recordingRetentionDays: 30,
-          maxRecordingDurationSeconds: 600,
-        },
-      ],
-    });
-    const session = await service.startSession({
-      context: recordingContext,
-      request: startRequest(),
-      requestSnapshot: {
-        ipAddress: "203.0.113.10",
-        userAgent: null,
-        city: null,
-        region: null,
-        countryCode: null,
-      },
-    });
-
-    if (!session.accepted || !session.recording.enabled) {
-      throw new Error("Expected recording to be accepted.");
-    }
-
-    await expect(
-      service.completeRecording({
-        recordingId: session.recording.recordingId,
-        uploadToken: session.recording.uploadToken,
-        complete: {
-          schemaVersion: 3,
-          sessionId: session.sessionId,
-          finalSequence: null,
-          endedAt: "2026-07-09T12:00:05.000Z",
-          stopReason: "error",
-        },
-      }),
-    ).resolves.toEqual({
-      completed: true,
-      status: "failed",
-    });
-    expect(repository.recordings.get(session.recording.recordingId)).toMatchObject({
-      status: "failed",
-      chunkCount: 0,
-      finalSequence: null,
-    });
-    expect(repository.sessions.get(session.sessionId)).toMatchObject({
-      recordingStatus: "failed",
-    });
-    expect(recordingObjectStore.objects.size).toBe(0);
-  });
-
-  it("settles recordings when completion arrives before the final chunk", async () => {
-    const recordingObjectStore = createMemoryTrackingV2RecordingObjectStore();
-    const { repository, service } = createService({
-      recordingObjectStore,
-      settings: [
-        {
-          workspaceId: context.workspaceId,
-          siteId: context.siteId,
-          recipientId: context.recipientId,
-          scope: "recipient",
-          enabled: true,
-          captureIpAddress: true,
-          rawIpRetentionDays: 30,
-          eventRetentionDays: 365,
-          recordingEnabled: true,
-          recordingRetentionDays: 30,
-          maxRecordingDurationSeconds: 600,
-        },
-      ],
-    });
-    const session = await service.startSession({
-      context: recordingContext,
-      request: startRequest(),
-      requestSnapshot: {
-        ipAddress: "203.0.113.10",
-        userAgent: null,
-        city: null,
-        region: null,
-        countryCode: null,
-      },
-    });
-
-    if (!session.accepted || !session.recording.enabled) {
-      throw new Error("Expected recording to be accepted.");
-    }
-
-    await expect(
-      service.completeRecording({
-        recordingId: session.recording.recordingId,
-        uploadToken: session.recording.uploadToken,
-        complete: {
-          schemaVersion: 3,
-          sessionId: session.sessionId,
-          finalSequence: 1,
-          endedAt: "2026-07-09T12:00:05.000Z",
-          stopReason: "ended",
-        },
-      }),
-    ).resolves.toEqual({
-      completed: false,
-      status: "recording",
-    });
-    expect(repository.recordings.get(session.recording.recordingId)).toMatchObject({
-      status: "recording",
-      finalSequence: 1,
-      stopReason: "ended",
-    });
-
-    await service.recordRecordingChunk({
-      recordingId: session.recording.recordingId,
-      uploadToken: session.recording.uploadToken,
-      chunk: {
-        schemaVersion: 3,
-        sessionId: session.sessionId,
-        sequence: 0,
-        events: [
-          {
-            type: 2,
-            timestamp: Date.parse("2026-07-09T12:00:01.000Z"),
-            data: {},
-          },
-        ],
-        compressed: false,
-      },
-    });
-
-    expect(repository.recordings.get(session.recording.recordingId)).toMatchObject({
-      status: "recording",
-      chunkCount: 1,
-    });
-
-    await service.recordRecordingChunk({
-      recordingId: session.recording.recordingId,
-      uploadToken: session.recording.uploadToken,
-      chunk: {
-        schemaVersion: 3,
-        sessionId: session.sessionId,
-        sequence: 1,
-        events: [
-          {
-            type: 3,
-            timestamp: Date.parse("2026-07-09T12:00:04.000Z"),
-            data: { source: 1, positions: [] },
-          },
-        ],
-        compressed: false,
-      },
-    });
-
-    expect(repository.recordings.get(session.recording.recordingId)).toMatchObject({
-      status: "available",
-      finalSequence: 1,
-      chunkCount: 2,
-      eventCount: 2,
-      durationMs: 3_000,
-    });
-    await expect(
-      service.getRecordingManifest({
-        workspaceId: context.workspaceId,
-        sessionId: session.sessionId,
-      }),
-    ).resolves.toMatchObject({
-      status: "available",
-      chunkCount: 2,
-      durationMs: 3_000,
-    });
-  });
-
-  it("keeps terminal recording uploads idempotent without accepting new chunks", async () => {
-    const recordingObjectStore = createMemoryTrackingV2RecordingObjectStore();
-    const { repository, service } = createService({
-      recordingObjectStore,
-      settings: [
-        {
-          workspaceId: context.workspaceId,
-          siteId: context.siteId,
-          recipientId: context.recipientId,
-          scope: "recipient",
-          enabled: true,
-          captureIpAddress: true,
-          rawIpRetentionDays: 30,
-          eventRetentionDays: 365,
-          recordingEnabled: true,
-          recordingRetentionDays: 30,
-          maxRecordingDurationSeconds: 600,
-        },
-      ],
-    });
-    const session = await service.startSession({
-      context: recordingContext,
-      request: startRequest(),
-      requestSnapshot: {
-        ipAddress: "203.0.113.10",
-        userAgent: null,
-        city: null,
-        region: null,
-        countryCode: null,
-      },
-    });
-
-    if (!session.accepted || !session.recording.enabled) {
-      throw new Error("Expected recording to be accepted.");
-    }
-
-    const firstChunk = {
-      schemaVersion: 3 as const,
-      sessionId: session.sessionId,
-      sequence: 0,
-      events: [
-        {
-          type: 2,
-          timestamp: Date.parse("2026-07-09T12:00:01.000Z"),
-          data: {},
-        },
-      ],
-      compressed: false as const,
-    };
-    const completion = {
-      schemaVersion: 3 as const,
-      sessionId: session.sessionId,
-      finalSequence: 0,
-      endedAt: "2026-07-09T12:00:05.000Z",
-      stopReason: "ended" as const,
-    };
-
-    await service.recordRecordingChunk({
-      recordingId: session.recording.recordingId,
-      uploadToken: session.recording.uploadToken,
-      chunk: firstChunk,
-    });
-    await service.completeRecording({
-      recordingId: session.recording.recordingId,
-      uploadToken: session.recording.uploadToken,
-      complete: completion,
-    });
-
-    await expect(
-      service.completeRecording({
-        recordingId: session.recording.recordingId,
-        uploadToken: session.recording.uploadToken,
-        complete: completion,
-      }),
-    ).resolves.toEqual({
-      completed: true,
-      status: "available",
-    });
-    await expect(
-      service.recordRecordingChunk({
-        recordingId: session.recording.recordingId,
-        uploadToken: session.recording.uploadToken,
-        chunk: firstChunk,
-      }),
-    ).resolves.toMatchObject({
-      accepted: true,
-      duplicate: true,
-      sequence: 0,
-    });
-    await expect(
-      service.recordRecordingChunk({
-        recordingId: session.recording.recordingId,
-        uploadToken: session.recording.uploadToken,
-        chunk: {
-          ...firstChunk,
-          sequence: 1,
-        },
-      }),
-    ).rejects.toBeInstanceOf(TrackingV2InvalidContextError);
-
-    expect(repository.recordings.get(session.recording.recordingId)).toMatchObject({
-      status: "available",
-      chunkCount: 1,
-      eventCount: 1,
-    });
-    expect(repository.recordingChunks).toHaveLength(1);
-    expect(recordingObjectStore.objects.size).toBe(1);
-  });
-
-  it("records browser event batches idempotently", async () => {
-    const { repository, service } = createService();
-    const session = await service.startSession({
-      context,
-      request: startRequest(),
-      requestSnapshot: {
-        ipAddress: "203.0.113.10",
-        userAgent: null,
-        city: null,
-        region: null,
-        countryCode: null,
-      },
-    });
-
-    if (!session.accepted) {
-      throw new Error("Expected accepted session.");
-    }
-
-    await service.recordEventBatch(eventBatch(session.sessionId, session.eventToken));
-    await service.recordEventBatch(eventBatch(session.sessionId, session.eventToken));
-
-    expect(repository.events).toHaveLength(3);
-    expect(repository.events.map((event) => event.type)).toEqual([
-      "site_visit",
-      "link_click",
-      "tab_switch",
+    expect(updated.id).toBe(created.id);
+    await expect(service.listInternalIpRanges(workspaceId)).resolves.toEqual([
+      expect.objectContaining({ id: created.id, label: "Main office" }),
     ]);
-    expect(repository.events[1]).toMatchObject({
-      elementKind: "sidebar_link",
-      elementLabel: "Proposal",
-      elementHref: "https://example.com/proposal",
-    });
-    expect(repository.events[2]).toMatchObject({
-      tabLabel: "Pricing",
-      eventData: {
+    await expect(service.createInternalIpRange({
+      workspaceId,
+      userId: "user-admin",
+      range: { label: "Bad", cidr: "203.0.113.8/99" },
+    })).rejects.toBeInstanceOf(TrackingV2InvalidIpRangeError);
+    await expect(service.deleteInternalIpRange({ workspaceId, id: created.id })).resolves.toBe(true);
+    await expect(service.listInternalIpRanges(workspaceId)).resolves.toEqual([]);
+  });
+
+  it("resolves labels and destination summaries from the immutable manifest", async () => {
+    const { repository, service } = harness();
+    const session = await start(service);
+    if (!session.accepted) throw new Error("Expected session to start.");
+
+    const result = await service.recordEventBatch(batch(session.sessionId, session.eventToken, [
+      {
+        eventId: "event-button-one",
+        type: "button_click",
+        occurredAt: now.toISOString(),
+        sequence: 1,
+        elementId: "button-book-demo",
+        pageId: "page-overview",
+      },
+      {
+        eventId: "event-tab-one",
+        type: "tab_switch",
+        occurredAt: now.toISOString(),
         sequence: 2,
-        fromTabLabel: "Overview",
+        fromPageId: "page-overview",
+        toPageId: "page-pricing",
+        trigger: "click",
       },
+      {
+        eventId: "event-forged-one",
+        type: "button_click",
+        occurredAt: now.toISOString(),
+        sequence: 3,
+        elementId: "button-not-in-manifest",
+        pageId: "page-overview",
+      },
+    ]));
+
+    expect(result).toEqual({ accepted: 2, rejected: 1 });
+    expect(repository.events.find((event) => event.eventId === "event-button-one")).toMatchObject({
+      pageLabel: "Overview",
+      elementLabel: "Book a demo",
+      destinationKind: "external_web",
+      destinationHost: "calendar.example",
+      eventData: { sequence: 1 },
+    });
+    expect(repository.events.find((event) => event.eventId === "event-tab-one")).toMatchObject({
+      pageLabel: "Pricing",
+      fromPageLabel: "Overview",
+      destinationKind: "internal_tab",
     });
   });
 
-  it("records deduped Slack share events without a browser session", async () => {
-    const { repository, service } = createService();
-
-    await expect(
-      service.recordSlackShare({
-        context,
-        imageCacheKey: "og-image-cache-key",
-      }),
-    ).resolves.toEqual({ recorded: true });
-    await service.recordSlackShare({
+  it("stores only webhook identity, endpoint host, and delivery outcome", async () => {
+    const { repository, service } = harness();
+    await service.recordWebhookSend({
       context,
-      imageCacheKey: "og-image-cache-key",
+      webhookId: "77777777-7777-4777-8777-777777777777",
+      endpointHost: "https://hooks.example.com/private/path?secret=value",
+      deliveryId: "delivery-12345678",
+      status: "succeeded",
+      attempt: 1,
     });
 
-    expect(repository.events).toHaveLength(1);
-    expect(repository.events[0]).toMatchObject({
-      type: "slack_share",
-      source: "slack_og_image",
-      sessionId: null,
-      workspaceId: context.workspaceId,
-      siteId: context.siteId,
-      recipientId: context.recipientId,
-      publishedVersionId: context.publishedVersionId,
-      tabLabel: null,
-      elementKind: null,
-      webhookId: null,
-      webhookUrl: null,
-      scriptVersion: null,
-      eventData: {
-        platform: "slack",
-        resource: "og_image",
-        userAgentFamily: "slackbot",
-        imageCacheKey: "og-image-cache-key",
-      },
+    const event = repository.events.find((candidate) => candidate.type === "webhook_send");
+    expect(event).toMatchObject({
+      webhookId: "77777777-7777-4777-8777-777777777777",
+      webhookEndpointHost: "hooks.example.com",
+      eventData: { deliveryId: "delivery-12345678", status: "succeeded", attempt: 1 },
     });
-  });
-
-  it("does not record Slack share events when tracking is disabled", async () => {
-    const { repository, service } = createService({
-      settings: [
-        {
-          workspaceId: context.workspaceId,
-          siteId: context.siteId,
-          recipientId: context.recipientId,
-          scope: "recipient",
-          enabled: false,
-          captureIpAddress: true,
-          rawIpRetentionDays: 30,
-          eventRetentionDays: 365,
-          recordingEnabled: false,
-          recordingRetentionDays: 30,
-          maxRecordingDurationSeconds: 600,
-        },
-      ],
-    });
-
-    await expect(
-      service.recordSlackShare({
-        context,
-        imageCacheKey: "og-image-cache-key",
-      }),
-    ).resolves.toEqual({ recorded: false });
-
-    expect(repository.events).toHaveLength(0);
-  });
-
-  it("rejects event batches with the wrong event token", async () => {
-    const { service } = createService();
-    const session = await service.startSession({
-      context,
-      request: startRequest(),
-      requestSnapshot: {
-        ipAddress: "203.0.113.10",
-        userAgent: null,
-        city: null,
-        region: null,
-        countryCode: null,
-      },
-    });
-
-    if (!session.accepted) {
-      throw new Error("Expected accepted session.");
-    }
-
-    await expect(
-      service.recordEventBatch(eventBatch(session.sessionId, "event_wrong-token")),
-    ).rejects.toBeInstanceOf(TrackingV2InvalidContextError);
-  });
-
-  it("updates heartbeat and ends sessions through event tokens", async () => {
-    const { repository, service } = createService();
-    const session = await service.startSession({
-      context,
-      request: startRequest(),
-      requestSnapshot: {
-        ipAddress: "203.0.113.10",
-        userAgent: null,
-        city: null,
-        region: null,
-        countryCode: null,
-      },
-    });
-
-    if (!session.accepted) {
-      throw new Error("Expected accepted session.");
-    }
-
-    await service.recordHeartbeat({
-      sessionId: session.sessionId,
-      eventToken: session.eventToken,
-      occurredAt: "2026-07-09T12:00:15.000Z",
-      activeMs: 5_000,
-      maxScrollDepthPercent: 40,
-    });
-    await service.endSession({
-      sessionId: session.sessionId,
-      eventToken: session.eventToken,
-      occurredAt: "2026-07-09T12:00:20.000Z",
-      reason: "pagehide",
-      activeMs: 8_000,
-    });
-
-    expect(repository.sessions.get(session.sessionId)).toMatchObject({
-      state: "ended",
-      lastSeenAt: new Date("2026-07-09T12:00:20.000Z"),
-    });
-  });
-
-  it("rejects lifecycle signals after the server freshness window", async () => {
-    let serverNow = now;
-    const { repository, service } = createService({
-      now: () => serverNow,
-    });
-    const session = await service.startSession({
-      context,
-      request: startRequest(),
-      requestSnapshot: {
-        ipAddress: "203.0.113.10",
-        userAgent: null,
-        city: null,
-        region: null,
-        countryCode: null,
-      },
-    });
-
-    if (!session.accepted) {
-      throw new Error("Expected accepted session.");
-    }
-
-    serverNow = new Date("2026-07-09T12:02:00.001Z");
-
-    await expect(service.recordHeartbeat({
-      sessionId: session.sessionId,
-      eventToken: session.eventToken,
-      occurredAt: serverNow.toISOString(),
-      activeMs: 120_000,
-    })).rejects.toBeInstanceOf(TrackingV2InvalidContextError);
-    await expect(
-      service.recordEventBatch(eventBatch(session.sessionId, session.eventToken)),
-    ).rejects.toBeInstanceOf(TrackingV2InvalidContextError);
-    expect(repository.sessions.get(session.sessionId)).toMatchObject({
-      state: "active",
-      lastSeenAt: now,
-      activeMs: 0,
-    });
-  });
-
-  it("caps active time claims to elapsed time between lifecycle signals", async () => {
-    const { repository, service } = createService();
-    const session = await service.startSession({
-      context,
-      request: startRequest(),
-      requestSnapshot: {
-        ipAddress: "203.0.113.10",
-        userAgent: null,
-        city: null,
-        region: null,
-        countryCode: null,
-      },
-    });
-
-    if (!session.accepted) {
-      throw new Error("Expected accepted session.");
-    }
-
-    await service.recordHeartbeat({
-      sessionId: session.sessionId,
-      eventToken: session.eventToken,
-      occurredAt: "2026-07-09T12:00:15.000Z",
-      activeMs: 999_999_999,
-    });
-    await service.recordHeartbeat({
-      sessionId: session.sessionId,
-      eventToken: session.eventToken,
-      occurredAt: "2026-07-09T12:00:16.000Z",
-      activeMs: 999_999_999,
-    });
-    await service.endSession({
-      sessionId: session.sessionId,
-      eventToken: session.eventToken,
-      occurredAt: "2026-07-09T12:00:17.000Z",
-      reason: "pagehide",
-      activeMs: 999_999_999,
-    });
-
-    expect(repository.sessions.get(session.sessionId)).toMatchObject({
-      activeMs: 17_000,
-      durationMs: 17_000,
-      state: "ended",
-    });
-  });
-
-  it("hashes event tokens per session", () => {
-    expect(
-      hashEventToken({
-        sessionId: "session_a",
-        eventToken: "event_same",
-        secret: tokenSecret,
-      }),
-    ).not.toBe(
-      hashEventToken({
-        sessionId: "session_b",
-        eventToken: "event_same",
-        secret: tokenSecret,
-      }),
-    );
+    expect(JSON.stringify(event)).not.toContain("private/path");
+    expect(JSON.stringify(event)).not.toContain("secret=value");
   });
 });
+
+function publicPayload(): PublishedSitePayload {
+  const content = createDefaultSiteContent("Taylor proposal");
+  content.settings.trackingConsentPopup = "popup-b";
+  content.settings.trackingPrivacyPolicyUrl = "https://customer.example/privacy";
+  return {
+    schemaVersion: PUBLIC_SITE_PAYLOAD_SCHEMA_VERSION,
+    workspace: { id: workspaceId, slug: "acme", name: "Acme", websiteDomain: "acme.example", logoUrl: null },
+    site: {
+      id: siteId,
+      slug: "taylor-proposal",
+      name: "Taylor proposal",
+      publishedVersionId,
+      publishedAt: now.toISOString(),
+    },
+    metadata: { title: "Taylor proposal", description: "", ogImageUrl: null, robots: "noindex,nofollow" },
+    content,
+    selectedVariant: null,
+    tracking: {
+      version: 2,
+      workspaceId,
+      siteId,
+      publishedVersionId,
+      recipientId: null,
+      recipientRevision: null,
+      trackingMode: "events",
+    },
+  };
+}
+
+function batch(
+  sessionId: string,
+  eventToken: string,
+  events: TrackingV2EventBatch["events"],
+): TrackingV2EventBatch {
+  return {
+    batchId: "batch-session-one",
+    sessionId,
+    eventToken,
+    scriptVersion: "2026-07-13.v9",
+    sentAt: now.toISOString(),
+    events,
+  };
+}

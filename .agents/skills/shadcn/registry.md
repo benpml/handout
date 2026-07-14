@@ -224,7 +224,7 @@ Preferred flow:
 
 ```txt
 owner/repo[#ref]
-  -> resolve ref with git ls-remote
+  -> resolve ref with git handout-remote
   -> commit SHA
   -> read https://raw.githubusercontent.com/{owner}/{repo}/{sha}/registry.json
   -> read includes and item files from the same SHA

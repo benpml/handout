@@ -1,5 +1,7 @@
 import { memo, useState } from "react"
 import { Link } from "@tanstack/react-router"
+import type { WorkspacePlan } from "@handout/contracts"
+import type { SiteContent, SiteVariableDefinition } from "@handout/site-document"
 import {
   IconAlertTriangle,
   IconArrowBackUp,
@@ -46,7 +48,7 @@ import {
 } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { EditorSiteSettingsMenu } from "./site-settings-menu"
-import type { EditorMode, SiteTheme, SiteThemeMode } from "../types"
+import type { EditorMode, SiteTheme } from "../types"
 import type {
   EditorCollaborator,
   EditorSaveStatus,
@@ -57,61 +59,67 @@ export type EditorPublishStatus = "published" | "unpublished" | "unpublished-cha
 type EditorHeaderProps = {
   canRedo: boolean
   canUndo: boolean
+  canManageTracking: boolean
   collaborators: EditorCollaborator[]
-  isDeletingSite: boolean
-  isDuplicatingSite: boolean
+  content: SiteContent
   isPublishing: boolean
-  isRenamingSite: boolean
   lastPublishedAt: string | null
   liveSiteDisplayUrl: string
   liveSiteUrl: string
   mode: EditorMode
-  onDeleteSite: () => Promise<void>
-  onDuplicateSite: () => Promise<void>
+  onContentChange: (content: SiteContent) => void
+  onCreateVariable: (input: Pick<SiteVariableDefinition, "defaultValue" | "description" | "label">) => void
+  onDeleteVariable: (variableId: string) => void
+  onEditVariable: (variableId: string, input: Pick<SiteVariableDefinition, "defaultValue" | "description" | "label">) => void
   onModeChange: (mode: EditorMode) => void
   onPublish: () => Promise<void>
   onRedo: () => void
-  onRenameSite: (name: string) => Promise<void>
   onShare: () => void
-  onSiteThemeModeChange: (mode: SiteThemeMode) => void
   onToggleSiteTheme: () => void
   onUndo: () => void
+  plan: WorkspacePlan
   publishStatus: EditorPublishStatus
   recipientCount: number
   saveStatus: EditorSaveStatus
   siteName: string
+  siteId: string
   siteTheme: SiteTheme
-  siteThemeMode: SiteThemeMode
+  usageCounts: Readonly<Record<string, number>>
+  variables: SiteVariableDefinition[]
+  workspaceId: string
 }
 
 export function EditorHeader({
   canRedo,
   canUndo,
+  canManageTracking,
   collaborators,
-  isDeletingSite,
-  isDuplicatingSite,
+  content,
   isPublishing,
-  isRenamingSite,
   lastPublishedAt,
   liveSiteDisplayUrl,
   liveSiteUrl,
   mode,
-  onDeleteSite,
-  onDuplicateSite,
+  onContentChange,
+  onCreateVariable,
+  onDeleteVariable,
+  onEditVariable,
   onModeChange,
   onPublish,
   onRedo,
-  onRenameSite,
   onShare,
-  onSiteThemeModeChange,
   onToggleSiteTheme,
   onUndo,
+  plan,
   publishStatus,
   recipientCount,
   saveStatus,
   siteName,
+  siteId,
   siteTheme,
-  siteThemeMode,
+  usageCounts,
+  variables,
+  workspaceId,
 }: EditorHeaderProps) {
   return (
     <TooltipProvider>
@@ -194,15 +202,17 @@ export function EditorHeader({
                   recipientCount={recipientCount}
             />
             <EditorSiteSettingsMenu
-                  isDeletingSite={isDeletingSite}
-                  isDuplicatingSite={isDuplicatingSite}
-                  isRenamingSite={isRenamingSite}
-                  onDeleteSite={onDeleteSite}
-                  onDuplicateSite={onDuplicateSite}
-                  onRenameSite={onRenameSite}
-                  onSiteThemeModeChange={onSiteThemeModeChange}
-                  siteName={siteName}
-                  siteThemeMode={siteThemeMode}
+                  canManageTracking={canManageTracking}
+                  content={content}
+                  onChange={onContentChange}
+                  onCreateVariable={onCreateVariable}
+                  onDeleteVariable={onDeleteVariable}
+                  onEditVariable={onEditVariable}
+                  plan={plan}
+                  siteId={siteId}
+                  usageCounts={usageCounts}
+                  variables={variables}
+                  workspaceId={workspaceId}
             />
           </div>
         </div>

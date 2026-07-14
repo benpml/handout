@@ -1,4 +1,4 @@
-export type LightsiteImageAttrs = {
+export type HandoutImageAttrs = {
   alt: string
   height: number
   src: string
@@ -7,7 +7,7 @@ export type LightsiteImageAttrs = {
 }
 
 export function readImageFileAsAttrs(file: File) {
-  return new Promise<LightsiteImageAttrs>((resolve, reject) => {
+  return new Promise<HandoutImageAttrs>((resolve, reject) => {
     const reader = new FileReader()
 
     reader.onerror = () => {

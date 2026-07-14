@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
-import { renderPublicSiteHtml } from "@lightsite/site-document"
+import { renderPublicSiteHtml } from "@handout/site-document"
 
 import { getDemoPublishedSite } from "./public-site-fixture"
 import { PublicSiteRenderer } from "./public-site-renderer"
@@ -13,18 +13,21 @@ describe("public site renderer", () => {
     expect(html).toContain('title="Rollout brief"')
     expect(html).toContain("allow-same-origin")
     expect(html).toContain("root.addEventListener")
-    expect(html).not.toContain("site-runtime.v3.js")
+    expect(html).not.toContain("site-runtime.v4.js")
+    expect(html).not.toContain("data-handout-consent-popup=&quot;")
+    expect(html).not.toContain("data-handout-tracking-v2=&quot;")
   })
 
   it("preserves Tiptap marks and emits element tracking from the shared renderer", () => {
     const html = renderPublicSiteHtml(getDemoPublishedSite("acme"), {
       includeTracking: false,
-      origin: "https://lightsite.test",
+      origin: "https://handout.test",
     })
 
     expect(html).toContain("<strong>full Tiptap document</strong>")
-    expect(html).toContain('data-ls-element-id="book-call"')
-    expect(html).toContain('data-ls-element-label="Book a call"')
+    expect(html).toContain('data-handout-element-id="book-call"')
+    expect(html).toContain('data-handout-track="button"')
+    expect(html).not.toContain("data-handout-element-label")
     expect(html).toContain("A rollout brief for Acme")
   })
 
@@ -39,6 +42,6 @@ describe("public site renderer", () => {
     const html = renderPublicSiteHtml(payload, { includeTracking: false })
 
     expect(html).not.toContain("javascript:")
-    expect(html).not.toContain('data-ls-element-id="unsafe"')
+    expect(html).not.toContain('data-handout-element-id="unsafe"')
   })
 })

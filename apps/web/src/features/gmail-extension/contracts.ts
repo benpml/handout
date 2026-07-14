@@ -13,13 +13,13 @@ export type ComposeContext = {
 export type GmailHostMessage =
   | {
       protocolVersion: typeof EXTENSION_PROTOCOL_VERSION
-      source: "lightsite-gmail-host"
+      source: "handout-gmail-host"
       type: "compose-context"
       context: ComposeContext
     }
   | {
       protocolVersion: typeof EXTENSION_PROTOCOL_VERSION
-      source: "lightsite-gmail-host"
+      source: "handout-gmail-host"
       type: "insert-result"
       ok: boolean
       message?: string
@@ -28,17 +28,17 @@ export type GmailHostMessage =
 export type ExtensionPanelMessage =
   | {
       protocolVersion: typeof EXTENSION_PROTOCOL_VERSION
-      source: "lightsite-extension-panel"
+      source: "handout-extension-panel"
       type: "panel-ready"
     }
   | {
       protocolVersion: typeof EXTENSION_PROTOCOL_VERSION
-      source: "lightsite-extension-panel"
+      source: "handout-extension-panel"
       type: "close-panel"
     }
   | {
       protocolVersion: typeof EXTENSION_PROTOCOL_VERSION
-      source: "lightsite-extension-panel"
+      source: "handout-extension-panel"
       type: "insert"
       composeId: string
       format: "card" | "link"
@@ -68,7 +68,7 @@ export function isExtensionPanelMessage(value: unknown): value is ExtensionPanel
   if (!isRecord(value)) return false
   if (
     value.protocolVersion !== EXTENSION_PROTOCOL_VERSION ||
-    value.source !== "lightsite-extension-panel" ||
+    value.source !== "handout-extension-panel" ||
     typeof value.type !== "string"
   ) {
     return false
@@ -88,7 +88,7 @@ export function isGmailHostMessage(value: unknown): value is GmailHostMessage {
   if (!isRecord(value)) return false
   if (
     value.protocolVersion !== EXTENSION_PROTOCOL_VERSION ||
-    value.source !== "lightsite-gmail-host" ||
+    value.source !== "handout-gmail-host" ||
     typeof value.type !== "string"
   ) {
     return false

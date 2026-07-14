@@ -1,5 +1,5 @@
 {
-  "name": "@lightsite/content-schema",
+  "name": "@handout/content-schema",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -13,8 +13,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@lightsite/site-document": "workspace:*",
-    "@lightsite/tracking-schema": "workspace:*"
+    "@handout/site-document": "workspace:*",
+    "@handout/tracking-schema": "workspace:*"
   },
   "devDependencies": {
     "typescript": "~6.0.2",

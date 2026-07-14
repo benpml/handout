@@ -2,7 +2,7 @@ import type {
   TrackingV2EventFeedItem,
   TrackingV2SessionEndReason,
   TrackingV2SessionSummary,
-} from "@lightsite/tracking-schema"
+} from "@handout/tracking-schema"
 
 const unavailableValue = "-"
 
@@ -20,7 +20,7 @@ export type TrackingSessionDrawerData = {
   location: string
   name: string
   recipient: TrackingDrawerRecipient | null
-  scrollDepth: string
+  initialPage: string
   siteName: string
   startedAt: string
   totalDuration: string
@@ -61,9 +61,7 @@ export function toSessionDrawerData(session: TrackingV2SessionSummary): Tracking
     location: formatLocation(session.location),
     name: formatRecipient(session.recipient),
     recipient: toRecipient(session.recipient),
-    scrollDepth: session.maxScrollDepthPercent === null
-      ? unavailableValue
-      : `${session.maxScrollDepthPercent}%`,
+    initialPage: session.initialPage.label,
     siteName: session.site.name,
     startedAt: session.startedAt,
     totalDuration: formatDurationMs(session.durationMs ?? session.activeMs),
@@ -134,7 +132,7 @@ function formatEventType(type: TrackingV2EventFeedItem["type"]) {
 }
 
 function formatEventDetails(event: TrackingV2EventFeedItem) {
-  const detail = event.element?.label ?? event.tab?.label ?? event.webhook?.url
+  const detail = event.element?.label ?? event.tab?.label ?? event.webhook?.endpointHost
   if (!detail) {
     const fallback = event.type === "site_visit"
       ? formatLocation(event.session?.location ?? null)
@@ -145,7 +143,7 @@ function formatEventDetails(event: TrackingV2EventFeedItem) {
 
   if (detail.trim().toLowerCase() === "unknown") return unavailableValue
 
-  return event.webhook?.url ? detail : `“${detail}”`
+  return event.webhook?.endpointHost ? detail : `“${detail}”`
 }
 
 export function formatTrackingDevice(device: TrackingV2SessionSummary["device"] | null) {

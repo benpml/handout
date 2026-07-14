@@ -2,7 +2,7 @@ import {
   appBootstrapResponseSchema,
   completeAccountSetupRequestSchema,
   setActiveWorkspaceRequestSchema,
-} from "@lightsite/contracts";
+} from "@handout/contracts";
 import { Router } from "express";
 import type { CurrentActorProvider } from "../auth/current-actor";
 import { getDevAppBootstrap, isDevAuthBypassRequest } from "../auth/dev-auth";

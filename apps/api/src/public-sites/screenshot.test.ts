@@ -4,7 +4,7 @@ import {
   createDefaultSiteContent,
   PUBLIC_SITE_PAYLOAD_SCHEMA_VERSION,
   type PublishedSitePayload,
-} from "@lightsite/site-document";
+} from "@handout/site-document";
 import {
   createPublicSiteScreenshotService,
   createPlaywrightPublicSiteScreenshotRenderer,
@@ -42,8 +42,8 @@ describe("public site screenshots", () => {
     const service = createPublicSiteScreenshotService(renderer);
     const payload = buildPayload();
 
-    const first = await service.render({ origin: "https://lightsite.test", payload });
-    const second = await service.render({ origin: "https://lightsite.test", payload });
+    const first = await service.render({ origin: "https://handout.test", payload });
+    const second = await service.render({ origin: "https://handout.test", payload });
 
     expect(first?.bytes.toString()).toBe("jpg");
     expect(second?.cacheKey).toBe(first?.cacheKey);
@@ -51,7 +51,7 @@ describe("public site screenshots", () => {
     const renderedHtml = render.mock.calls[0]?.[0].html ?? "";
     expect(renderedHtml).toContain("Ada Lovelace");
     expect(renderedHtml).toContain("North Star");
-    expect(renderedHtml).not.toContain("data-lightsite-tracking-v2");
+    expect(renderedHtml).not.toContain("data-handout-tracking-v2");
   });
 
   it("renders a new image when the recipient revision changes", async () => {
@@ -59,9 +59,9 @@ describe("public site screenshots", () => {
     const service = createPublicSiteScreenshotService({ render });
     const payload = buildPayload();
 
-    await service.render({ origin: "https://lightsite.test", payload });
+    await service.render({ origin: "https://handout.test", payload });
     payload.selectedVariant!.revisionNumber = 3;
-    await service.render({ origin: "https://lightsite.test", payload });
+    await service.render({ origin: "https://handout.test", payload });
 
     expect(render).toHaveBeenCalledTimes(2);
   });
@@ -131,7 +131,7 @@ function buildPayload(): PublishedSitePayload {
       publishedVersionId: "33333333-3333-4333-8333-333333333333",
       recipientId: "44444444-4444-4444-8444-444444444444",
       recipientRevision: 2,
-      trackingMode: "events_and_recording",
+      trackingMode: "events",
     },
   };
 }

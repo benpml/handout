@@ -2,8 +2,8 @@ import { Extension } from "@tiptap/core"
 import { isNodeRangeSelection } from "@tiptap/extension-node-range"
 import { Plugin, TextSelection } from "@tiptap/pm/state"
 
-export const LightsiteNextSelectionCleanup = Extension.create({
-  name: "lightsiteNextSelectionCleanup",
+export const HandoutNextSelectionCleanup = Extension.create({
+  name: "handoutNextSelectionCleanup",
 
   onSelectionUpdate() {
     if (!isNodeRangeSelection(this.editor.state.selection)) {
@@ -49,7 +49,7 @@ function cleanupSelection(view: import("@tiptap/pm/view").EditorView, event: Mou
     !(target instanceof Element) ||
     !editorPage?.contains(target) ||
     target.closest(
-      ".lightsite-editor-drag-handle, .lightsite-editor-block-menu, .lightsite-editor-button-settings, .lightsite-editor-suggestion-menu"
+      ".handout-editor-drag-handle, .handout-editor-block-menu, .handout-editor-button-settings, .handout-editor-suggestion-menu"
     ) ||
     view.dom.contains(target)
   ) {

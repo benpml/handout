@@ -63,7 +63,7 @@ export function validateWorkEmail(input: string): WorkEmailValidationResult {
     return {
       ok: false,
       code: "email.personal_domain_blocked",
-      message: "Use your company email to sign up for Lightsite.",
+      message: "Use your company email to sign up for Handout.",
     };
   }
 

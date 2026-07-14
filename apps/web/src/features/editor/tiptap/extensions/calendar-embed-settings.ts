@@ -1,16 +1,16 @@
 import { Extension } from "@tiptap/core"
 import { NodeSelection, TextSelection } from "@tiptap/pm/state"
 
-export type LightsiteNextCalendarEmbedSettingsTarget = {
+export type HandoutNextCalendarEmbedSettingsTarget = {
   mode: "create" | "edit"
   pos: number
   src: string
 }
 
 type CalendarEmbedSettingsStorage = {
-  openSettings: (target: LightsiteNextCalendarEmbedSettingsTarget) => void
+  openSettings: (target: HandoutNextCalendarEmbedSettingsTarget) => void
   subscribe: (
-    listener: (target: LightsiteNextCalendarEmbedSettingsTarget) => void
+    listener: (target: HandoutNextCalendarEmbedSettingsTarget) => void
   ) => () => void
 }
 
@@ -20,25 +20,25 @@ type CalendarEmbedAttrs = {
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
-    lightsiteNextCalendarEmbedSettings: {
-      openLightsiteNextCalendarEmbedSettings: (
+    handoutNextCalendarEmbedSettings: {
+      openHandoutNextCalendarEmbedSettings: (
         pos?: number,
-        mode?: LightsiteNextCalendarEmbedSettingsTarget["mode"]
+        mode?: HandoutNextCalendarEmbedSettingsTarget["mode"]
       ) => ReturnType
-      removeLightsiteNextCalendarEmbedDraft: (pos: number) => ReturnType
-      setLightsiteNextCalendarEmbedAttrs: (pos: number, attrs: CalendarEmbedAttrs) => ReturnType
+      removeHandoutNextCalendarEmbedDraft: (pos: number) => ReturnType
+      setHandoutNextCalendarEmbedAttrs: (pos: number, attrs: CalendarEmbedAttrs) => ReturnType
     }
   }
 }
 
-export const LightsiteNextCalendarEmbedSettings = Extension.create<
+export const HandoutNextCalendarEmbedSettings = Extension.create<
   Record<string, never>,
   CalendarEmbedSettingsStorage
 >({
-  name: "lightsiteNextCalendarEmbedSettings",
+  name: "handoutNextCalendarEmbedSettings",
 
   addStorage() {
-    const listeners = new Set<(target: LightsiteNextCalendarEmbedSettingsTarget) => void>()
+    const listeners = new Set<(target: HandoutNextCalendarEmbedSettingsTarget) => void>()
 
     return {
       openSettings: (target) => {
@@ -56,7 +56,7 @@ export const LightsiteNextCalendarEmbedSettings = Extension.create<
 
   addCommands() {
     return {
-      openLightsiteNextCalendarEmbedSettings:
+      openHandoutNextCalendarEmbedSettings:
         (pos, mode = "edit") =>
         ({ state, dispatch }) => {
           const target = resolveCalendarEmbedTarget(state, pos)
@@ -80,7 +80,7 @@ export const LightsiteNextCalendarEmbedSettings = Extension.create<
 
           return true
         },
-      removeLightsiteNextCalendarEmbedDraft:
+      removeHandoutNextCalendarEmbedDraft:
         (pos) =>
         ({ state, dispatch, view }) => {
           const node = state.doc.nodeAt(pos)
@@ -107,7 +107,7 @@ export const LightsiteNextCalendarEmbedSettings = Extension.create<
 
           return true
         },
-      setLightsiteNextCalendarEmbedAttrs:
+      setHandoutNextCalendarEmbedAttrs:
         (pos, attrs) =>
         ({ state, dispatch, view }) => {
           const node = state.doc.nodeAt(pos)

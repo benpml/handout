@@ -93,7 +93,7 @@ describe("recipient model", () => {
     )
 
     expect(buildRecipientPublicUrl({ recipient, siteUri: "ab4125" })).toBe(
-      "https://lightsite.io/ab4125/linear-david"
+      "https://handout.link/ab4125/linear-david"
     )
   })
 
@@ -116,7 +116,7 @@ describe("recipient model", () => {
 
     expect(updated.linkSlug).toBe("linear-david")
     expect(buildRecipientPublicUrl({ recipient: updated, siteUri: "ab4125" })).toBe(
-      "https://lightsite.io/ab4125/linear-david"
+      "https://handout.link/ab4125/linear-david"
     )
   })
 
@@ -134,7 +134,7 @@ describe("recipient model", () => {
 
     const embed = createRecipientEmailEmbedHtml({ recipient, siteUri: "ab4125" })
     expect(embed).toContain(
-      'src="https://lightsite.io/ab4125/linear-david/embed.jpg?v='
+      'src="https://handout.link/ab4125/linear-david/embed.jpg?v='
     )
     expect(embed).toContain('style="display:block;width:600px;max-width:100%;height:auto')
   })

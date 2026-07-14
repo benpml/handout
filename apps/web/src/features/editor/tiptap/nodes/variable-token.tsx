@@ -1,5 +1,5 @@
 import { ReactNodeViewRenderer } from "@tiptap/react"
-import { SiteVariableToken } from "@lightsite/site-document"
+import { SiteVariableToken } from "@handout/site-document"
 
 import { VariableTokenView } from "./variable-token-view"
 

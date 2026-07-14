@@ -1,6 +1,6 @@
-export const DEV_AUTH_BYPASS_HEADER = "x-lightsite-dev-auth"
+export const DEV_AUTH_BYPASS_HEADER = "x-handout-dev-auth"
 
-const DEV_AUTH_BYPASS_STORAGE_KEY = "lightsite.devAuthBypass"
+const DEV_AUTH_BYPASS_STORAGE_KEY = "handout.devAuthBypass"
 let devAuthBypassEnabledInMemory = false
 
 export function isDevAuthBypassAvailable() {

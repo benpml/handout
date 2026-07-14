@@ -3,4 +3,4 @@ export {
   normalizePublishedSitePayload,
   publicSitePayloadSchema,
   type PublishedSitePayload,
-} from "@lightsite/site-document";
+} from "@handout/site-document";

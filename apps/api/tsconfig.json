@@ -6,15 +6,15 @@
     "types": ["node"],
     "baseUrl": ".",
     "paths": {
-      "@lightsite/config": ["../../packages/config/src/index.ts"],
-      "@lightsite/content-schema": ["../../packages/content-schema/src/index.ts"],
-      "@lightsite/contracts": ["../../packages/contracts/src/index.ts"],
-      "@lightsite/db": ["../../packages/db/src/index.ts"],
-      "@lightsite/db/schema": ["../../packages/db/src/schema.ts"],
-      "@lightsite/domain": ["../../packages/domain/src/index.ts"],
-      "@lightsite/site-document": ["../../packages/site-document/src/index.ts"],
-      "@lightsite/site-document/*": ["../../packages/site-document/src/*"],
-      "@lightsite/tracking-schema": ["../../packages/tracking-schema/src/index.ts"]
+      "@handout/config": ["../../packages/config/src/index.ts"],
+      "@handout/content-schema": ["../../packages/content-schema/src/index.ts"],
+      "@handout/contracts": ["../../packages/contracts/src/index.ts"],
+      "@handout/db": ["../../packages/db/src/index.ts"],
+      "@handout/db/schema": ["../../packages/db/src/schema.ts"],
+      "@handout/domain": ["../../packages/domain/src/index.ts"],
+      "@handout/site-document": ["../../packages/site-document/src/index.ts"],
+      "@handout/site-document/*": ["../../packages/site-document/src/*"],
+      "@handout/tracking-schema": ["../../packages/tracking-schema/src/index.ts"]
     },
     "ignoreDeprecations": "6.0"
   },

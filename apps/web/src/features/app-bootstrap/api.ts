@@ -6,7 +6,7 @@ import type {
   SetActiveWorkspaceRequest,
   WorkspacePlan,
   WorkspaceRole,
-} from "@lightsite/contracts"
+} from "@handout/contracts"
 
 import { apiRequest } from "@/lib/api/client"
 

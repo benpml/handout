@@ -2,7 +2,7 @@ import { useMemo } from "react"
 import {
   renderPublicSitePreviewHtml,
   type SiteContent,
-} from "@lightsite/site-document"
+} from "@handout/site-document"
 
 type EditorSitePreviewProps = {
   activePageSlug: string | null

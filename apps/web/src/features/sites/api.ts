@@ -19,7 +19,7 @@ import {
   type UpdateSiteContentRequest,
   type UpdateSiteContentResponse,
   type UpdateSiteRequest,
-} from "@lightsite/contracts"
+} from "@handout/contracts"
 
 import { apiRequest } from "@/lib/api/client"
 
@@ -255,7 +255,7 @@ const publishSiteResponseSchema = {
 
 function normalizeCreateSiteRequest(input: CreateSiteRequest): CreateSiteRequest {
   const rawName = typeof input.name === "string" ? input.name : ""
-  const name = rawName.trim() || "Untitled Lightsite"
+  const name = rawName.trim() || "Untitled Handout"
 
   return {
     name,

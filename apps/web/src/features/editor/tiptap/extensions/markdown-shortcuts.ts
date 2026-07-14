@@ -1,8 +1,8 @@
 import { Extension } from "@tiptap/core"
 import { Plugin, TextSelection } from "@tiptap/pm/state"
 
-export const LightsiteNextMarkdownShortcuts = Extension.create({
-  name: "lightsiteNextMarkdownShortcuts",
+export const HandoutNextMarkdownShortcuts = Extension.create({
+  name: "handoutNextMarkdownShortcuts",
   priority: 1100,
 
   addProseMirrorPlugins() {

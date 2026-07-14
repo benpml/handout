@@ -1,4 +1,4 @@
-export const LIGHTSITE_TEXT_LIMITS = {
+export const HANDOUT_TEXT_LIMITS = {
   accountDisplayName: 160,
   blockText: 20_000,
   changeSummary: 500,
@@ -23,13 +23,13 @@ export const LIGHTSITE_TEXT_LIMITS = {
   workspaceName: 160,
 } as const;
 
-export const LIGHTSITE_COLLECTION_LIMITS = {
+export const HANDOUT_COLLECTION_LIMITS = {
   blocksPerTab: 500,
   links: 25,
   tabs: 25,
 } as const;
 
-export type LightsiteTextLimitKey = keyof typeof LIGHTSITE_TEXT_LIMITS;
+export type HandoutTextLimitKey = keyof typeof HANDOUT_TEXT_LIMITS;
 
 export type TextLimitValidationResult =
   | { ok: true; value: string }
@@ -41,16 +41,16 @@ export type TextLimitValidationResult =
       value: string;
     };
 
-export function clampTextToLimit(value: string, limitKey: LightsiteTextLimitKey) {
-  return value.slice(0, LIGHTSITE_TEXT_LIMITS[limitKey]);
+export function clampTextToLimit(value: string, limitKey: HandoutTextLimitKey) {
+  return value.slice(0, HANDOUT_TEXT_LIMITS[limitKey]);
 }
 
 export function validateTextLimit(
   value: string,
-  limitKey: LightsiteTextLimitKey,
+  limitKey: HandoutTextLimitKey,
   label = "Text",
 ): TextLimitValidationResult {
-  const limit = LIGHTSITE_TEXT_LIMITS[limitKey];
+  const limit = HANDOUT_TEXT_LIMITS[limitKey];
 
   if (value.length <= limit) {
     return {

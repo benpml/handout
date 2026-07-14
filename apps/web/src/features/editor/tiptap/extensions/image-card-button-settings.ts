@@ -2,7 +2,7 @@ import { Extension } from "@tiptap/core"
 import { NodeRangeSelection } from "@tiptap/extension-node-range"
 import { TextSelection } from "@tiptap/pm/state"
 
-export type LightsiteNextImageCardButtonSettingsTarget = {
+export type HandoutNextImageCardButtonSettingsTarget = {
   href: string
   label: string
   mode: "create" | "edit"
@@ -10,9 +10,9 @@ export type LightsiteNextImageCardButtonSettingsTarget = {
 }
 
 type ImageCardButtonSettingsStorage = {
-  openSettings: (target: LightsiteNextImageCardButtonSettingsTarget) => void
+  openSettings: (target: HandoutNextImageCardButtonSettingsTarget) => void
   subscribe: (
-    listener: (target: LightsiteNextImageCardButtonSettingsTarget) => void
+    listener: (target: HandoutNextImageCardButtonSettingsTarget) => void
   ) => () => void
 }
 
@@ -24,17 +24,17 @@ type ImageCardButtonConfig = {
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
-    lightsiteNextImageCardButtonSettings: {
-      openLightsiteNextImageCardButtonSettings: (
+    handoutNextImageCardButtonSettings: {
+      openHandoutNextImageCardButtonSettings: (
         pos?: number,
-        mode?: LightsiteNextImageCardButtonSettingsTarget["mode"]
+        mode?: HandoutNextImageCardButtonSettingsTarget["mode"]
       ) => ReturnType
-      previewLightsiteNextImageCardButtonDraft: (
+      previewHandoutNextImageCardButtonDraft: (
         pos: number,
         attrs: ImageCardButtonConfig
       ) => ReturnType
-      removeLightsiteNextImageCardButtonDraft: (pos: number) => ReturnType
-      setLightsiteNextImageCardButtonAttrs: (
+      removeHandoutNextImageCardButtonDraft: (pos: number) => ReturnType
+      setHandoutNextImageCardButtonAttrs: (
         pos: number,
         attrs: ImageCardButtonConfig
       ) => ReturnType
@@ -42,14 +42,14 @@ declare module "@tiptap/core" {
   }
 }
 
-export const LightsiteNextImageCardButtonSettings = Extension.create<
+export const HandoutNextImageCardButtonSettings = Extension.create<
   Record<string, never>,
   ImageCardButtonSettingsStorage
 >({
-  name: "lightsiteNextImageCardButtonSettings",
+  name: "handoutNextImageCardButtonSettings",
 
   addStorage() {
-    const listeners = new Set<(target: LightsiteNextImageCardButtonSettingsTarget) => void>()
+    const listeners = new Set<(target: HandoutNextImageCardButtonSettingsTarget) => void>()
 
     return {
       openSettings: (target) => {
@@ -67,7 +67,7 @@ export const LightsiteNextImageCardButtonSettings = Extension.create<
 
   addCommands() {
     return {
-      openLightsiteNextImageCardButtonSettings:
+      openHandoutNextImageCardButtonSettings:
         (pos, mode) =>
         ({ state, dispatch }) => {
           const target = resolveImageCardTarget(state, pos)
@@ -105,7 +105,7 @@ export const LightsiteNextImageCardButtonSettings = Extension.create<
 
           return true
         },
-      previewLightsiteNextImageCardButtonDraft:
+      previewHandoutNextImageCardButtonDraft:
         (pos, attrs) =>
         ({ state, dispatch }) => {
           const node = state.doc.nodeAt(pos)
@@ -125,7 +125,7 @@ export const LightsiteNextImageCardButtonSettings = Extension.create<
 
           return true
         },
-      removeLightsiteNextImageCardButtonDraft:
+      removeHandoutNextImageCardButtonDraft:
         (pos) =>
         ({ state, dispatch, view }) => {
           const node = state.doc.nodeAt(pos)
@@ -148,7 +148,7 @@ export const LightsiteNextImageCardButtonSettings = Extension.create<
 
           return true
         },
-      setLightsiteNextImageCardButtonAttrs:
+      setHandoutNextImageCardButtonAttrs:
         (pos, attrs) =>
         ({ state, dispatch, view }) => {
           const node = state.doc.nodeAt(pos)

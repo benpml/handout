@@ -1,24 +1,24 @@
-import type { Database } from "@lightsite/db";
+import type { Database } from "@handout/db";
 import type { Request } from "express";
 import type { AppBootstrap } from "../bootstrap/service";
 import type { CurrentActor } from "./current-actor";
 
-export const DEV_AUTH_BYPASS_HEADER = "x-lightsite-dev-auth";
+export const DEV_AUTH_BYPASS_HEADER = "x-handout-dev-auth";
 
 export const devActor: CurrentActor = {
-  userId: "dev_user_lightsite",
-  email: "dev@lightsite.app",
+  userId: "dev_user_handout",
+  email: "dev@handout.app",
   emailVerified: true,
-  name: "Lightsite Dev",
+  name: "Handout Dev",
 };
 
 export const devWorkspace = {
   id: "00000000-0000-4000-8000-000000000101",
   membershipId: "00000000-0000-4000-8000-000000000102",
-  name: "Lightsite Dev",
-  slug: "lightsite-dev",
-  websiteDomain: "lightsite.app",
-  plan: "core",
+  name: "Handout Dev",
+  slug: "handout-dev",
+  websiteDomain: "handout.app",
+  plan: "pro",
 } as const;
 
 export function isDevAuthBypassRequest(request: Request) {
@@ -81,7 +81,7 @@ export async function provisionDevAuthBypass(database?: Database) {
     userProfiles,
     workspaceMembers,
     workspaces,
-  } = await import("@lightsite/db");
+  } = await import("@handout/db");
   const db = database ?? defaultDb;
   const now = new Date();
 
@@ -90,7 +90,7 @@ export async function provisionDevAuthBypass(database?: Database) {
       .insert(user)
       .values({
         id: devActor.userId,
-        name: devActor.name ?? "Lightsite Dev",
+        name: devActor.name ?? "Handout Dev",
         email: devActor.email,
         emailVerified: devActor.emailVerified,
         updatedAt: now,
@@ -98,7 +98,7 @@ export async function provisionDevAuthBypass(database?: Database) {
       .onConflictDoUpdate({
         target: user.id,
         set: {
-          name: devActor.name ?? "Lightsite Dev",
+          name: devActor.name ?? "Handout Dev",
           email: devActor.email,
           emailVerified: devActor.emailVerified,
           updatedAt: now,
@@ -112,6 +112,7 @@ export async function provisionDevAuthBypass(database?: Database) {
         name: devWorkspace.name,
         slug: devWorkspace.slug,
         websiteDomain: devWorkspace.websiteDomain,
+        plan: devWorkspace.plan,
         status: "active",
         updatedAt: now,
       })
@@ -120,6 +121,7 @@ export async function provisionDevAuthBypass(database?: Database) {
         set: {
           name: devWorkspace.name,
           websiteDomain: devWorkspace.websiteDomain,
+          plan: devWorkspace.plan,
           status: "active",
           updatedAt: now,
         },

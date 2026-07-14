@@ -23,12 +23,12 @@ import {
   IconRefresh,
   IconX,
 } from "@tabler/icons-react"
-import { LIGHTSITE_TEXT_LIMITS } from "@lightsite/domain"
-import type { SiteDetailResponse } from "@lightsite/contracts"
+import { HANDOUT_TEXT_LIMITS } from "@handout/domain"
+import type { SiteDetailResponse } from "@handout/contracts"
 import type {
   TrackingV2EventFeedItem,
   TrackingV2SessionSummary,
-} from "@lightsite/tracking-schema"
+} from "@handout/tracking-schema"
 import { toast } from "sonner"
 
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -97,7 +97,6 @@ import {
   toSessionDrawerData,
   type TrackingEventDrawerData,
 } from "../tracking/tracking-details-model"
-import { TrackingRecordingReplay } from "../tracking/recording-replay"
 
 const customRecipientVariables = editorVariables.filter(
   (variable) =>
@@ -196,7 +195,7 @@ export function RecipientDetailsPage() {
   }, [trackingEvents])
   const draftContent = siteContentQuery.data?.draftContent
   const recipientPublicUrl =
-    recipient ? buildRecipientPublicUrl({ recipient, siteUri }) : "https://lightsite.io/site/recipient"
+    recipient ? buildRecipientPublicUrl({ recipient, siteUri }) : "https://handout.link/site/recipient"
   const recipientDisplayUrl = recipientPublicUrl.replace(/^https?:\/\//, "")
   const previewPayload = useMemo(() => {
     if (!site || !draftContent || !recipient) {
@@ -424,15 +423,6 @@ export function RecipientDetailsPage() {
           void sessionEventsQuery.refetch()
         }}
         open={selectedEvent !== null || selectedSessionId !== null}
-        replay={selectedSession?.recording.available
-          ? (
-              <TrackingRecordingReplay
-                session={selectedSession}
-                variant="drawer"
-                workspaceId={activeWorkspace.id}
-              />
-            )
-          : undefined}
         session={selectedSession ? toSessionDrawerData(selectedSession) : null}
       />
     </div>
@@ -883,7 +873,7 @@ function EditRecipientDialog({
               <Input
                 id={`${idPrefix}-name`}
                 aria-invalid={nameInvalid}
-                maxLength={LIGHTSITE_TEXT_LIMITS.recipientName}
+                maxLength={HANDOUT_TEXT_LIMITS.recipientName}
                 value={draft.name}
                 onChange={(event) =>
                   setDraft((currentDraft) => ({
@@ -904,7 +894,7 @@ function EditRecipientDialog({
               <Input
                 id={`${idPrefix}-company`}
                 aria-invalid={companyInvalid}
-                maxLength={LIGHTSITE_TEXT_LIMITS.recipientCompany}
+                maxLength={HANDOUT_TEXT_LIMITS.recipientCompany}
                 value={draft.company}
                 onChange={(event) =>
                   setDraft((currentDraft) => ({
@@ -926,7 +916,7 @@ function EditRecipientDialog({
                 id={`${idPrefix}-website`}
                 aria-invalid={!websiteValidation.ok}
                 inputMode="url"
-                maxLength={LIGHTSITE_TEXT_LIMITS.url}
+                maxLength={HANDOUT_TEXT_LIMITS.url}
                 value={draft.website}
                 onChange={(event) =>
                   setDraft((currentDraft) => ({
@@ -947,7 +937,7 @@ function EditRecipientDialog({
                 </FieldLabel>
                 <Input
                   id={`${idPrefix}-${variable.id}`}
-                  maxLength={LIGHTSITE_TEXT_LIMITS.recipientVariableValue}
+                  maxLength={HANDOUT_TEXT_LIMITS.recipientVariableValue}
                   placeholder={variable.defaultValue || "Enter value..."}
                   value={draft.values[variable.id] ?? ""}
                   onChange={(event) =>

@@ -47,6 +47,8 @@ export const queryKeys = {
     ["trackingSiteRecipientActivity", workspaceId, siteId] as const,
   trackingSiteSettings: (workspaceId: string, siteId: string) =>
     ["trackingSiteSettings", workspaceId, siteId] as const,
+  trackingInternalIpRanges: (workspaceId: string) =>
+    ["trackingInternalIpRanges", workspaceId] as const,
   publicSite: (workspaceSlug: string, siteSlug: string, variantSlug: string | null = null) =>
     ["publicSite", workspaceSlug, siteSlug, variantSlug] as const,
 }

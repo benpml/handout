@@ -4,12 +4,13 @@ import {
   type TrackingV2ContextTokenPayload,
   type TrackingV2PublicBootstrap,
   type TrackingV2TrackingMode,
-} from "@lightsite/tracking-schema";
+} from "@handout/tracking-schema";
 
 export type TrackingV2ContextTokenIssueInput = {
   workspaceId: string;
   siteId: string;
   publishedVersionId: string;
+  manifestId: string;
   recipientId: string | null;
   recipientRevision: number | null;
   trackingMode: TrackingV2TrackingMode;
@@ -55,6 +56,7 @@ export function createEncryptedTrackingV2ContextTokenService(
         workspaceId: input.workspaceId,
         siteId: input.siteId,
         publishedVersionId: input.publishedVersionId,
+        manifestId: input.manifestId,
         recipientId: input.recipientId,
         recipientRevision: input.recipientRevision,
         trackingMode: input.trackingMode,
@@ -149,7 +151,7 @@ export function createEncryptedTrackingV2ContextTokenService(
 
 function deriveEncryptionKey(secret: string, keyId: string) {
   return createHash("sha256")
-    .update("lightsite:tracking-v2-context-token")
+    .update("handout:tracking-v2-context-token")
     .update("\0")
     .update(keyId)
     .update("\0")

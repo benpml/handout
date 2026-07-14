@@ -1,4 +1,4 @@
-import { normalizeWebsiteUrl } from "@lightsite/domain"
+import { normalizeWebsiteUrl } from "@handout/domain"
 
 export type EmbedUrlResult =
   | {

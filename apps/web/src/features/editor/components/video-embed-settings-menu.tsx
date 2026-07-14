@@ -1,10 +1,10 @@
 import { IconLink, IconVideo } from "@tabler/icons-react"
 import type { Editor } from "@tiptap/react"
-import { LIGHTSITE_TEXT_LIMITS } from "@lightsite/domain"
+import { HANDOUT_TEXT_LIMITS } from "@handout/domain"
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react"
 
 import { getVideoEmbedHost, normalizeVideoEmbedUrl } from "../lib/video-embed-url"
-import type { LightsiteNextVideoEmbedSettingsTarget } from "../tiptap/extensions/video-embed-settings"
+import type { HandoutNextVideoEmbedSettingsTarget } from "../tiptap/extensions/video-embed-settings"
 import { useFloatingEditorPopoverPosition } from "./use-floating-editor-popover-position"
 
 type EditorVideoEmbedSettingsMenuProps = {
@@ -12,11 +12,11 @@ type EditorVideoEmbedSettingsMenuProps = {
 }
 
 type VideoEmbedSettingsStorage = {
-  subscribe: (listener: (target: LightsiteNextVideoEmbedSettingsTarget) => void) => () => void
+  subscribe: (listener: (target: HandoutNextVideoEmbedSettingsTarget) => void) => () => void
 }
 
 export function EditorVideoEmbedSettingsMenu({ editor }: EditorVideoEmbedSettingsMenuProps) {
-  const [target, setTarget] = useState<LightsiteNextVideoEmbedSettingsTarget | null>(null)
+  const [target, setTarget] = useState<HandoutNextVideoEmbedSettingsTarget | null>(null)
   const [srcDraft, setSrcDraft] = useState("")
   const [error, setError] = useState<string | null>(null)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
@@ -36,7 +36,7 @@ export function EditorVideoEmbedSettingsMenu({ editor }: EditorVideoEmbedSetting
       reset()
 
       if (removeDraft && activeTarget?.mode === "create") {
-        editor.chain().focus().removeLightsiteNextVideoEmbedDraft(activeTarget.pos).run()
+        editor.chain().focus().removeHandoutNextVideoEmbedDraft(activeTarget.pos).run()
         return
       }
 
@@ -48,9 +48,9 @@ export function EditorVideoEmbedSettingsMenu({ editor }: EditorVideoEmbedSetting
   useEffect(() => {
     const storage = (
       editor.storage as unknown as {
-        lightsiteNextVideoEmbedSettings?: VideoEmbedSettingsStorage
+        handoutNextVideoEmbedSettings?: VideoEmbedSettingsStorage
       }
-    ).lightsiteNextVideoEmbedSettings
+    ).handoutNextVideoEmbedSettings
 
     if (!storage) {
       return
@@ -138,7 +138,7 @@ export function EditorVideoEmbedSettingsMenu({ editor }: EditorVideoEmbedSetting
       editor
         .chain()
         .focus()
-        .setLightsiteNextVideoEmbedAttrs(target.pos, {
+        .setHandoutNextVideoEmbedAttrs(target.pos, {
           provider: normalized.provider,
           src: normalized.url,
         })
@@ -161,24 +161,24 @@ export function EditorVideoEmbedSettingsMenu({ editor }: EditorVideoEmbedSetting
     <div
       ref={menuRef}
       aria-label={isCreateMode ? "Add video" : "Edit video"}
-      className="lightsite-editor-video-settings-menu"
+      className="handout-editor-video-settings-menu"
       role="dialog"
       style={{ left: position.x, maxHeight: position.maxHeight, top: position.y }}
       onPointerDown={(event) => event.stopPropagation()}
       onWheel={(event) => event.stopPropagation()}
     >
       <form onSubmit={save}>
-        <label className="lightsite-editor-button-settings-label" htmlFor="lightsite-editor-video-url">
+        <label className="handout-editor-button-settings-label" htmlFor="handout-editor-video-url">
           Video link or embed code
         </label>
-        <div className="lightsite-editor-button-settings-field lightsite-editor-button-settings-field-textarea">
+        <div className="handout-editor-button-settings-field handout-editor-button-settings-field-textarea">
           <IconLink aria-hidden="true" />
           <textarea
             ref={inputRef}
             aria-invalid={error ? "true" : undefined}
-            id="lightsite-editor-video-url"
+            id="handout-editor-video-url"
             inputMode="url"
-            maxLength={LIGHTSITE_TEXT_LIMITS.embedCode}
+            maxLength={HANDOUT_TEXT_LIMITS.embedCode}
             placeholder="Paste link or embed code"
             rows={3}
             value={srcDraft}
@@ -189,26 +189,26 @@ export function EditorVideoEmbedSettingsMenu({ editor }: EditorVideoEmbedSetting
           />
         </div>
         {previewLabel ? (
-          <div className="lightsite-editor-video-settings-preview">
+          <div className="handout-editor-video-settings-preview">
             <IconVideo aria-hidden="true" />
             {previewLabel}
           </div>
         ) : (
-          <div className="lightsite-editor-video-settings-preview">
-            Paste a video link or embed code. Lightsite will handle either.
+          <div className="handout-editor-video-settings-preview">
+            Paste a video link or embed code. Handout will handle either.
           </div>
         )}
-        {error ? <div className="lightsite-editor-button-settings-error">{error}</div> : null}
-        <div className="lightsite-editor-button-settings-actions">
+        {error ? <div className="handout-editor-button-settings-error">{error}</div> : null}
+        <div className="handout-editor-button-settings-actions">
           <button
-            className="lightsite-editor-button-settings-action"
+            className="handout-editor-button-settings-action"
             type="button"
             onClick={() => close(true)}
           >
             Cancel
           </button>
           <button
-            className="lightsite-editor-button-settings-action lightsite-editor-button-settings-action-primary"
+            className="handout-editor-button-settings-action handout-editor-button-settings-action-primary"
             type="submit"
           >
             {isCreateMode ? "Add" : "Save"}

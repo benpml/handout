@@ -2,7 +2,7 @@ import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
 import type { Browser, BrowserContext } from "playwright";
 import { chromium } from "playwright";
-import { normalizePublishedSitePayload } from "@lightsite/content-schema";
+import { normalizePublishedSitePayload } from "@handout/content-schema";
 import { renderPublicSiteScreenshotHtmlDocument } from "./html";
 
 export const PUBLIC_SITE_SCREENSHOT_WIDTH = 1200;

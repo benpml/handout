@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from "react"
-import { LIGHTSITE_TEXT_LIMITS } from "@lightsite/domain"
+import { HANDOUT_TEXT_LIMITS } from "@handout/domain"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   IconAlertTriangle,
@@ -102,7 +102,7 @@ export function SettingsPage() {
                     id="settings-first-name"
                     aria-invalid={Boolean(nameError || serverNameError) || undefined}
                     autoComplete="given-name"
-                    maxLength={LIGHTSITE_TEXT_LIMITS.accountDisplayName}
+                    maxLength={HANDOUT_TEXT_LIMITS.accountDisplayName}
                     placeholder="John"
                     value={firstName}
                     onChange={(event) => {
@@ -119,7 +119,7 @@ export function SettingsPage() {
                   <Input
                     id="settings-last-name"
                     autoComplete="family-name"
-                    maxLength={LIGHTSITE_TEXT_LIMITS.accountDisplayName}
+                    maxLength={HANDOUT_TEXT_LIMITS.accountDisplayName}
                     placeholder="Acme"
                     value={lastName}
                     onChange={(event) => {
@@ -149,7 +149,7 @@ export function SettingsPage() {
                   <FieldLabel htmlFor="settings-workspace-name">Name</FieldLabel>
                   <Input
                     id="settings-workspace-name"
-                    maxLength={LIGHTSITE_TEXT_LIMITS.workspaceName}
+                    maxLength={HANDOUT_TEXT_LIMITS.workspaceName}
                     value={activeWorkspace.name}
                     readOnly
                   />
@@ -159,7 +159,7 @@ export function SettingsPage() {
                   <Input
                     id="settings-workspace-website"
                     inputMode="url"
-                    maxLength={LIGHTSITE_TEXT_LIMITS.url}
+                    maxLength={HANDOUT_TEXT_LIMITS.url}
                     value={activeWorkspace.websiteDomain || "https://example.com"}
                     readOnly
                   />

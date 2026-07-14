@@ -36,7 +36,7 @@ CREATE TABLE "tracking_recordings" (
 	"session_id" uuid NOT NULL,
 	"public_session_id" varchar(160) NOT NULL,
 	"status" varchar(40) DEFAULT 'pending' NOT NULL,
-	"rrweb_version" varchar(40) DEFAULT 'lightsite-minimal-v1' NOT NULL,
+	"rrweb_version" varchar(40) DEFAULT 'handout-minimal-v1' NOT NULL,
 	"runtime_version" varchar(80) NOT NULL,
 	"privacy_version" integer DEFAULT 1 NOT NULL,
 	"upload_token_hash" varchar(128) NOT NULL,

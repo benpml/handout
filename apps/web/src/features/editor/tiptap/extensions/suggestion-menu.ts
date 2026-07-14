@@ -38,38 +38,38 @@ import type React from "react"
 
 import { createInsertedBlockContent, setSelectionInsideInsertedContent } from "./block-commands"
 import {
-  LightsiteNextSuggestionMenuView,
-  type LightsiteNextSuggestionMenuHandle,
-  type LightsiteNextSuggestionMenuProps,
+  HandoutNextSuggestionMenuView,
+  type HandoutNextSuggestionMenuHandle,
+  type HandoutNextSuggestionMenuProps,
 } from "./suggestion-menu-view"
 import type {
-  LightsiteNextBlockType,
-  LightsiteVariableOption,
-  LightsiteVariableValueMap,
+  HandoutNextBlockType,
+  HandoutVariableOption,
+  HandoutVariableValueMap,
 } from "../schema"
 import {
-  createLightsiteVariableId,
-  getLightsiteVariableStorage,
-  getUniqueLightsiteVariableSlug,
-  normalizeLightsiteVariableName,
+  createHandoutVariableId,
+  getHandoutVariableStorage,
+  getUniqueHandoutVariableSlug,
+  normalizeHandoutVariableName,
 } from "../variable-state"
 
 type MenuItem = {
   category: "Text" | "Lists" | "Cards and actions" | "Media" | "Structure"
   icon: typeof IconPilcrow
-  id: LightsiteNextBlockType
+  id: HandoutNextBlockType
   label: string
   description: string
 }
 
-const slashPluginKey = new PluginKey("lightsiteNextSlash")
-const variablePluginKey = new PluginKey("lightsiteNextVariable")
+const slashPluginKey = new PluginKey("handoutNextSlash")
+const variablePluginKey = new PluginKey("handoutNextVariable")
 
 type VariableMenuItem =
   | {
       icon: typeof IconCodeAsterisk
       type: "variable"
-      variable: LightsiteVariableOption
+      variable: HandoutVariableOption
     }
   | {
       icon: typeof IconCirclePlus
@@ -77,23 +77,23 @@ type VariableMenuItem =
       type: "create"
     }
 
-export type LightsiteNextVariableCreatorTarget = {
+export type HandoutNextVariableCreatorTarget = {
   name: string
   range: Range
 }
 
-type LightsiteNextVariableStorage = {
+type HandoutNextVariableStorage = {
   activeVariantId: string
-  definitions: LightsiteVariableOption[]
-  openCreator: (target: LightsiteNextVariableCreatorTarget) => void
-  subscribeCreator: (listener: (target: LightsiteNextVariableCreatorTarget) => void) => () => void
-  values: LightsiteVariableValueMap
+  definitions: HandoutVariableOption[]
+  openCreator: (target: HandoutNextVariableCreatorTarget) => void
+  subscribeCreator: (listener: (target: HandoutNextVariableCreatorTarget) => void) => () => void
+  values: HandoutVariableValueMap
 }
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
-    lightsiteNextVariables: {
-      createAndInsertLightsiteVariable: (
+    handoutNextVariables: {
+      createAndInsertHandoutVariable: (
         range: Range,
         attrs: {
           defaultValue?: string
@@ -101,21 +101,21 @@ declare module "@tiptap/core" {
           name: string
         }
       ) => ReturnType
-      createLightsiteVariable: (attrs: {
+      createHandoutVariable: (attrs: {
         defaultValue?: string
         description?: string
         name: string
       }) => ReturnType
-      openLightsiteVariableCreator: (name: string, range: Range) => ReturnType
-      setLightsiteVariableDefinition: (
+      openHandoutVariableCreator: (name: string, range: Range) => ReturnType
+      setHandoutVariableDefinition: (
         variableId: string,
-        attrs: Partial<Pick<LightsiteVariableOption, "defaultValue" | "description" | "name">>
+        attrs: Partial<Pick<HandoutVariableOption, "defaultValue" | "description" | "name">>
       ) => ReturnType
-      setLightsiteVariableScope: (
+      setHandoutVariableScope: (
         scopeId: string,
         values: Record<string, string>
       ) => ReturnType
-      setLightsiteVariableValue: (variableId: string, value: string) => ReturnType
+      setHandoutVariableValue: (variableId: string, value: string) => ReturnType
     }
   }
 }
@@ -291,8 +291,8 @@ const slashItems: MenuItem[] = [
   },
 ]
 
-export const LightsiteNextSlashCommands = Extension.create({
-  name: "lightsiteNextSlashCommands",
+export const HandoutNextSlashCommands = Extension.create({
+  name: "handoutNextSlashCommands",
 
   addProseMirrorPlugins() {
     return [
@@ -320,22 +320,22 @@ export const LightsiteNextSlashCommands = Extension.create({
   },
 })
 
-export const LightsiteNextVariables = Extension.create<
+export const HandoutNextVariables = Extension.create<
 {
   activeVariantId: string
-  values: LightsiteVariableValueMap
-  variables: LightsiteVariableOption[]
+  values: HandoutVariableValueMap
+  variables: HandoutVariableOption[]
 },
-LightsiteNextVariableStorage
+HandoutNextVariableStorage
 >({
-  name: "lightsiteNextVariables",
+  name: "handoutNextVariables",
 
   addOptions() {
     return { activeVariantId: "default", values: {}, variables: [] }
   },
 
   addStorage() {
-    const creatorListeners = new Set<(target: LightsiteNextVariableCreatorTarget) => void>()
+    const creatorListeners = new Set<(target: HandoutNextVariableCreatorTarget) => void>()
 
     return {
       activeVariantId: this.options.activeVariantId,
@@ -356,7 +356,7 @@ LightsiteNextVariableStorage
 
   addCommands() {
     return {
-      createAndInsertLightsiteVariable:
+      createAndInsertHandoutVariable:
         (range, attrs) =>
         ({ commands, editor }) => {
           const variable = createVariableDefinition(editor, attrs, false)
@@ -370,24 +370,24 @@ LightsiteNextVariableStorage
             attrs: { fallbackName: variable.name, variableId: variable.id },
           })
         },
-      createLightsiteVariable:
+      createHandoutVariable:
         (attrs) =>
         ({ editor }) => {
           return Boolean(createVariableDefinition(editor, attrs))
         },
-      openLightsiteVariableCreator:
+      openHandoutVariableCreator:
         (name, range) =>
         () => {
           this.storage.openCreator({
-            name: normalizeLightsiteVariableName(name),
+            name: normalizeHandoutVariableName(name),
             range,
           })
           return true
         },
-      setLightsiteVariableDefinition:
+      setHandoutVariableDefinition:
         (variableId, attrs) =>
         ({ editor }) => {
-          const storage = getLightsiteVariableStorage(editor)
+          const storage = getHandoutVariableStorage(editor)
           const current = storage.definitions.find((definition) => definition.id === variableId)
 
           if (!current) {
@@ -395,7 +395,7 @@ LightsiteNextVariableStorage
           }
 
           const nextName =
-            attrs.name === undefined ? current.name : normalizeLightsiteVariableName(attrs.name)
+            attrs.name === undefined ? current.name : normalizeHandoutVariableName(attrs.name)
 
           if (!nextName) {
             return false
@@ -415,7 +415,7 @@ LightsiteNextVariableStorage
                   slug:
                     nextName === definition.name
                       ? definition.slug
-                      : getUniqueLightsiteVariableSlug(
+                      : getUniqueHandoutVariableSlug(
                           nextName,
                           storage.definitions.filter((item) => item.id !== variableId)
                         ),
@@ -426,10 +426,10 @@ LightsiteNextVariableStorage
           dispatchVariableStorageChanged(editor)
           return true
         },
-      setLightsiteVariableScope:
+      setHandoutVariableScope:
         (scopeId, values) =>
         ({ editor }) => {
-          const storage = getLightsiteVariableStorage(editor)
+          const storage = getHandoutVariableStorage(editor)
           const nextScopeId = scopeId.trim() || "default"
 
           storage.activeVariantId = nextScopeId
@@ -441,10 +441,10 @@ LightsiteNextVariableStorage
           dispatchVariableStorageChanged(editor)
           return true
         },
-      setLightsiteVariableValue:
+      setHandoutVariableValue:
         (variableId, value) =>
         ({ editor }) => {
-          const storage = getLightsiteVariableStorage(editor)
+          const storage = getHandoutVariableStorage(editor)
 
           if (!storage.definitions.some((definition) => definition.id === variableId)) {
             return false
@@ -473,10 +473,10 @@ LightsiteNextVariableStorage
         allowSpaces: true,
         allowedPrefixes: null,
         shouldShow: ({ transaction }) => !isChangeOrigin(transaction),
-        items: ({ query }) => filterVariables(getLightsiteVariableStorage(this.editor).definitions, query),
+        items: ({ query }) => filterVariables(getHandoutVariableStorage(this.editor).definitions, query),
         command: ({ editor, range, props }) => {
           if (props.type === "create") {
-            editor.commands.openLightsiteVariableCreator(props.name, range)
+            editor.commands.openHandoutVariableCreator(props.name, range)
             return
           }
 
@@ -513,7 +513,7 @@ LightsiteNextVariableStorage
   },
 })
 
-export function createLightsiteNextEmojiSuggestion() {
+export function createHandoutNextEmojiSuggestion() {
   return {
     allowSpaces: true,
     allowedPrefixes: null,
@@ -549,7 +549,7 @@ export function createLightsiteNextEmojiSuggestion() {
   }
 }
 
-function replaceRangeWithBlock(editor: Editor, range: Range, blockType: LightsiteNextBlockType) {
+function replaceRangeWithBlock(editor: Editor, range: Range, blockType: HandoutNextBlockType) {
   const { state, view } = editor
   const $from = state.doc.resolve(range.from)
 
@@ -567,16 +567,16 @@ function replaceRangeWithBlock(editor: Editor, range: Range, blockType: Lightsit
         .insert(textblockStart, createSliceFragment(editor, blockType))
       view.dispatch(setSelectionInsideInsertedContent(tr, textblockStart))
       if (blockType === "gif") {
-        editor.commands.openLightsiteNextGifPicker(textblockStart)
+        editor.commands.openHandoutNextGifPicker(textblockStart)
       }
       if (blockType === "button") {
-        editor.commands.openLightsiteNextButtonSettings(textblockStart, "create")
+        editor.commands.openHandoutNextButtonSettings(textblockStart, "create")
       }
       if (blockType === "calendar") {
-        editor.commands.openLightsiteNextCalendarEmbedSettings(textblockStart, "create")
+        editor.commands.openHandoutNextCalendarEmbedSettings(textblockStart, "create")
       }
       if (blockType === "video") {
-        editor.commands.openLightsiteNextVideoEmbedSettings(textblockStart, "create")
+        editor.commands.openHandoutNextVideoEmbedSettings(textblockStart, "create")
       }
       view.focus()
       return
@@ -585,20 +585,20 @@ function replaceRangeWithBlock(editor: Editor, range: Range, blockType: Lightsit
 
   editor.chain().focus().deleteRange(range).insertContent(createInsertedBlockContent(blockType)).run()
   if (blockType === "gif") {
-    editor.commands.openLightsiteNextGifPicker()
+    editor.commands.openHandoutNextGifPicker()
   }
   if (blockType === "button") {
-    editor.commands.openLightsiteNextButtonSettings(undefined, "create")
+    editor.commands.openHandoutNextButtonSettings(undefined, "create")
   }
   if (blockType === "calendar") {
-    editor.commands.openLightsiteNextCalendarEmbedSettings(undefined, "create")
+    editor.commands.openHandoutNextCalendarEmbedSettings(undefined, "create")
   }
   if (blockType === "video") {
-    editor.commands.openLightsiteNextVideoEmbedSettings(undefined, "create")
+    editor.commands.openHandoutNextVideoEmbedSettings(undefined, "create")
   }
 }
 
-function createSliceFragment(editor: Editor, blockType: LightsiteNextBlockType) {
+function createSliceFragment(editor: Editor, blockType: HandoutNextBlockType) {
   const content = createInsertedBlockContent(blockType)
   const contentItems = Array.isArray(content) ? content : [content]
 
@@ -617,7 +617,7 @@ function filterSlashItems(query: string) {
   )
 }
 
-function filterVariables(variables: LightsiteVariableOption[], query: string): VariableMenuItem[] {
+function filterVariables(variables: HandoutVariableOption[], query: string): VariableMenuItem[] {
   const normalizedQuery = normalizeQuery(query)
 
   if (!normalizedQuery) {
@@ -646,7 +646,7 @@ function filterVariables(variables: LightsiteVariableOption[], query: string): V
   }))
 
   if (!hasExactMatch) {
-    const name = normalizeLightsiteVariableName(query)
+    const name = normalizeHandoutVariableName(query)
 
     if (name) {
       items.unshift({ icon: IconCirclePlus, name, type: "create" })
@@ -665,19 +665,19 @@ function createVariableDefinition(
   },
   dispatchChange = true
 ) {
-  const name = normalizeLightsiteVariableName(attrs.name)
+  const name = normalizeHandoutVariableName(attrs.name)
 
   if (!name) {
     return null
   }
 
-  const storage = getLightsiteVariableStorage(editor)
-  const definition: LightsiteVariableOption = {
+  const storage = getHandoutVariableStorage(editor)
+  const definition: HandoutVariableOption = {
     defaultValue: attrs.defaultValue ?? "",
     description: attrs.description?.trim() || undefined,
-    id: createLightsiteVariableId(name),
+    id: createHandoutVariableId(name),
     name,
-    slug: getUniqueLightsiteVariableSlug(name, storage.definitions),
+    slug: getUniqueHandoutVariableSlug(name, storage.definitions),
   }
 
   storage.definitions = [...storage.definitions, definition]
@@ -697,7 +697,7 @@ function createVariableDefinition(
 }
 
 function dispatchVariableStorageChanged(editor: Editor) {
-  const tr = editor.state.tr.setMeta("lightsiteNextVariablesChanged", true)
+  const tr = editor.state.tr.setMeta("handoutNextVariablesChanged", true)
   editor.view.dispatch(tr)
 }
 
@@ -789,8 +789,8 @@ function createSuggestionMenu<TItem>({
   let props: SuggestionProps<TItem, TItem> | null = null
   let lastRect: DOMRect | null = null
   let renderer: ReactRenderer<
-    LightsiteNextSuggestionMenuHandle,
-    LightsiteNextSuggestionMenuProps<TItem>
+    HandoutNextSuggestionMenuHandle,
+    HandoutNextSuggestionMenuProps<TItem>
   > | null = null
   let pendingExit = false
   let pendingExitTimer: number | null = null
@@ -839,12 +839,12 @@ function createSuggestionMenu<TItem>({
     cancelPendingExit()
     props = nextProps
     const MenuComponent =
-      LightsiteNextSuggestionMenuView as React.ComponentType<
-        LightsiteNextSuggestionMenuProps<TItem>
+      HandoutNextSuggestionMenuView as React.ComponentType<
+        HandoutNextSuggestionMenuProps<TItem>
       >
     const nextRenderer = new ReactRenderer<
-      LightsiteNextSuggestionMenuHandle,
-      LightsiteNextSuggestionMenuProps<TItem>
+      HandoutNextSuggestionMenuHandle,
+      HandoutNextSuggestionMenuProps<TItem>
     >(MenuComponent, {
       editor: nextProps.editor,
       props: createMenuProps(nextProps),
@@ -873,7 +873,7 @@ function createSuggestionMenu<TItem>({
 
   function createMenuProps(
     nextProps: SuggestionProps<TItem, TItem>
-  ): LightsiteNextSuggestionMenuProps<TItem> {
+  ): HandoutNextSuggestionMenuProps<TItem> {
     return {
       command: (item) => {
         nextProps.command(item)

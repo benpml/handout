@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { Link, useNavigate } from "@tanstack/react-router"
-import { LIGHTSITE_TEXT_LIMITS, normalizeEmail, validateWorkEmail } from "@lightsite/domain"
+import { HANDOUT_TEXT_LIMITS, normalizeEmail, validateWorkEmail } from "@handout/domain"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -45,7 +45,7 @@ export function AuthPage() {
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 text-foreground md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
         <Link to="/" className="flex items-center gap-2 self-center font-medium">
-          <img src="/lightsite-logo.svg" alt="Lightsite" className="h-[17px] w-[83px]" />
+          <img src="/handout-logo.svg" alt="Handout" className="h-[17px] w-[85px]" />
         </Link>
         <LoginForm mode={mode} onModeChange={setMode} returnTo={returnTo} />
       </div>
@@ -156,7 +156,7 @@ function LoginForm({
                 <Input
                   id="email"
                   type="email"
-                  maxLength={LIGHTSITE_TEXT_LIMITS.email}
+                  maxLength={HANDOUT_TEXT_LIMITS.email}
                   value={email}
                   onChange={(event) => {
                     setEmail(event.target.value)
@@ -177,7 +177,7 @@ function LoginForm({
                 <Input
                   id="password"
                   type="password"
-                  maxLength={LIGHTSITE_TEXT_LIMITS.password}
+                  maxLength={HANDOUT_TEXT_LIMITS.password}
                   value={password}
                   onChange={(event) => {
                     setPassword(event.target.value)
@@ -226,7 +226,7 @@ function LoginForm({
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center">
-        Use your company email to create and manage your Lightsite account.
+        Use your company email to create and manage your Handout account.
       </FieldDescription>
     </div>
   )
@@ -254,7 +254,7 @@ function AuthErrorAlert({
 }
 
 function getInitialAccountName(email: string) {
-  return email.split("@")[0]?.replace(/[._-]+/g, " ").trim() || "Lightsite user"
+  return email.split("@")[0]?.replace(/[._-]+/g, " ").trim() || "Handout user"
 }
 
 function getSafeExtensionReturnTo() {
@@ -283,7 +283,7 @@ function getBetterAuthErrorMessage(
   mode: AuthMode,
 ) {
   if (error.code === "email.personal_domain_blocked") {
-    return "Use your company email to sign up for Lightsite."
+    return "Use your company email to sign up for Handout."
   }
 
   if (error.code === "email.plus_addressing_blocked") {

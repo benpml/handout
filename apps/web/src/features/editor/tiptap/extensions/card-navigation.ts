@@ -14,8 +14,8 @@ const blockTypesThatExitOnTrailingEnter = new Set([
   "testimonialCard",
 ])
 
-export const LightsiteNextCardNavigation = Extension.create({
-  name: "lightsiteNextCardNavigation",
+export const HandoutNextCardNavigation = Extension.create({
+  name: "handoutNextCardNavigation",
   priority: 1000,
 
   addProseMirrorPlugins() {

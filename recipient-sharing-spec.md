@@ -1,6 +1,6 @@
-# Lightsite Recipient Sharing Spec
+# Handout Recipient Sharing Spec
 
-This document defines the new share model for sending a Lightsite site to prospects.
+This document defines the new share model for sending a Handout site to prospects.
 
 Recipient sharing replaces the older site-copy, detachable-copy, and user-editable-link model. A user does not create a separate editable page copy. They create a recipient for a site, fill that recipient's variable values, and receive a stable recipient link plus an email embed.
 
@@ -31,13 +31,13 @@ The UI should show friendly labels like `Name` and `Company`; users should not n
 Recipient links are generated, not hand-authored:
 
 ```text
-https://lightsite.io/{siteUri}/{recipientSlug}
+https://handout.link/{siteUri}/{recipientSlug}
 ```
 
 Example:
 
 ```text
-https://lightsite.io/a8f2k/david-linear
+https://handout.link/a8f2k/david-linear
 ```
 
 Rules:
@@ -196,5 +196,5 @@ Do not expose recipient email because V1 does not collect email. Slack/Open Grap
 - No detached recipient content editing.
 - No user-authored public slug field.
 - No separate recipient-specific editor context.
-- No email sending from Lightsite in V1.
+- No email sending from Handout in V1.
 - No CRM contact dedupe or lifecycle management.

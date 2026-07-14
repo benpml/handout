@@ -1,5 +1,5 @@
 {
-  "name": "@lightsite/contracts",
+  "name": "@handout/contracts",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -13,8 +13,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@lightsite/domain": "workspace:*",
-    "@lightsite/site-document": "workspace:*",
+    "@handout/domain": "workspace:*",
+    "@handout/site-document": "workspace:*",
     "zod": "^4.2.1"
   },
   "devDependencies": {

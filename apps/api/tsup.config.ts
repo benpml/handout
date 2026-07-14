@@ -10,5 +10,5 @@ export default defineConfig({
   clean: true,
   splitting: false,
   sourcemap: true,
-  noExternal: [/^@lightsite\//],
+  noExternal: [/^@handout\//],
 });

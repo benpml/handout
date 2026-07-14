@@ -1,4 +1,4 @@
-import type { LightsiteVariableOption } from "@/features/editor/tiptap/schema"
+import type { HandoutVariableOption } from "@/features/editor/tiptap/schema"
 import { editorVariables } from "@/features/editor/tiptap/variables"
 import { RecipientShareDialog } from "@/features/editor/recipients/recipient-share-dialog"
 import { useSiteRecipients } from "@/features/editor/recipients/use-site-recipients"
@@ -19,7 +19,7 @@ const shareVariableIds = new Set([
   "var-company-logo",
 ])
 
-const shareVariables: LightsiteVariableOption[] = editorVariables.filter((variable) =>
+const shareVariables: HandoutVariableOption[] = editorVariables.filter((variable) =>
   shareVariableIds.has(variable.id)
 )
 

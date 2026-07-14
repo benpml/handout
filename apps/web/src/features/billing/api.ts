@@ -6,7 +6,7 @@ import type {
   BillingSummary,
   CreateBillingCheckoutRequest,
   WorkspacePlan,
-} from "@lightsite/contracts"
+} from "@handout/contracts"
 
 import { apiRequest } from "@/lib/api/client"
 

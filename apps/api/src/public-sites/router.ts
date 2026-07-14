@@ -1,5 +1,5 @@
 import type { Response } from "express";
-import { publicSiteResponseSchema } from "@lightsite/contracts";
+import { publicSiteResponseSchema } from "@handout/contracts";
 import { Router } from "express";
 import { asyncHandler } from "../http/async-handler";
 import { AppError } from "../http/errors";

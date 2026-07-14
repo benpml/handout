@@ -1,5 +1,5 @@
 import { ReactNodeViewRenderer } from "@tiptap/react"
-import { SiteVideoEmbed } from "@lightsite/site-document"
+import { SiteVideoEmbed } from "@handout/site-document"
 
 import { VideoEmbedView } from "./video-embed-view"
 

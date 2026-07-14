@@ -1,6 +1,6 @@
-# Lightsite App Spec
+# Handout App Spec
 
-Lightsite is a lightweight sales site builder. It gives sales teams a place to quickly build, edit, personalize, publish, and track sites that can be sent to prospects who ask for more information.
+Handout is a lightweight sales site builder. It gives sales teams a place to quickly build, edit, personalize, publish, and track sites that can be sent to prospects who ask for more information.
 
 > **Canonical editor/rendering update:** [site-rendering-architecture.md](./site-rendering-architecture.md) and [site-sidebar-pages-spec.md](./site-sidebar-pages-spec.md) supersede historical references in this document to flat product blocks, root `blocks`, page `blocks`, `chrome` content, or Tiptap being limited to rich-text fields. The implemented source of truth is schema-v3 `SiteContent`: each page owns one canonical Tiptap JSON `document`, and the same Tiptap Static Renderer powers Preview and published HTML. Do not use the historical shapes for implementation.
 
@@ -8,11 +8,11 @@ This document is the living product and architecture spec for the app. It will i
 
 Note: The prospect-specific sharing model is now defined as **Recipient Sharing** in [recipient-sharing-spec.md](recipient-sharing-spec.md). That model supersedes the older user-facing "variants", "site copies", and detached-copy terminology in this document for new product and implementation work.
 
-Note: The fresh tracking rebuild is now defined in [tracking-implementation-spec.md](tracking-implementation-spec.md). That focused spec supersedes older tracking implementation details in this document until the tracking sections are merged or retired.
+Note: The event-only tracking replacement is defined in [event-tracking-privacy-hardening-spec.md](event-tracking-privacy-hardening-spec.md). That focused spec supersedes older tracking implementation details in this document.
 
 ## Product And Architecture Principles
 
-Lightsite is greenfield, so the foundation should optimize for correctness, clarity, maintainability, and low operating cost from the beginning.
+Handout is greenfield, so the foundation should optimize for correctness, clarity, maintainability, and low operating cost from the beginning.
 
 ### Product Principles
 
@@ -38,7 +38,7 @@ Lightsite is greenfield, so the foundation should optimize for correctness, clar
 
 ### Core Objects
 
-Lightsite is built around these core objects:
+Handout is built around these core objects:
 
 - **User**: A person with a login identity. A user can belong to one or more workspaces.
 - **Workspace**: A company/team account. It owns sites, team members, assets, billing, public namespace, and workspace settings.
@@ -112,7 +112,7 @@ Lightsite is built around these core objects:
 
 ### Core Idea
 
-Lightsite has one reusable sales one-pager called a **Site**. A sales rep builds the content once, inserts **Variables** anywhere the content should be personalized, then creates **Variants** for specific recipients/accounts.
+Handout has one reusable sales one-pager called a **Site**. A sales rep builds the content once, inserts **Variables** anywhere the content should be personalized, then creates **Variants** for specific recipients/accounts.
 
 So instead of duplicating a whole page for every prospect, the user creates one site and many personalized links.
 
@@ -133,7 +133,7 @@ It owns:
 
 A site is edited in the builder. Changes to the site's structure/content should flow through to every variant, unless the differing part is specifically controlled by a variable.
 
-Lightsite should use one canonical site design in V1. We do not need user-facing site style selection in the initial product surface. The content model should still be clean enough to support additional style systems without adding style switching now.
+Handout should use one canonical site design in V1. We do not need user-facing site style selection in the initial product surface. The content model should still be clean enough to support additional style systems without adding style switching now.
 
 ### Variables
 
@@ -269,7 +269,7 @@ The app should keep **user account setup** separate from **workspace setup**. A 
 
 ### Auth Provider
 
-Lightsite should use BetterAuth for authentication.
+Handout should use BetterAuth for authentication.
 
 BetterAuth should own:
 
@@ -279,7 +279,7 @@ BetterAuth should own:
 - Secure auth cookies/session tokens
 - Account linking behavior, if OAuth is added later
 
-Lightsite should own:
+Handout should own:
 
 - Work email validation rules
 - Workspace creation and membership
@@ -461,14 +461,14 @@ Website validation:
 
 ### logo.dev Integration
 
-During workspace setup, Lightsite should use logo.dev to suggest a workspace logo from the entered website.
+During workspace setup, Handout should use logo.dev to suggest a workspace logo from the entered website.
 
 Rules:
 
 - The logo.dev token lives in `LOGO_DEV_TOKEN`.
 - The token must only be used server-side.
-- The client should call a Lightsite API endpoint such as `POST /api/workspace-logo-preview`.
-- The server fetches or proxies the logo.dev image and returns a Lightsite-owned preview/asset URL. The browser must never receive a logo.dev URL containing the token.
+- The client should call a Handout API endpoint such as `POST /api/workspace-logo-preview`.
+- The server fetches or proxies the logo.dev image and returns a Handout-owned preview/asset URL. The browser must never receive a logo.dev URL containing the token.
 - Do not expose the raw token to the browser.
 - Do not log the full logo.dev URL with token.
 
@@ -483,7 +483,7 @@ Recommended behavior:
 - Default size: 128 or 256 for workspace setup preview.
 - Default theme: choose the theme that best fits the app's current mode, but store the selected image asset rather than depending on theme-specific remote URLs forever.
 - Let the user accept the suggested logo, upload their own, or skip.
-- If accepted, copy/store the logo as a Lightsite asset so future rendering does not depend on repeated logo.dev requests.
+- If accepted, copy/store the logo as a Handout asset so future rendering does not depend on repeated logo.dev requests.
 - If logo.dev fails, show a quiet fallback state and let the user upload manually.
 - If the website changes, offer to refresh the suggested logo without overwriting a manually selected logo automatically.
 
@@ -564,7 +564,7 @@ After successful creation:
 
 ### Workspace Purpose
 
-A workspace is the company/team boundary for Lightsite.
+A workspace is the company/team boundary for Handout.
 
 It owns:
 
@@ -671,7 +671,7 @@ Internal access:
 
 - `isDeveloper` belongs on an internal user/admin access record, not on a workspace membership.
 - It is not editable through normal UI.
-- It can unlock dev/debug tools for the Lightsite team.
+- It can unlock dev/debug tools for the Handout team.
 - It should never grant customer workspace admin permissions accidentally unless explicitly combined with admin checks in internal-only code.
 
 ### Member List
@@ -1278,13 +1278,13 @@ Confirmation should say:
 Default public site link:
 
 ```text
-https://lightsite.app/{workspace-slug}/{site-slug}
+https://handout.app/{workspace-slug}/{site-slug}
 ```
 
 Variant public link:
 
 ```text
-https://lightsite.app/{workspace-slug}/{site-slug}/{variant-slug}
+https://handout.app/{workspace-slug}/{site-slug}/{variant-slug}
 ```
 
 Rules:
@@ -1359,7 +1359,7 @@ Rules:
 
 - Every published site should have an OG title, description, and image.
 - OG image should be configurable in the editor.
-- If no custom OG image is set, use a Lightsite-generated default.
+- If no custom OG image is set, use a Handout-generated default.
 - Variant links may use the same OG image as the site unless variant-specific OG images are added later.
 - OG image requests from Slack/preview bots can be used as a signal that a link was shared/unfurled, but this is probabilistic.
 
@@ -1563,13 +1563,13 @@ Do not let these layers blur. Most editor bugs come from treating local working 
 
 ### Content Ownership
 
-Lightsite should own the product content schema.
+Handout should own the product content schema.
 
 Tiptap/ProseMirror should power rich text editing inside rich-text fields, but the entire site should not be an opaque editor-specific blob.
 
 Recommended architecture:
 
-- Site content is a Lightsite JSON document.
+- Site content is a Handout JSON document.
 - The document has a flat ordered array of product blocks.
 - Blocks have stable IDs and typed data.
 - Rich text fields inside blocks store Tiptap/ProseMirror JSON.
@@ -1696,7 +1696,7 @@ Rules:
 
 - `showTableOfContents` defaults to false or true based on final product preference.
 - OG image is configurable in the editor.
-- If no OG image is set, use the Lightsite default OG image.
+- If no OG image is set, use the Handout default OG image.
 - Settings changes are draft changes and require publish/republish to affect public pages unless the setting is explicitly app-only.
 
 ### Block Schema
@@ -2583,7 +2583,7 @@ Notes:
 Variant public link:
 
 ```text
-https://lightsite.app/{workspace-slug}/{site-slug}/{variant-slug}
+https://handout.app/{workspace-slug}/{site-slug}/{variant-slug}
 ```
 
 Rules:
@@ -3064,12 +3064,12 @@ Defaults:
 
 - Title: site header title resolved with default/variant values where safe.
 - Description: site subtitle or default workspace/site description.
-- Image: configured site OG image or Lightsite default OG image.
+- Image: configured site OG image or Handout default OG image.
 
 Rules:
 
 - OG image is configurable in editor.
-- If no custom OG image exists, use a generated/default Lightsite image.
+- If no custom OG image exists, use a generated/default Handout image.
 - Variant links can use the same OG image as the base site in v1.
 - If title/subtitle contain variables, variant links may resolve them for OG metadata if doing so is cheap and safe.
 - OG metadata must be generated from published snapshot, not draft.
@@ -3079,7 +3079,7 @@ Rules:
 Decision for v1:
 
 - Use uploaded/configured OG image if present.
-- Otherwise use a static Lightsite default OG image.
+- Otherwise use a static Handout default OG image.
 - Do not build expensive dynamic OG rendering until required.
 
 Future dynamic OG:
@@ -3250,7 +3250,7 @@ Rules:
 - Store session ID in memory/session storage where possible, not necessarily long-lived cookies.
 - A new public page open can create a new session.
 - If the visitor reloads quickly, it is acceptable to create a new session in v1 unless session continuity is needed.
-- Do not use session ID to track users across unrelated Lightsite sites unless explicitly designed and privacy-reviewed.
+- Do not use session ID to track users across unrelated Handout sites unless explicitly designed and privacy-reviewed.
 - Any `anonymousVisitorId` must be scoped to the site/link context or another privacy-reviewed boundary. Do not create a global cross-workspace visitor identifier in v1.
 
 ### Event Fields
@@ -3799,7 +3799,7 @@ Rules:
 V1 decision:
 
 - Treat uploaded site assets as public once used in a published page.
-- Do not store sensitive files in Lightsite assets.
+- Do not store sensitive files in Handout assets.
 - Communicate through product design that uploaded public-site assets may be publicly accessible.
 
 ### Attaching Assets
@@ -3830,7 +3830,7 @@ Rules:
 
 - The server uses `LOGO_DEV_TOKEN`.
 - Client never receives token.
-- If user accepts the suggested logo, copy it into Lightsite asset storage.
+- If user accepts the suggested logo, copy it into Handout asset storage.
 - Do not depend on the logo.dev URL at public render time.
 - Store asset source as `logo_dev`.
 - Store original website domain used for lookup in metadata if useful.
@@ -3848,7 +3848,7 @@ OG images are assets.
 Rules:
 
 - Site can reference custom `ogImageAssetId`.
-- If absent, public rendering uses Lightsite default OG image.
+- If absent, public rendering uses Handout default OG image.
 - Future generated OG images should be stored/cached as assets tied to published version.
 - OG images should have recommended dimensions and cropping guidance.
 
@@ -5406,9 +5406,9 @@ Rules:
 
 BetterAuth owns its required auth tables.
 
-Lightsite should not duplicate auth credentials.
+Handout should not duplicate auth credentials.
 
-Lightsite may need an app profile table if BetterAuth user fields are insufficient:
+Handout may need an app profile table if BetterAuth user fields are insufficient:
 
 ```text
 user_profiles
@@ -5887,7 +5887,7 @@ The frontend should be organized by product feature and optimized for a fast app
 
 It should:
 
-- Use the Lightsite design system consistently.
+- Use the Handout design system consistently.
 - Keep app, editor, and public rendering bundles separate where practical.
 - Avoid loading heavy editor/collaboration code outside the editor.
 - Avoid loading internal app code on public pages.
@@ -5909,7 +5909,7 @@ Frontend stack:
 
 Rules:
 
-- App-owned UI uses shadcn primitives and Lightsite component wrappers.
+- App-owned UI uses shadcn primitives and Handout component wrappers.
 - Product icons use `@tabler/icons-react`.
 - Avoid one-off components that bypass the design system.
 - Heavy editor modules should be code-split.
@@ -7827,7 +7827,7 @@ Backend:
 
 ### Design System Purpose
 
-The design system should make Lightsite easier to build, not harder.
+The design system should make Handout easier to build, not harder.
 
 It should provide:
 
@@ -7854,8 +7854,8 @@ Sources of truth:
 Rules:
 
 - Base shadcn tokens come from the Figma mode variable collection.
-- Lightsite semantic tokens are allowed when they represent product meaning.
-- Current Lightsite semantic tokens include `page-background`, `tertiary-foreground`, `variable-*`, and `editing-*`.
+- Handout semantic tokens are allowed when they represent product meaning.
+- Current Handout semantic tokens include `page-background`, `tertiary-foreground`, `variable-*`, and `editing-*`.
 - Add new semantic tokens only when the meaning is reusable and product-level.
 - Do not introduce raw Tailwind color palettes inside product components.
 
@@ -7998,7 +7998,7 @@ Rules:
 
 ### Accessibility Goals
 
-Lightsite should be accessible by default.
+Handout should be accessible by default.
 
 Goals:
 
@@ -8110,7 +8110,7 @@ Auth email flows:
 - Magic link, if added later.
 - Account security notifications, if supported by the auth setup.
 
-Lightsite owns product email flows:
+Handout owns product email flows:
 
 - Workspace invitation.
 - Invitation accepted.
@@ -8303,7 +8303,7 @@ Email deliverability basics:
 - Include physical mailing address/legal footer where required by provider/policy.
 - Monitor bounces and complaints when provider supports it.
 
-Invite emails should come from a Lightsite address in v1.
+Invite emails should come from a Handout address in v1.
 
 Future:
 
@@ -8355,7 +8355,7 @@ Development mode:
 
 ### Purpose
 
-Lightsite has two analytics domains that must remain separate:
+Handout has two analytics domains that must remain separate:
 
 - Customer-facing prospect tracking for published one-pagers.
 - Internal product analytics for understanding app usage and reliability.
@@ -8585,7 +8585,7 @@ Recommended:
 
 ### Purpose
 
-Lightsite is not a compliance-heavy enterprise product at launch, but public page hosting, prospect tracking, uploaded content, and workspace user management create legal and privacy obligations.
+Handout is not a compliance-heavy enterprise product at launch, but public page hosting, prospect tracking, uploaded content, and workspace user management create legal and privacy obligations.
 
 V1 should establish clean defaults so compliance can grow without painful rewrites.
 
@@ -8601,7 +8601,7 @@ Before production launch, provide:
 
 These documents should explain:
 
-- Lightsite hosts user-created sales pages.
+- Handout hosts user-created sales pages.
 - Workspace members can publish public links.
 - Public page visits may be tracked.
 - Prospect interaction events may be visible to workspace members.
@@ -8706,7 +8706,7 @@ These actions must be:
 
 ### Purpose
 
-Developer and admin tooling should make Lightsite easier to operate without creating hidden product behavior or permission bypasses.
+Developer and admin tooling should make Handout easier to operate without creating hidden product behavior or permission bypasses.
 
 V1 should distinguish:
 
@@ -8729,7 +8729,7 @@ Workspace admin:
 
 Internal admin:
 
-- Belongs to Lightsite operations.
+- Belongs to Handout operations.
 - Can access explicitly allowed internal tools.
 - Can perform support/moderation actions across workspaces when necessary.
 
@@ -9001,7 +9001,7 @@ V1 can start with a simple queue, but service boundaries should not assume synch
 
 ### Purpose
 
-Lightsite content should not be trapped inside opaque UI state.
+Handout content should not be trapped inside opaque UI state.
 
 The app should use portable, versioned JSON schemas for:
 
@@ -9039,7 +9039,7 @@ Export should not include by default:
 Site export format:
 
 ```txt
-lightsite_site_export
+handout_site_export
   exportVersion
   exportedAt
   source
@@ -9124,7 +9124,7 @@ Do not build broad customer-facing import in v1 unless a clear use case appears.
 
 Supported v1 import-like flows:
 
-- Duplicate existing Lightsite site.
+- Duplicate existing Handout site.
 - Restore from version history.
 - Internal migration scripts.
 - Developer seed fixtures.
@@ -9692,7 +9692,7 @@ Targets:
 
 ### Purpose
 
-Lists are core product surfaces in Lightsite:
+Lists are core product surfaces in Handout:
 
 - Sites.
 - Variants.
@@ -9917,9 +9917,9 @@ Frontend rules:
 
 ### Purpose
 
-Integrations should expand Lightsite without contaminating the core product model.
+Integrations should expand Handout without contaminating the core product model.
 
-Core Lightsite should work without any third-party integration except:
+Core Handout should work without any third-party integration except:
 
 - Auth provider.
 - Database.
@@ -9980,7 +9980,7 @@ StorageProvider
 
 Rules:
 
-- Feature code depends on Lightsite services, not provider SDKs.
+- Feature code depends on Handout services, not provider SDKs.
 - Provider SDKs live at infrastructure boundaries.
 - Provider errors are translated into typed application/provider errors.
 - Provider calls have timeouts.
@@ -10092,7 +10092,7 @@ Future CRM principles:
 - Workspace admin connects CRM.
 - Sync is opt-in.
 - CRM mappings are explicit.
-- Lightsite remains source of truth for site content.
+- Handout remains source of truth for site content.
 - CRM may receive activity summaries/events.
 - CRM errors do not block public page tracking.
 - Sync jobs are idempotent and retryable.
@@ -10143,13 +10143,13 @@ Testing requirements:
 
 ### Purpose
 
-Public links are central to Lightsite. The default public URL system must be stable enough for v1 and flexible enough for custom domains later.
+Public links are central to Handout. The default public URL system must be stable enough for v1 and flexible enough for custom domains later.
 
 V1 public URLs:
 
 ```txt
-https://lightsite.app/{workspaceSlug}/{siteSlug}
-https://lightsite.app/{workspaceSlug}/{siteSlug}/{variantSlug}
+https://handout.app/{workspaceSlug}/{siteSlug}
+https://handout.app/{workspaceSlug}/{siteSlug}/{variantSlug}
 ```
 
 Custom domains are future scope, but the routing model should not prevent them.
@@ -10178,7 +10178,7 @@ Rules:
 
 ### Default URL Stability
 
-Default Lightsite URLs should be stable.
+Default Handout URLs should be stable.
 
 Rules:
 
@@ -10253,7 +10253,7 @@ Rules:
 - Do not manually manage certificates unless required.
 - Domain activation waits for TLS readiness.
 - Public routing must fail closed before activation.
-- If TLS provisioning fails, default Lightsite URLs still work.
+- If TLS provisioning fails, default Handout URLs still work.
 - Domain status should surface actionable errors.
 
 ### Custom Domain Routing
@@ -10494,7 +10494,7 @@ Tests should cover:
 
 Errors should be predictable for developers and understandable for users.
 
-Lightsite should avoid generic failures that force frontend code to inspect strings or guess recovery behavior.
+Handout should avoid generic failures that force frontend code to inspect strings or guess recovery behavior.
 
 Goals:
 
@@ -10799,7 +10799,7 @@ Server logs should not include:
 
 Testing should protect the product model, permissions, editor correctness, and public rendering.
 
-Lightsite should not rely on manual clicking as the main quality strategy.
+Handout should not rely on manual clicking as the main quality strategy.
 
 Quality goals:
 
@@ -11056,7 +11056,7 @@ Rules:
 
 ### Purpose
 
-Lightsite should feel lightweight because the product promise is speed and simplicity.
+Handout should feel lightweight because the product promise is speed and simplicity.
 
 Performance goals:
 
@@ -11367,7 +11367,7 @@ Do not introduce distributed complexity before measured need.
 
 Time bugs are subtle and expensive, especially for tracking, billing, invites, version history, and activity feeds.
 
-Lightsite should use a consistent time model from the start.
+Handout should use a consistent time model from the start.
 
 ### Storage Rules
 
@@ -11489,7 +11489,7 @@ Future localization:
 
 ### Purpose
 
-Lightsite should be safe to change after real users and public links exist.
+Handout should be safe to change after real users and public links exist.
 
 Release safety matters because:
 
@@ -11699,7 +11699,7 @@ Rules:
 
 ### Purpose
 
-Lightsite has two very different device requirements:
+Handout has two very different device requirements:
 
 - Public pages must work beautifully on mobile and desktop.
 - The authenticated editor can be optimized for desktop, but must fail gracefully on small screens.
@@ -11802,7 +11802,7 @@ Do not promise full offline editing in v1.
 
 ### Purpose
 
-Lightsite stores user-created content and renders it publicly. XSS and embed abuse are core risks.
+Handout stores user-created content and renders it publicly. XSS and embed abuse are core risks.
 
 ### Rich Text Sanitization
 
@@ -11893,7 +11893,7 @@ Tests should include:
 
 ### Purpose
 
-Lightsite is for sending useful one-pagers to prospects, but v1 should not become a CRM.
+Handout is for sending useful one-pagers to prospects, but v1 should not become a CRM.
 
 Variants can represent a personalized link for:
 
@@ -12064,7 +12064,7 @@ Future redaction:
 
 ### Purpose
 
-Lightsite needs two different histories:
+Handout needs two different histories:
 
 - Product activity that helps users understand what happened.
 - Security/audit history that helps admins/support investigate important actions.
@@ -12136,7 +12136,7 @@ Rationale:
 
 - Comments introduce mentions, notifications, permissions, resolution state, email preferences, and retention questions.
 - The core product can launch without comments.
-- Sales teams can collaborate in their existing tools while Lightsite proves the editor/publishing workflow.
+- Sales teams can collaborate in their existing tools while Handout proves the editor/publishing workflow.
 
 Future comments requirements:
 
@@ -12270,7 +12270,7 @@ V1 avatar options:
 Rules:
 
 - User avatar upload is deferred in v1.
-- If auth provider exposes a safe avatar URL later, treat it as external display metadata, not a Lightsite asset.
+- If auth provider exposes a safe avatar URL later, treat it as external display metadata, not a Handout asset.
 - Removing avatar falls back to initials.
 
 Future avatar upload requirements:
@@ -12404,7 +12404,7 @@ Site ownership/display:
 
 ### Ownership-Like Responsibilities
 
-Lightsite does not need a separate "workspace owner" role in v1.
+Handout does not need a separate "workspace owner" role in v1.
 
 V1 roles:
 
@@ -12700,7 +12700,7 @@ Rules:
 
 - Render from published snapshot only.
 - Resolve variables before rendering visible content.
-- Use the single canonical Lightsite public design.
+- Use the single canonical Handout public design.
 - Do not render editor controls.
 - Do not render internal comments, audit metadata, or access controls.
 - Do not fetch authenticated app data.
@@ -12760,7 +12760,7 @@ V1 footer should be minimal.
 
 Footer may include:
 
-- Lightsite attribution if required by plan.
+- Handout attribution if required by plan.
 - Privacy/tracking disclosure link if required.
 - Workspace/company link if configured later.
 
@@ -12900,7 +12900,7 @@ Rules:
 
 ### Purpose
 
-CTAs are the primary conversion mechanism for Lightsite pages.
+CTAs are the primary conversion mechanism for Handout pages.
 
 They must be easy to configure, safe to render, trackable, and reliable.
 
@@ -13174,7 +13174,7 @@ Rules:
 
 ### Purpose
 
-Lightsite pages are primarily shareable sales pages, not SEO landing pages.
+Handout pages are primarily shareable sales pages, not SEO landing pages.
 
 V1 should make link previews polished while defaulting to privacy-safe indexing behavior.
 
@@ -13198,7 +13198,7 @@ Rules:
 
 - Meta title falls back to site title.
 - Meta description falls back to subtitle/summary when available.
-- OG image falls back to Lightsite default OG image.
+- OG image falls back to Handout default OG image.
 - Variant links use same metadata as site unless variant-specific metadata is added later.
 - Metadata renders from published snapshot.
 
@@ -13242,7 +13242,7 @@ Rules:
 - Custom OG image must be a valid image asset.
 - Recommended aspect ratio: 1200 x 630.
 - Warn on poor aspect ratio.
-- If no custom OG image, use Lightsite default.
+- If no custom OG image, use Handout default.
 - Do not generate dynamic OG images per request in v1.
 
 Future:
@@ -13277,7 +13277,7 @@ Publish validation should block:
 
 V1:
 
-- Use Lightsite favicon for public pages.
+- Use Handout favicon for public pages.
 - Site/workspace custom favicon is not v1.
 
 Future custom favicon:
@@ -14069,7 +14069,7 @@ Do not cut:
 
 ### Purpose
 
-Lightsite needs asynchronous work, but async work should stay boring, observable, idempotent, and cheap.
+Handout needs asynchronous work, but async work should stay boring, observable, idempotent, and cheap.
 
 Jobs support:
 
@@ -14318,7 +14318,7 @@ Tests should cover:
 
 Retention and cleanup protect cost, privacy, performance, and restoreability.
 
-Lightsite should keep what users need, remove what is unsafe or wasteful, and avoid deleting records that preserve business history.
+Handout should keep what users need, remove what is unsafe or wasteful, and avoid deleting records that preserve business history.
 
 ### Lifecycle Categories
 
@@ -14558,7 +14558,7 @@ Actor kinds:
 
 - `user`: normal authenticated user.
 - `system`: automated job/system action.
-- `internal_admin`: Lightsite operator/support action.
+- `internal_admin`: Handout operator/support action.
 
 Rules:
 
@@ -14636,7 +14636,7 @@ Rules:
 
 ### Purpose
 
-Public page hosting creates abuse risk. Lightsite needs a minimal operational path for takedowns and support without building a huge moderation system in v1.
+Public page hosting creates abuse risk. Handout needs a minimal operational path for takedowns and support without building a huge moderation system in v1.
 
 ### Abuse Risks
 
@@ -14784,13 +14784,13 @@ Runbooks should include:
 
 ## API Versioning, Contracts, And Compatibility
 
-Lightsite should treat its internal API contracts as product infrastructure, not incidental route code. The first version can move quickly because the product is young, but the API should still have explicit compatibility rules so frontend, public rendering, tracking, background jobs, and future integrations do not drift apart.
+Handout should treat its internal API contracts as product infrastructure, not incidental route code. The first version can move quickly because the product is young, but the API should still have explicit compatibility rules so frontend, public rendering, tracking, background jobs, and future integrations do not drift apart.
 
 The primary goal is not to over-build a public developer platform early. The goal is to make every app boundary typed, validated, observable, and evolvable from day one.
 
 ### API Surfaces
 
-Lightsite has several distinct API surfaces:
+Handout has several distinct API surfaces:
 
 - Authenticated app API for the dashboard, editor, settings, team, tracking analytics, and billing.
 - Public site read API for resolving and rendering published sites.
@@ -15226,7 +15226,7 @@ Do not rely only on frontend tests to validate API behavior. API contracts are a
 
 ## Environment Configuration And Secret Management
 
-Lightsite should have typed, explicit configuration from the start. Configuration drift is one of the easiest ways for a clean app to become fragile, especially once there are public URLs, tracking scripts, email, storage, workers, and preview deployments.
+Handout should have typed, explicit configuration from the start. Configuration drift is one of the easiest ways for a clean app to become fragile, especially once there are public URLs, tracking scripts, email, storage, workers, and preview deployments.
 
 The rule is simple: every environment variable is documented, validated, owned, and classified as public or secret.
 
@@ -15450,7 +15450,7 @@ Rules:
 
 ### Public URL Strategy In Config
 
-Lightsite needs multiple URL classes:
+Handout needs multiple URL classes:
 
 - App dashboard URL.
 - API URL.
@@ -16090,7 +16090,7 @@ Rules:
 
 ## Type System, Shared Packages, And Validation Boundaries
 
-Lightsite should use TypeScript as a product safety tool, not just as editor autocomplete. The most important types should describe domain contracts, not implementation accidents.
+Handout should use TypeScript as a product safety tool, not just as editor autocomplete. The most important types should describe domain contracts, not implementation accidents.
 
 The goal is to make invalid states hard to represent at module boundaries and impossible to persist at system boundaries.
 
@@ -16223,7 +16223,7 @@ Testing should include:
 
 ## Authorization Model, Policy Enforcement, And Resource Scoping
 
-Authorization should be a first-class architecture layer in Lightsite. The app is collaborative, workspace-scoped, and publishes public pages, which means authorization mistakes can expose customer content, allow unauthorized edits, or leak analytics. Permission checks should be centralized, tested, and expressed in product language.
+Authorization should be a first-class architecture layer in Handout. The app is collaborative, workspace-scoped, and publishes public pages, which means authorization mistakes can expose customer content, allow unauthorized edits, or leak analytics. Permission checks should be centralized, tested, and expressed in product language.
 
 The core rule: every authenticated action is evaluated as an actor attempting an action on a resource inside a workspace context.
 
@@ -16264,7 +16264,7 @@ Rules:
 
 ### Actor Types
 
-Lightsite has several actor types:
+Handout has several actor types:
 
 - Authenticated user.
 - Workspace member.
@@ -16396,7 +16396,7 @@ Rules:
 
 - Admin authority is workspace-scoped.
 - A workspace admin in one workspace has no power in another workspace.
-- Admins are not internal Lightsite staff.
+- Admins are not internal Handout staff.
 - User permissions can be expanded through site access, not through hidden route exceptions.
 - Last-admin protections apply to role changes, removal, leaving, and account deactivation.
 
@@ -16541,7 +16541,7 @@ Permission tests should be service-level and route-level. UI tests are not enoug
 
 ## Observability, Logging, Metrics, And Tracing
 
-Lightsite should be observable from the beginning. Observability is not just production debugging; it is how we verify publishing, tracking, collaboration, public rendering, and background jobs behave correctly without inspecting customer content.
+Handout should be observable from the beginning. Observability is not just production debugging; it is how we verify publishing, tracking, collaboration, public rendering, and background jobs behave correctly without inspecting customer content.
 
 The goal is to answer: what happened, who or what initiated it, which workspace/site was affected, how long it took, whether it succeeded, and where to look next.
 
@@ -16804,7 +16804,7 @@ Rules:
 
 ## Rate Limiting, Throttling, And Cost Controls
 
-Rate limits should protect Lightsite from abuse, accidental loops, provider costs, and noisy clients without harming normal sales workflows. The app has several high-risk surfaces: signup, invites, slug checks, logo fetching, uploads, publishing, tracking ingest, public rendering, and realtime collaboration.
+Rate limits should protect Handout from abuse, accidental loops, provider costs, and noisy clients without harming normal sales workflows. The app has several high-risk surfaces: signup, invites, slug checks, logo fetching, uploads, publishing, tracking ingest, public rendering, and realtime collaboration.
 
 The goal is to enforce limits at the right layer with clear user feedback and privacy-safe keys.
 
@@ -17025,7 +17025,7 @@ Tests should cover:
 
 ## Backup, Restore, And Disaster Recovery
 
-Backups are not a checkbox. Lightsite will host customer-facing public pages and collect engagement data, so recovery must be designed before production usage creates pressure.
+Backups are not a checkbox. Handout will host customer-facing public pages and collect engagement data, so recovery must be designed before production usage creates pressure.
 
 The goal is to recover from accidental deletion, bad migrations, provider outages, corrupted content, compromised credentials, and regional/platform failures with clear tradeoffs.
 
@@ -17173,7 +17173,7 @@ Rules:
 
 ## Privacy, Consent, And Data Governance
 
-Lightsite should be privacy-conscious by design because the product combines user accounts, workspace collaboration, uploaded sales content, public links, and prospect engagement tracking.
+Handout should be privacy-conscious by design because the product combines user accounts, workspace collaboration, uploaded sales content, public links, and prospect engagement tracking.
 
 The practical standard: collect what is needed, explain it honestly, avoid surprising tracking, keep data scoped, and make deletion/retention behavior predictable.
 
@@ -17298,7 +17298,7 @@ Tests and reviews should cover:
 
 ## Domain State Machines And Transition Guards
 
-Lightsite should model product state explicitly. Booleans are useful for simple flags, but core lifecycle state should not be implied from scattered nullable timestamps or UI assumptions. Every important state transition should have a named command, validation rules, permission rules, side effects, and tests.
+Handout should model product state explicitly. Booleans are useful for simple flags, but core lifecycle state should not be implied from scattered nullable timestamps or UI assumptions. Every important state transition should have a named command, validation rules, permission rules, side effects, and tests.
 
 The goal is to make invalid states hard to create and easy to diagnose.
 
@@ -17660,7 +17660,7 @@ Tests should cover:
 
 ## Transactional Side Effects, Outbox, And Domain Events
 
-Lightsite should not perform important side effects inline before the database transaction commits. Publishing, invites, cache invalidation, tracking aggregation, email, asset processing, analytics summaries, and realtime notifications all need reliable handoff without creating duplicate side effects.
+Handout should not perform important side effects inline before the database transaction commits. Publishing, invites, cache invalidation, tracking aggregation, email, asset processing, analytics summaries, and realtime notifications all need reliable handoff without creating duplicate side effects.
 
 Use a transactional outbox pattern for business events that need post-commit processing.
 
@@ -17881,7 +17881,7 @@ Tests should cover:
 
 ## Data Access Layer, Workspace Isolation, And Query Ownership
 
-Lightsite is a multi-workspace app. The data access layer should make cross-workspace leaks difficult, not merely unlikely. Workspace scoping, permission checks, and resource ownership should be encoded in repositories/query helpers and service boundaries.
+Handout is a multi-workspace app. The data access layer should make cross-workspace leaks difficult, not merely unlikely. Workspace scoping, permission checks, and resource ownership should be encoded in repositories/query helpers and service boundaries.
 
 The goal is simple: a route should not be able to accidentally load or mutate another workspace's data because a developer forgot one `where` clause.
 
@@ -18193,7 +18193,7 @@ The goal is to make every route answer four questions clearly:
 
 ### Route Taxonomy
 
-Lightsite has distinct route classes:
+Handout has distinct route classes:
 
 - Public marketing/auth routes.
 - Auth routes.
@@ -18420,7 +18420,7 @@ Tests should cover:
 
 ## Forms, Validation UX, And Submit Lifecycle
 
-Forms are where users feel quality most directly. Lightsite should have a consistent form architecture so signup, onboarding, workspace settings, site settings, variant editing, invites, publishing, and destructive confirmations all behave predictably.
+Forms are where users feel quality most directly. Handout should have a consistent form architecture so signup, onboarding, workspace settings, site settings, variant editing, invites, publishing, and destructive confirmations all behave predictably.
 
 The goal is to keep form code boring: typed schemas, consistent field errors, preserved input, no duplicate submits, no hidden destructive behavior, and clean recovery from server errors.
 
@@ -18637,7 +18637,7 @@ Tests should cover:
 
 ## Mutation Lifecycle, Cache Invalidation, And Realtime Reconciliation
 
-Lightsite should have a consistent client-side mutation model. Server state comes from the API. Local UI state exists for interaction. Realtime messages notify and reconcile. The frontend should not maintain parallel truth that slowly diverges from the backend.
+Handout should have a consistent client-side mutation model. Server state comes from the API. Local UI state exists for interaction. Realtime messages notify and reconcile. The frontend should not maintain parallel truth that slowly diverges from the backend.
 
 The goal is to make every mutation predictable: what it changes, which queries update, which realtime events arrive, what happens on failure, and how stale clients recover.
 
@@ -18825,7 +18825,7 @@ Tests should cover:
 
 ## Loading, Empty, Error, And Feedback System
 
-Lightsite should feel calm even when data is loading, unavailable, empty, or broken. These states should be designed as part of the product, not added at the end.
+Handout should feel calm even when data is loading, unavailable, empty, or broken. These states should be designed as part of the product, not added at the end.
 
 The goal is to keep users oriented: where they are, what is happening, what they can do next, and whether their work is safe.
 
@@ -19408,7 +19408,7 @@ Tests should cover:
 
 ## Media Picker, Uploads, And Asset Usage UX
 
-Lightsite needs media, but a full asset library can wait. V1 should still have a clean media picker/upload flow that works for workspace logo, site avatar, image blocks, image variables, OG image, and logo/testimonial blocks without creating messy asset ownership or deletion behavior.
+Handout needs media, but a full asset library can wait. V1 should still have a clean media picker/upload flow that works for workspace logo, site avatar, image blocks, image variables, OG image, and logo/testimonial blocks without creating messy asset ownership or deletion behavior.
 
 The key idea: asset upload and asset usage are different. Upload creates an asset. Saving content/settings creates a usage reference.
 
@@ -20378,7 +20378,7 @@ Site access modal controls authenticated app access to a site.
 
 It should answer:
 
-- Who can see this site inside Lightsite?
+- Who can see this site inside Handout?
 - Who can edit it?
 - Can everyone on the team access it?
 - What can the current user do?
@@ -20482,7 +20482,7 @@ Rules:
 
 - Email is display-only in v1 unless BetterAuth account management is explicitly implemented.
 - Profile changes do not change workspace memberships.
-- Avatar upload uses normal asset validation if stored by Lightsite.
+- Avatar upload uses normal asset validation if stored by Handout.
 - Deleting/changing profile should not mutate immutable audit records.
 - Profile settings should not contain workspace role controls.
 
@@ -20513,7 +20513,7 @@ Rules:
 - Fetch through server-side logo.dev integration.
 - Browser never receives tokenized logo.dev URL.
 - Suggested logo is previewed before applying.
-- Applying suggested logo stores/copies it as Lightsite asset.
+- Applying suggested logo stores/copies it as Handout asset.
 - Failure does not block settings save.
 - Refresh should not overwrite current logo without explicit confirmation.
 
@@ -20764,18 +20764,18 @@ Tests should cover:
 
 ## Authentication, Session, And Account Security Contracts
 
-Authentication should be boring, safe, and mostly delegated to BetterAuth. Lightsite should not invent its own auth system around BetterAuth. The app layer should define product rules around work email, account setup, workspace routing, invite acceptance, session-aware UI, and authorization context.
+Authentication should be boring, safe, and mostly delegated to BetterAuth. Handout should not invent its own auth system around BetterAuth. The app layer should define product rules around work email, account setup, workspace routing, invite acceptance, session-aware UI, and authorization context.
 
 The separation is important:
 
 - BetterAuth owns credentials, auth sessions, password reset, verification tokens, auth cookies, and provider-specific auth flows.
-- Lightsite owns user profile completion, workspace membership, onboarding state, roles, permissions, and product routing.
+- Handout owns user profile completion, workspace membership, onboarding state, roles, permissions, and product routing.
 
 ### Auth Principles
 
 Rules:
 
-- Do not store passwords or auth secrets in Lightsite app tables.
+- Do not store passwords or auth secrets in Handout app tables.
 - Do not duplicate BetterAuth credential state.
 - Do not build parallel session cookies for authenticated app access.
 - Do not rely on frontend auth state for protected API access.
@@ -20826,7 +20826,7 @@ Flow:
 1. User submits signup.
 2. Client performs local validation for immediate feedback.
 3. Server/BetterAuth performs authoritative auth creation.
-4. Lightsite creates/updates app profile record if needed.
+4. Handout creates/updates app profile record if needed.
 5. User is routed to email verification, account setup, invite continuation, or workspace setup based on state.
 
 Rules:
@@ -20885,7 +20885,7 @@ Rules:
 - Verification flow should be neutral about account existence.
 - Verification success resumes intended flow.
 - Verification token handling belongs to BetterAuth/provider.
-- Lightsite stores only app profile verification-derived state if needed for routing; BetterAuth remains source of truth for auth verification.
+- Handout stores only app profile verification-derived state if needed for routing; BetterAuth remains source of truth for auth verification.
 
 ### Password Reset
 
@@ -20895,8 +20895,8 @@ Rules:
 - Reset request response should be neutral.
 - Reset requests are rate-limited.
 - Successful reset should invalidate sessions according to BetterAuth capability/policy.
-- Lightsite should route user after reset based on account/workspace setup state.
-- Password reset tokens are never logged or stored in Lightsite app tables.
+- Handout should route user after reset based on account/workspace setup state.
+- Password reset tokens are never logged or stored in Handout app tables.
 
 ### Session Context
 
@@ -21126,7 +21126,7 @@ Rules:
 
 - logo.dev is called server-side only.
 - Browser never receives tokenized logo.dev URL.
-- Suggested logo is copied into Lightsite asset storage when accepted.
+- Suggested logo is copied into Handout asset storage when accepted.
 - User can upload instead.
 - User can skip.
 - logo.dev failure does not block workspace setup.
@@ -21189,7 +21189,7 @@ Tests should cover:
 
 ## Public Page Runtime, Tracking Script, And Visitor Safety
 
-Public pages are the customer-facing output of Lightsite. They should be fast, stable, accessible, cacheable, and independent from authenticated app code. Tracking should never block rendering, never collect more than needed, and never make public page availability depend on analytics infrastructure.
+Public pages are the customer-facing output of Handout. They should be fast, stable, accessible, cacheable, and independent from authenticated app code. Tracking should never block rendering, never collect more than needed, and never make public page availability depend on analytics infrastructure.
 
 ### Public Runtime Principles
 
@@ -21451,7 +21451,7 @@ Rules:
 - Mobile layout must not overflow horizontally.
 - Failed embed state should fit in page design.
 - Embed block should have clear settings in inspector.
-- Public renderer should not let provider content overlap Lightsite UI.
+- Public renderer should not let provider content overlap Handout UI.
 
 ### Embed Privacy
 
@@ -21480,7 +21480,7 @@ Tests should cover:
 
 ## Design System Governance, Component Contracts, And UI Consistency
 
-Lightsite should feel like one coherent product even as features grow. The design system should make implementation faster and safer, not become a second product or a folder full of disconnected examples. shadcn primitives are the base layer. Lightsite-specific components should be composed from those primitives, use the Figma/shadcn token system, and live in the right ownership layer.
+Handout should feel like one coherent product even as features grow. The design system should make implementation faster and safer, not become a second product or a folder full of disconnected examples. shadcn primitives are the base layer. Handout-specific components should be composed from those primitives, use the Figma/shadcn token system, and live in the right ownership layer.
 
 The goal is to prevent component drift before the app has dozens of screens.
 
@@ -21649,7 +21649,7 @@ Tests should cover:
 
 ## Accessibility, Responsive Behavior, And Cross-Browser Contracts
 
-Accessibility and responsive behavior should be designed into the app, not patched at the end. Lightsite has three different surfaces with different requirements: the authenticated app, the editor, and public pages. Public pages are launch-critical on mobile. The editor can be optimized for desktop, but it still needs graceful behavior and clear messaging.
+Accessibility and responsive behavior should be designed into the app, not patched at the end. Handout has three different surfaces with different requirements: the authenticated app, the editor, and public pages. Public pages are launch-critical on mobile. The editor can be optimized for desktop, but it still needs graceful behavior and clear messaging.
 
 ### Accessibility Principles
 
@@ -21792,7 +21792,7 @@ Tests should cover:
 
 ## Release Readiness, QA Matrix, And Acceptance Gates
 
-Lightsite should ship in deliberate slices. A large spec is only useful if implementation has gates that preserve quality. Each milestone should have acceptance criteria, test coverage, performance checks, migration safety, and rollback expectations.
+Handout should ship in deliberate slices. A large spec is only useful if implementation has gates that preserve quality. Each milestone should have acceptance criteria, test coverage, performance checks, migration safety, and rollback expectations.
 
 ### Release Principles
 
@@ -21921,7 +21921,7 @@ Rules:
 
 ## Support, Internal Admin, And Operational Tooling Contracts
 
-Support and internal admin tooling should help operate Lightsite without creating hidden product behavior or privacy risk. Internal tools should prefer metadata, request IDs, audit events, and safe status views over direct content access.
+Support and internal admin tooling should help operate Handout without creating hidden product behavior or privacy risk. Internal tools should prefer metadata, request IDs, audit events, and safe status views over direct content access.
 
 ### Support Principles
 
@@ -22019,7 +22019,7 @@ Tests/reviews should cover:
 
 ## Monorepo, Package Boundaries, And Build Ownership
 
-The repository should make the clean path the easy path. Lightsite will grow across app UI, public rendering, editor logic, backend APIs, workers, schemas, tests, and operational scripts. The package structure should keep those responsibilities separate enough that a change in one area does not quietly leak into another.
+The repository should make the clean path the easy path. Handout will grow across app UI, public rendering, editor logic, backend APIs, workers, schemas, tests, and operational scripts. The package structure should keep those responsibilities separate enough that a change in one area does not quietly leak into another.
 
 Recommended workspace shape:
 
@@ -22180,7 +22180,7 @@ Shared packages should be easy to test because they should be mostly pure. If a 
 
 ## Developer Workflow, Code Review, And Implementation Hygiene
 
-Lightsite should be pleasant to build because the development workflow prevents uncertainty. Every feature should have a clear place to live, a clear test shape, clear environment requirements, and clear review criteria.
+Handout should be pleasant to build because the development workflow prevents uncertainty. Every feature should have a clear place to live, a clear test shape, clear environment requirements, and clear review criteria.
 
 ### Local Development Workflow
 
@@ -22347,7 +22347,7 @@ The goal is not process for its own sake. The goal is to keep the app easy to ch
 
 ## Feature Flags, Rollouts, And Kill Switches
 
-Feature flags should help Lightsite release carefully, degrade safely, and recover quickly. They should not become a shadow permission system or a place where unfinished product behavior hides indefinitely.
+Feature flags should help Handout release carefully, degrade safely, and recover quickly. They should not become a shadow permission system or a place where unfinished product behavior hides indefinitely.
 
 ### Flag Principles
 
@@ -22575,7 +22575,7 @@ Good operational scripts make support safer and engineering calmer.
 
 ## Documentation, Decision Records, And Spec Maintenance
 
-Documentation should make the system easier to change. Lightsite’s docs should explain product behavior, architecture decisions, operational behavior, and implementation conventions without forcing every reader to reconstruct intent from code.
+Documentation should make the system easier to change. Handout’s docs should explain product behavior, architecture decisions, operational behavior, and implementation conventions without forcing every reader to reconstruct intent from code.
 
 ### Documentation Map
 

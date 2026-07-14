@@ -1,12 +1,12 @@
 import { IconArrowsHorizontal, IconLink } from "@tabler/icons-react"
 import type { Editor } from "@tiptap/react"
-import { LIGHTSITE_TEXT_LIMITS } from "@lightsite/domain"
+import { HANDOUT_TEXT_LIMITS } from "@handout/domain"
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react"
 
 import { cn } from "@/lib/utils"
 
 import { getFormValue, normalizeButtonHref } from "../lib/button-link"
-import type { LightsiteNextButtonSettingsTarget } from "../tiptap/extensions/button-settings"
+import type { HandoutNextButtonSettingsTarget } from "../tiptap/extensions/button-settings"
 import { useFloatingEditorPopoverPosition } from "./use-floating-editor-popover-position"
 
 type EditorButtonSettingsPopoverProps = {
@@ -14,7 +14,7 @@ type EditorButtonSettingsPopoverProps = {
 }
 
 type ButtonSettingsStorage = {
-  subscribe: (listener: (target: LightsiteNextButtonSettingsTarget) => void) => () => void
+  subscribe: (listener: (target: HandoutNextButtonSettingsTarget) => void) => () => void
 }
 
 type ButtonSettingsError = {
@@ -23,7 +23,7 @@ type ButtonSettingsError = {
 }
 
 export function EditorButtonSettingsPopover({ editor }: EditorButtonSettingsPopoverProps) {
-  const [target, setTarget] = useState<LightsiteNextButtonSettingsTarget | null>(null)
+  const [target, setTarget] = useState<HandoutNextButtonSettingsTarget | null>(null)
   const [labelDraft, setLabelDraft] = useState("")
   const [hrefDraft, setHrefDraft] = useState("")
   const [fullWidthDraft, setFullWidthDraft] = useState(false)
@@ -46,7 +46,7 @@ export function EditorButtonSettingsPopover({ editor }: EditorButtonSettingsPopo
     reset()
 
     if (activeTarget?.mode === "create") {
-      editor.chain().focus().removeLightsiteNextButtonDraft(activeTarget.pos).run()
+      editor.chain().focus().removeHandoutNextButtonDraft(activeTarget.pos).run()
       return
     }
 
@@ -54,7 +54,7 @@ export function EditorButtonSettingsPopover({ editor }: EditorButtonSettingsPopo
       editor
         .chain()
         .focus()
-        .previewLightsiteNextButtonDraft(activeTarget.pos, {
+        .previewHandoutNextButtonDraft(activeTarget.pos, {
           fullWidth: activeTarget.fullWidth,
           href: activeTarget.href,
           label: activeTarget.label,
@@ -71,15 +71,15 @@ export function EditorButtonSettingsPopover({ editor }: EditorButtonSettingsPopo
         return
       }
 
-      editor.commands.previewLightsiteNextButtonDraft(target.pos, attrs)
+      editor.commands.previewHandoutNextButtonDraft(target.pos, attrs)
     },
     [editor, target]
   )
 
   useEffect(() => {
     const storage = (
-      editor.storage as unknown as { lightsiteNextButtonSettings?: ButtonSettingsStorage }
-    ).lightsiteNextButtonSettings
+      editor.storage as unknown as { handoutNextButtonSettings?: ButtonSettingsStorage }
+    ).handoutNextButtonSettings
 
     if (!storage) {
       return
@@ -181,7 +181,7 @@ export function EditorButtonSettingsPopover({ editor }: EditorButtonSettingsPopo
       editor
         .chain()
         .focus()
-        .setLightsiteNextButtonAttrs(target.pos, {
+        .setHandoutNextButtonAttrs(target.pos, {
           fullWidth: fullWidthDraft,
           label,
           href: normalized,
@@ -199,7 +199,7 @@ export function EditorButtonSettingsPopover({ editor }: EditorButtonSettingsPopo
   return (
     <div
       ref={popoverRef}
-      className="lightsite-editor-button-settings"
+      className="handout-editor-button-settings"
       role="dialog"
       style={{ left: position.x, maxHeight: position.maxHeight, top: position.y }}
       aria-label="Button settings"
@@ -207,14 +207,14 @@ export function EditorButtonSettingsPopover({ editor }: EditorButtonSettingsPopo
       onWheel={(event) => event.stopPropagation()}
     >
       <form onSubmit={save}>
-        <label className="lightsite-editor-button-settings-label" htmlFor="lightsite-editor-button-label">
+        <label className="handout-editor-button-settings-label" htmlFor="handout-editor-button-label">
           Button text
         </label>
-        <div className="lightsite-editor-button-settings-field">
+        <div className="handout-editor-button-settings-field">
           <input
             ref={labelInputRef}
-            id="lightsite-editor-button-label"
-            maxLength={LIGHTSITE_TEXT_LIMITS.sidebarLabel}
+            id="handout-editor-button-label"
+            maxLength={HANDOUT_TEXT_LIMITS.sidebarLabel}
             name="label"
             placeholder="Button"
             type="text"
@@ -229,17 +229,17 @@ export function EditorButtonSettingsPopover({ editor }: EditorButtonSettingsPopo
           />
         </div>
         {error?.field === "label" ? (
-          <div className="lightsite-editor-button-settings-error">{error.message}</div>
+          <div className="handout-editor-button-settings-error">{error.message}</div>
         ) : null}
-        <label className="lightsite-editor-button-settings-label" htmlFor="lightsite-editor-button-link">
+        <label className="handout-editor-button-settings-label" htmlFor="handout-editor-button-link">
           Button link
         </label>
-        <div className="lightsite-editor-button-settings-field">
+        <div className="handout-editor-button-settings-field">
           <IconLink aria-hidden="true" />
           <input
-            id="lightsite-editor-button-link"
+            id="handout-editor-button-link"
             inputMode="url"
-            maxLength={LIGHTSITE_TEXT_LIMITS.url}
+            maxLength={HANDOUT_TEXT_LIMITS.url}
             name="href"
             placeholder="https://example.com"
             type="text"
@@ -251,10 +251,10 @@ export function EditorButtonSettingsPopover({ editor }: EditorButtonSettingsPopo
           />
         </div>
         {error?.field === "href" ? (
-          <div className="lightsite-editor-button-settings-error">{error.message}</div>
+          <div className="handout-editor-button-settings-error">{error.message}</div>
         ) : null}
         <button
-          className="lightsite-editor-button-settings-toggle"
+          className="handout-editor-button-settings-toggle"
           type="button"
           aria-pressed={fullWidthDraft}
           onClick={() => {
@@ -265,24 +265,24 @@ export function EditorButtonSettingsPopover({ editor }: EditorButtonSettingsPopo
           }}
         >
           <IconArrowsHorizontal aria-hidden="true" />
-          <span className="lightsite-editor-button-settings-toggle-copy">
+          <span className="handout-editor-button-settings-toggle-copy">
             <span>Fill width</span>
             <span>Stretch the button to the block width</span>
           </span>
           <span
             className={cn(
-              "lightsite-editor-button-settings-switch",
-              fullWidthDraft && "lightsite-editor-button-settings-switch-on"
+              "handout-editor-button-settings-switch",
+              fullWidthDraft && "handout-editor-button-settings-switch-on"
             )}
             aria-hidden="true"
           />
         </button>
-        <div className="lightsite-editor-button-settings-actions">
-          <button className="lightsite-editor-button-settings-action" type="button" onClick={cancel}>
+        <div className="handout-editor-button-settings-actions">
+          <button className="handout-editor-button-settings-action" type="button" onClick={cancel}>
             Cancel
           </button>
           <button
-            className="lightsite-editor-button-settings-action lightsite-editor-button-settings-action-primary"
+            className="handout-editor-button-settings-action handout-editor-button-settings-action-primary"
             type="submit"
           >
             {isCreateMode ? "Create" : "Save"}

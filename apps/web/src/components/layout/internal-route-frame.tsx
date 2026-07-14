@@ -160,7 +160,7 @@ function InternalUnavailableState({
 
   if (isAuthError) {
     title = "Sign in to continue"
-    description = devAuthErrorMessage ?? "Use a work email to access your Lightsite workspace."
+    description = devAuthErrorMessage ?? "Use a work email to access your Handout workspace."
   }
 
   if (devAuthLoadError) {
@@ -195,7 +195,7 @@ function InternalUnavailableState({
   return (
     <div className="flex min-h-dvh bg-page-background p-4">
       <main className="m-auto flex w-full max-w-md flex-col gap-6">
-        <img src="/lightsite-logo.svg" alt="Lightsite" className="h-[17px] w-[83px]" />
+        <img src="/handout-logo.svg" alt="Handout" className="h-[17px] w-[85px]" />
         <Alert variant={isAuthError ? "default" : "destructive"}>
           <AlertTitle>{title}</AlertTitle>
           <AlertDescription>{description}</AlertDescription>

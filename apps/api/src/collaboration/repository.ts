@@ -5,7 +5,7 @@ import {
   sites,
   type Database,
   type SiteContent,
-} from "@lightsite/db"
+} from "@handout/db"
 import type { SiteRecord } from "../sites/repository"
 
 export type SiteCollaborationSnapshot = {

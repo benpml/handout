@@ -6,10 +6,10 @@ import {
   SUPPORTED_SITE_DOCUMENT_MARK_TYPES,
   SUPPORTED_SITE_DOCUMENT_NODE_TYPES,
   siteContentSchema,
-} from "@lightsite/site-document";
+} from "@handout/site-document";
 import { z } from "zod";
 
-const apiBaseUrl = (process.env.LIGHTSITE_API_BASE_URL ?? "http://localhost:3011").replace(/\/$/, "");
+const apiBaseUrl = (process.env.HANDOUT_API_BASE_URL ?? "http://localhost:3011").replace(/\/$/, "");
 
 const variantInputSchema = z.object({
   id: z.string().optional(),
@@ -58,22 +58,22 @@ const siteDocumentExample = {
 };
 
 const server = new McpServer({
-  name: "lightsite",
+  name: "handout",
   version: "0.1.0",
 });
 
-registerTool("lightsite_get_capabilities", {
-  title: "Get Lightsite agent capabilities",
+registerTool("handout_get_capabilities", {
+  title: "Get Handout agent capabilities",
   description: "Returns the canonical Tiptap JSON workflow, supported node and mark types, and configuration seen by this MCP server.",
   inputSchema: {},
 }, async () => ({
   apiBaseUrl,
-  workspaceId: process.env.LIGHTSITE_AGENT_WORKSPACE_ID ?? null,
-  publicSiteOrigin: process.env.LIGHTSITE_PUBLIC_SITE_ORIGIN ?? null,
-  workspaceSlug: process.env.LIGHTSITE_AGENT_WORKSPACE_SLUG ?? null,
+  workspaceId: process.env.HANDOUT_AGENT_WORKSPACE_ID ?? null,
+  publicSiteOrigin: process.env.HANDOUT_PUBLIC_SITE_ORIGIN ?? null,
+  workspaceSlug: process.env.HANDOUT_AGENT_WORKSPACE_SLUG ?? null,
   auth: {
-    bearerTokenConfigured: Boolean(process.env.LIGHTSITE_AGENT_API_TOKEN),
-    devAuthEnabled: process.env.LIGHTSITE_DEV_AUTH === "1",
+    bearerTokenConfigured: Boolean(process.env.HANDOUT_AGENT_API_TOKEN),
+    devAuthEnabled: process.env.HANDOUT_DEV_AUTH === "1",
   },
   siteContent: {
     sourceOfTruth: "sites.draftContent",
@@ -108,15 +108,15 @@ registerTool("lightsite_get_capabilities", {
   ],
 }));
 
-registerTool("lightsite_list_sites", {
+registerTool("handout_list_sites", {
   title: "List sites",
   description: "Lists sites available to the configured actor/workspace.",
   inputSchema: {},
 }, () => apiRequest("/api/sites"));
 
-registerTool("lightsite_create_site", {
+registerTool("handout_create_site", {
   title: "Create site",
-  description: "Creates a draft site shell. Follow with lightsite_update_site_content to write the JSON.",
+  description: "Creates a draft site shell. Follow with handout_update_site_content to write the JSON.",
   inputSchema: {
     name: z.string().min(1).max(160),
     slug: z.string().max(96).optional(),
@@ -126,7 +126,7 @@ registerTool("lightsite_create_site", {
   body: input,
 }));
 
-registerTool("lightsite_get_site", {
+registerTool("handout_get_site", {
   title: "Get site metadata",
   description: "Reads site metadata and permissions.",
   inputSchema: {
@@ -134,7 +134,7 @@ registerTool("lightsite_get_site", {
   },
 }, (input) => apiRequest(`/api/sites/${encodeURIComponent(input.siteId)}`));
 
-registerTool("lightsite_update_site", {
+registerTool("handout_update_site", {
   title: "Update site metadata",
   description: "Updates site metadata such as name, slug, or visibility. Set visibility to team before sharing or browser-testing public URLs.",
   inputSchema: {
@@ -152,7 +152,7 @@ registerTool("lightsite_update_site", {
   },
 }));
 
-registerTool("lightsite_get_site_content", {
+registerTool("handout_get_site_content", {
   title: "Get site JSON content",
   description: "Reads the editable SiteContent JSON and draftRevision.",
   inputSchema: {
@@ -160,9 +160,9 @@ registerTool("lightsite_get_site_content", {
   },
 }, (input) => apiRequest(`/api/sites/${encodeURIComponent(input.siteId)}/content`));
 
-registerTool("lightsite_update_site_content", {
+registerTool("handout_update_site_content", {
   title: "Update site JSON content",
-  description: "Replaces the editable canonical SiteContent JSON. Page content must be Tiptap JSON. Use expectedDraftRevision from lightsite_get_site_content.",
+  description: "Replaces the editable canonical SiteContent JSON. Page content must be Tiptap JSON. Use expectedDraftRevision from handout_get_site_content.",
   inputSchema: {
     siteId: z.string().min(1),
     expectedDraftRevision: z.number().int().positive().optional(),
@@ -178,7 +178,7 @@ registerTool("lightsite_update_site_content", {
   },
 }));
 
-registerTool("lightsite_validate_site_content", {
+registerTool("handout_validate_site_content", {
   title: "Validate site JSON content",
   description: "Checks whether SiteContent JSON is ready to publish.",
   inputSchema: {
@@ -192,7 +192,7 @@ registerTool("lightsite_validate_site_content", {
   },
 }));
 
-registerTool("lightsite_publish_site", {
+registerTool("handout_publish_site", {
   title: "Publish site",
   description: "Publishes the current draft JSON as an immutable public snapshot.",
   inputSchema: {
@@ -202,7 +202,7 @@ registerTool("lightsite_publish_site", {
   method: "POST",
 }));
 
-registerTool("lightsite_unpublish_site", {
+registerTool("handout_unpublish_site", {
   title: "Unpublish site",
   description: "Unpublishes a live site without deleting version history.",
   inputSchema: {
@@ -212,7 +212,7 @@ registerTool("lightsite_unpublish_site", {
   method: "POST",
 }));
 
-registerTool("lightsite_list_variants", {
+registerTool("handout_list_variants", {
   title: "List site variants",
   description: "Lists active variants for a site.",
   inputSchema: {
@@ -220,7 +220,7 @@ registerTool("lightsite_list_variants", {
   },
 }, (input) => apiRequest(`/api/sites/${encodeURIComponent(input.siteId)}/variants`));
 
-registerTool("lightsite_get_public_urls", {
+registerTool("handout_get_public_urls", {
   title: "Get public site URLs",
   description: "Builds the default public site URL and variant URLs from site and variant slugs.",
   inputSchema: {
@@ -235,11 +235,11 @@ registerTool("lightsite_get_public_urls", {
   ]);
   const site = asRecord(siteResult).site;
   const variants = asRecord(variantsResult).variants;
-  const workspaceSlug = input.workspaceSlug ?? process.env.LIGHTSITE_AGENT_WORKSPACE_SLUG;
-  const origin = (input.publicSiteOrigin ?? process.env.LIGHTSITE_PUBLIC_SITE_ORIGIN ?? apiBaseUrl).replace(/\/$/, "");
+  const workspaceSlug = input.workspaceSlug ?? process.env.HANDOUT_AGENT_WORKSPACE_SLUG;
+  const origin = (input.publicSiteOrigin ?? process.env.HANDOUT_PUBLIC_SITE_ORIGIN ?? apiBaseUrl).replace(/\/$/, "");
 
   if (!workspaceSlug) {
-    throw new Error("workspaceSlug is required unless LIGHTSITE_AGENT_WORKSPACE_SLUG is configured.");
+    throw new Error("workspaceSlug is required unless HANDOUT_AGENT_WORKSPACE_SLUG is configured.");
   }
 
   if (!isRecord(site) || !Array.isArray(variants)) {
@@ -261,7 +261,7 @@ registerTool("lightsite_get_public_urls", {
   };
 });
 
-registerTool("lightsite_batch_upsert_variants", {
+registerTool("handout_batch_upsert_variants", {
   title: "Batch upsert variants",
   description: "Creates or updates many site variants at once. Prefer matchBy=slug for account lists.",
   inputSchema: {
@@ -277,7 +277,7 @@ registerTool("lightsite_batch_upsert_variants", {
   },
 }));
 
-registerTool("lightsite_get_tracking_summary", {
+registerTool("handout_get_tracking_summary", {
   title: "Get tracking summary",
   description: "Gets a v2 tracking activity summary from recent events and sessions. Use this before listing detailed records.",
   inputSchema: {
@@ -315,10 +315,6 @@ registerTool("lightsite_get_tracking_summary", {
       slackShares: countBy(events, "type", "slack_share"),
       webhookSends: countBy(events, "type", "webhook_send"),
       activeSessions: countBy(sessions, "state", "active"),
-      sessionsWithRecordings: sessions.filter((session) => {
-        const recording = isRecord(session.recording) ? session.recording : null;
-        return recording?.available === true;
-      }).length,
     },
     events,
     sessions,
@@ -327,7 +323,7 @@ registerTool("lightsite_get_tracking_summary", {
   };
 });
 
-registerTool("lightsite_list_tracking_events", {
+registerTool("handout_list_tracking_events", {
   title: "List tracking events",
   description: "Lists detailed v2 tracking events for deeper inspection.",
   inputSchema: {
@@ -344,15 +340,14 @@ registerTool("lightsite_list_tracking_events", {
   },
 }, (input) => apiRequest(`/api/workspaces/${encodeURIComponent(resolveWorkspaceId(input.workspaceId))}/tracking/v2/events?${toSearchParams(input)}`));
 
-registerTool("lightsite_list_tracking_sessions", {
+registerTool("handout_list_tracking_sessions", {
   title: "List tracking sessions",
-  description: "Lists v2 tracking sessions, including device, location, duration, and recording status.",
+  description: "Lists v2 tracking sessions, including device, coarse location, and duration.",
   inputSchema: {
     workspaceId: z.string().optional(),
     siteId: z.string().optional(),
     recipientId: z.string().optional(),
     state: z.enum(["active", "ended", "expired", "suppressed"]).optional(),
-    recordingStatus: z.enum(["disabled", "pending", "available", "expired", "failed"]).optional(),
     from: z.string().optional(),
     to: z.string().optional(),
     cursor: z.string().optional(),
@@ -435,10 +430,10 @@ async function apiRequest(path: string, options: {
 function buildHeaders(body: unknown) {
   return {
     ...(body === undefined ? {} : { "content-type": "application/json" }),
-    ...(process.env.LIGHTSITE_AGENT_API_TOKEN
-      ? { authorization: `Bearer ${process.env.LIGHTSITE_AGENT_API_TOKEN}` }
+    ...(process.env.HANDOUT_AGENT_API_TOKEN
+      ? { authorization: `Bearer ${process.env.HANDOUT_AGENT_API_TOKEN}` }
       : {}),
-    ...(process.env.LIGHTSITE_DEV_AUTH === "1" ? { "x-lightsite-dev-auth": "1" } : {}),
+    ...(process.env.HANDOUT_DEV_AUTH === "1" ? { "x-handout-dev-auth": "1" } : {}),
   };
 }
 
@@ -478,7 +473,7 @@ function toToolError(error: unknown) {
 
 function asRecord(value: unknown): Record<string, any> {
   if (!isRecord(value)) {
-    throw new Error("Expected object response from Lightsite API.");
+    throw new Error("Expected object response from Handout API.");
   }
 
   return value;
@@ -489,10 +484,10 @@ function isRecord(value: unknown): value is Record<string, any> {
 }
 
 function resolveWorkspaceId(inputWorkspaceId: string | undefined) {
-  const workspaceId = inputWorkspaceId ?? process.env.LIGHTSITE_AGENT_WORKSPACE_ID;
+  const workspaceId = inputWorkspaceId ?? process.env.HANDOUT_AGENT_WORKSPACE_ID;
 
   if (!workspaceId) {
-    throw new Error("workspaceId is required unless LIGHTSITE_AGENT_WORKSPACE_ID is configured.");
+    throw new Error("workspaceId is required unless HANDOUT_AGENT_WORKSPACE_ID is configured.");
   }
 
   return workspaceId;

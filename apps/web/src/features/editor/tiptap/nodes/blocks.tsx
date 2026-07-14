@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- Tiptap node definitions intentionally share this module with their React node views. */
 import { ReactNodeViewRenderer } from "@tiptap/react"
 import {
   SiteButtonBlock,
@@ -23,7 +24,7 @@ import {
   SiteTestimonialCard,
   SiteTestimonialQuote,
   normalizeSiteIconColor,
-} from "@lightsite/site-document"
+} from "@handout/site-document"
 
 import {
   ButtonBlockView,
@@ -36,20 +37,20 @@ import {
   TestimonialCardView,
 } from "./block-views"
 
-// Pure schema and HTML live in @lightsite/site-document. These adapters add
+// Pure schema and HTML live in @handout/site-document. These adapters add
 // editor interaction only; Preview and published rendering consume the bases.
 export const IconList = SiteIconList
 export const IconListItem = SiteIconListItem.extend({
   addNodeView() {
     return ReactNodeViewRenderer(IconListItemView, {
       as: "li",
-      className: "lightsite-editor-icon-list-item",
+      className: "handout-editor-icon-list-item",
       attrs: ({ node }) => ({
         "data-icon": String(node.attrs.icon ?? "box"),
         "data-icon-color": normalizeSiteIconColor(node.attrs.iconColor),
-        "data-lightsite-icon-list-item": "",
-        "data-lightsite-editor-block-type": "icon-list-item",
-        "data-lightsite-editor-nested-block": "",
+        "data-handout-icon-list-item": "",
+        "data-handout-editor-block-type": "icon-list-item",
+        "data-handout-editor-nested-block": "",
       }),
     })
   },

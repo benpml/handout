@@ -1,50 +1,34 @@
 import { describe, expect, it } from "vitest";
+
 import {
   TRACKING_V2_MAX_BATCH_EVENTS,
-  TRACKING_V2_MAX_RECORDING_DURATION_MS,
-  TRACKING_V2_RECORDING_DISCLOSURE_TEXT,
+  TRACKING_V2_MAX_SESSION_DURATION_MS,
   TRACKING_V2_SCRIPT_VERSION,
-  extractTrackingV2ReferrerHost,
   isTrackingV2BrowserEventType,
   isTrackingV2EventType,
-  sanitizeTrackingV2Path,
-  sanitizeTrackingV2Url,
+  trackingV2ContextTokenPayloadSchema,
+  trackingV2CreateInternalIpRangeRequestSchema,
   trackingV2EventBatchSchema,
   trackingV2EventRegistry,
+  trackingV2ManifestPayloadSchema,
   trackingV2PublicBootstrapSchema,
-  trackingV2RecordingChunkSchema,
-  trackingV2RecordingManifestResponseSchema,
   trackingV2ServerEventDataSchema,
   trackingV2SiteTrackingSettingsResponseSchema,
   trackingV2SessionStartRequestSchema,
   trackingV2SessionStartResponseSchema,
   trackingV2UpdateSiteSettingsRequestSchema,
-  truncateTrackingV2Label,
   type TrackingV2EventBatch,
   type TrackingV2SessionStartRequest,
 } from "./index";
 
-const now = "2026-07-09T12:00:00.000Z";
+const now = "2026-07-12T12:00:00.000Z";
 
 function validStartRequest(): TrackingV2SessionStartRequest {
   return {
     contextToken: "bootstrap_token_that_is_long_enough",
+    requestId: "request_abc123",
     startedAt: now,
-    page: {
-      path: "/brief",
-      title: "Recipient brief",
-      referrerHost: "example.com",
-    },
-    viewport: {
-      width: 1440,
-      height: 900,
-    },
-    device: {
-      deviceId: "device_abc123",
-      timezone: "America/New_York",
-      locale: "en-US",
-      userAgent: "Mozilla/5.0",
-    },
+    initialPageId: "page-overview",
   };
 }
 
@@ -57,267 +41,201 @@ function validBatch(overrides: Partial<TrackingV2EventBatch> = {}): TrackingV2Ev
     sentAt: now,
     events: [
       {
-        eventId: "event_visit_1",
-        type: "site_visit",
-        occurredAt: now,
-        sequence: 0,
-        page: {
-          path: "/brief",
-          title: "Recipient brief",
-          referrerHost: null,
-        },
-        viewport: {
-          width: 1440,
-          height: 900,
-        },
-      },
-      {
         eventId: "event_button_1",
         type: "button_click",
         occurredAt: now,
         sequence: 1,
-        element: {
-          kind: "button",
-          id: "cta-primary",
-          label: "Book a demo",
-        },
+        elementId: "cta-primary",
+        pageId: "page-overview",
       },
       {
         eventId: "event_link_1",
         type: "link_click",
         occurredAt: now,
         sequence: 2,
-        element: {
-          kind: "sidebar_link",
-          id: "proposal",
-          label: "Proposal",
-          href: "https://example.com/proposal",
-        },
+        elementId: "proposal-link",
+        pageId: "page-overview",
       },
       {
         eventId: "event_tab_1",
         type: "tab_switch",
         occurredAt: now,
         sequence: 3,
-        element: {
-          kind: "tab",
-          id: "pricing",
-          label: "Pricing",
-        },
-        fromTabLabel: "Overview",
+        fromPageId: "page-overview",
+        toPageId: "page-pricing",
+        trigger: "click",
       },
     ],
     ...overrides,
   };
 }
 
-describe("tracking v2 contract", () => {
-  it("accepts the first-phase browser event set", () => {
-    const result = trackingV2EventBatchSchema.safeParse(validBatch());
-
-    expect(result.success).toBe(true);
+describe("tracking v2 browser contract", () => {
+  it("accepts only modeled IDs and event mechanics", () => {
+    expect(trackingV2SessionStartRequestSchema.safeParse(validStartRequest()).success).toBe(true);
+    expect(trackingV2EventBatchSchema.safeParse(validBatch()).success).toBe(true);
   });
 
-  it("rejects unknown browser event types", () => {
-    const batch = validBatch({
-      events: [
-        {
-          eventId: "event_bad_1",
-          type: "calendar_click",
-          occurredAt: now,
-          sequence: 0,
-        } as never,
-      ],
-    });
+  it("rejects browser-owned labels, destinations, page paths, and device identity", () => {
+    expect(trackingV2SessionStartRequestSchema.safeParse({
+      ...validStartRequest(),
+      page: { path: "/brief", title: "Private title" },
+      device: { deviceId: "persistent-device", userAgent: "Browser" },
+    }).success).toBe(false);
 
-    expect(trackingV2EventBatchSchema.safeParse(batch).success).toBe(false);
+    expect(trackingV2EventBatchSchema.safeParse({
+      ...validBatch(),
+      events: [{
+        eventId: "event_bad_1",
+        type: "button_click",
+        occurredAt: now,
+        sequence: 1,
+        elementId: "cta-primary",
+        label: "Browser supplied",
+        href: "https://example.com/private?token=secret",
+      }],
+    }).success).toBe(false);
+  });
+
+  it("rejects site visits and unknown interactions from the browser", () => {
+    for (const type of ["site_visit", "calendar_click"]) {
+      expect(trackingV2EventBatchSchema.safeParse({
+        ...validBatch(),
+        events: [{ eventId: `event_${type}`, type, occurredAt: now, sequence: 0 }],
+      }).success).toBe(false);
+    }
   });
 
   it("caps browser event batches", () => {
     const batch = validBatch({
       events: Array.from({ length: TRACKING_V2_MAX_BATCH_EVENTS + 1 }, (_, index) => ({
         eventId: `event_${index}`,
-        type: "site_visit" as const,
+        type: "button_click" as const,
         occurredAt: now,
         sequence: index,
+        elementId: "cta-primary",
+        pageId: "page-overview",
       })),
     });
 
     expect(trackingV2EventBatchSchema.safeParse(batch).success).toBe(false);
   });
 
-  it("keeps public session bootstrap opaque", () => {
-    const result = trackingV2SessionStartRequestSchema.safeParse({
-      ...validStartRequest(),
-      workspaceId: "8b748b97-9aef-4f72-aa62-c7bfe4b31154",
-    });
-
-    expect(result.success).toBe(false);
-  });
-
-  it("returns recording disabled by contract in phase one", () => {
-    expect(
-      trackingV2SessionStartResponseSchema.parse({
-        accepted: true,
-        eventsAccepted: true,
-        recordingAccepted: false,
-        sessionId: "session_abc123",
-        eventToken: "event_token_that_is_long_enough",
-        scriptVersion: TRACKING_V2_SCRIPT_VERSION,
-        heartbeatIntervalMs: 15_000,
-        idleTimeoutMs: 120_000,
-        maxSessionDurationMs: 3_600_000,
-        recording: {
-          enabled: false,
-          maxDurationMs: TRACKING_V2_MAX_RECORDING_DURATION_MS,
-        },
-      }).recording.enabled,
-    ).toBe(false);
-  });
-
-  it("exposes a public bootstrap without site or recipient ids", () => {
-    const parsed = trackingV2PublicBootstrapSchema.parse({
+  it("keeps public bootstrap opaque and manifest binding encrypted", () => {
+    const bootstrap = trackingV2PublicBootstrapSchema.parse({
       version: 2,
       trackingMode: "events",
       contextToken: "bootstrap_token_that_is_long_enough",
       issuedAt: now,
-      expiresAt: "2026-07-10T12:00:00.000Z",
+      expiresAt: "2026-07-13T12:00:00.000Z",
+    });
+    expect(Object.keys(bootstrap)).not.toContain("manifestId");
+
+    expect(trackingV2ContextTokenPayloadSchema.safeParse({
+      version: 2,
+      keyId: "default",
+      workspaceId: "11111111-1111-4111-8111-111111111111",
+      siteId: "22222222-2222-4222-8222-222222222222",
+      publishedVersionId: "33333333-3333-4333-8333-333333333333",
+      manifestId: "55555555-5555-4555-8555-555555555555",
+      recipientId: "44444444-4444-4444-8444-444444444444",
+      recipientRevision: 3,
+      trackingMode: "events",
+      issuedAt: now,
+      expiresAt: "2026-07-13T12:00:00.000Z",
+    }).success).toBe(true);
+  });
+
+  it("returns an event-only session configuration", () => {
+    const parsed = trackingV2SessionStartResponseSchema.parse({
+      accepted: true,
+      eventsAccepted: true,
+      recordingAccepted: false,
+      sessionId: "session_abc123",
+      eventToken: "event_token_that_is_long_enough",
+      scriptVersion: TRACKING_V2_SCRIPT_VERSION,
+      heartbeatIntervalMs: 15_000,
+      idleTimeoutMs: 120_000,
+      maxSessionDurationMs: TRACKING_V2_MAX_SESSION_DURATION_MS,
+      recording: { enabled: false, maxDurationMs: 600_000 },
     });
 
-    expect(Object.keys(parsed)).not.toContain("workspaceId");
-    expect(Object.keys(parsed)).not.toContain("siteId");
-    expect(Object.keys(parsed)).not.toContain("recipientId");
+    expect(parsed.accepted).toBe(true);
+    expect(parsed.recording).toEqual({ enabled: false, maxDurationMs: 600_000 });
   });
+});
 
-  it("accepts the authenticated recording manifest and chunk envelopes", () => {
-    expect(
-      trackingV2RecordingManifestResponseSchema.parse({
-        recordingId: "44444444-4444-4444-8444-444444444444",
-        sessionId: "session_abc123",
-        status: "available",
-        startedAt: now,
-        endedAt: "2026-07-09T12:01:00.000Z",
-        durationMs: 60_000,
-        eventCount: 2,
-        chunkCount: 1,
-        compressedBytes: 512,
-        maxDurationMs: TRACKING_V2_MAX_RECORDING_DURATION_MS,
-        chunks: [
-          {
-            sequence: 0,
-            eventCount: 2,
-            compressedBytes: 512,
-            checksumSha256: "a".repeat(64),
-            firstEventAt: now,
-            lastEventAt: "2026-07-09T12:00:02.000Z",
-          },
-        ],
-        requestId: "request_abc123",
-      }).chunks[0]?.sequence,
-    ).toBe(0);
-
-    expect(
-      trackingV2RecordingChunkSchema.parse({
-        schemaVersion: 3,
-        sessionId: "session_abc123",
-        sequence: 0,
-        events: [
-          {
-            type: 2,
-            timestamp: Date.parse(now),
-            data: {},
-          },
-        ],
-        compressed: false,
-      }).sequence,
-    ).toBe(0);
-  });
-
-  it("keeps the registry explicit about session scope", () => {
-    expect(trackingV2EventRegistry.site_visit.sessionScoped).toBe(true);
-    expect(trackingV2EventRegistry.slack_share.sessionScoped).toBe(false);
-    expect(trackingV2EventRegistry.webhook_send.sessionScoped).toBe(false);
-  });
-
-  it("requires recording disclosure acknowledgement when enabling site settings", () => {
-    const request = {
-      enabled: true,
-      captureIpAddress: true,
-      rawIpRetentionDays: 30,
-      eventRetentionDays: 365,
-      recordingEnabled: true,
-      recordingRetentionDays: 30,
-      maxRecordingDurationSeconds: 600,
+describe("tracking v2 server-owned data", () => {
+  it("validates compact manifests and rejects duplicate IDs", () => {
+    const manifest = {
+      schemaVersion: 1,
+      siteLabel: "Recipient brief",
+      pages: [{ id: "page-overview", label: "Overview" }],
+      elements: [{
+        id: "cta-primary",
+        pageId: "page-overview",
+        eventType: "button_click",
+        kind: "button",
+        label: "Book a demo",
+        destinationKind: "external_web",
+        destinationHost: "calendar.example",
+      }],
     };
 
-    expect(trackingV2UpdateSiteSettingsRequestSchema.safeParse(request).success).toBe(false);
-    expect(
-      trackingV2UpdateSiteSettingsRequestSchema.parse({
-        ...request,
-        recordingDisclosureAccepted: true,
-      }).recordingEnabled,
-    ).toBe(true);
+    expect(trackingV2ManifestPayloadSchema.safeParse(manifest).success).toBe(true);
+    expect(trackingV2ManifestPayloadSchema.safeParse({
+      ...manifest,
+      elements: [manifest.elements[0], manifest.elements[0]],
+    }).success).toBe(false);
   });
 
-  it("keeps settings retention and duration limits bounded", () => {
-    expect(
-      trackingV2UpdateSiteSettingsRequestSchema.safeParse({
-        enabled: true,
-        captureIpAddress: true,
-        rawIpRetentionDays: 30,
-        eventRetentionDays: 7,
-        recordingEnabled: false,
-        recordingRetentionDays: 30,
-        maxRecordingDurationSeconds: 600,
-      }).success,
-    ).toBe(false);
-
-    expect(
-      trackingV2UpdateSiteSettingsRequestSchema.safeParse({
-        enabled: true,
-        captureIpAddress: true,
-        rawIpRetentionDays: 30,
-        eventRetentionDays: 365,
-        recordingEnabled: false,
-        recordingRetentionDays: 30,
-        maxRecordingDurationSeconds: 601,
-      }).success,
-    ).toBe(false);
-  });
-
-  it("accepts authenticated site settings responses", () => {
+  it("keeps settings bounded to approved retention choices", () => {
     const settings = {
       enabled: true,
-      captureIpAddress: true,
-      rawIpRetentionDays: 30,
-      eventRetentionDays: 365,
+      eventRetentionDays: 90 as const,
       recordingEnabled: false,
-      recordingRetentionDays: 30,
+      recordingRetentionDays: 14 as const,
       maxRecordingDurationSeconds: 600,
     };
+    expect(trackingV2UpdateSiteSettingsRequestSchema.safeParse(settings).success).toBe(true);
+    expect(trackingV2UpdateSiteSettingsRequestSchema.safeParse({ ...settings, eventRetentionDays: 7 }).success).toBe(false);
+    expect(trackingV2UpdateSiteSettingsRequestSchema.safeParse({
+      ...settings,
+      enabled: false,
+      recordingEnabled: true,
+      recordingDisclosureAccepted: true,
+    }).success).toBe(false);
 
-    expect(
-      trackingV2SiteTrackingSettingsResponseSchema.parse({
-        site: {
-          id: "22222222-2222-4222-8222-222222222222",
-          name: "Recipient Site",
-          slug: "recipient-site",
-        },
-        scope: "site",
-        workspaceDefault: settings,
-        siteOverride: null,
-        effective: settings,
-        recordingDisclosure: {
-          required: true,
-          text: TRACKING_V2_RECORDING_DISCLOSURE_TEXT,
-        },
-        requestId: "request_abc123",
-      }).effective.recordingEnabled,
-    ).toBe(false);
+    const response = trackingV2SiteTrackingSettingsResponseSchema.parse({
+      site: {
+        id: "22222222-2222-4222-8222-222222222222",
+        name: "Recipient Site",
+        slug: "recipient-site",
+      },
+      scope: "site",
+      workspaceDefault: settings,
+      siteOverride: null,
+      effective: settings,
+      recordingAvailable: false,
+      recordingDisclosure: {
+        required: true,
+        termsVersion: "2026-07-13.1",
+        text: "Session replay captures visible page content and structure, clicks, cursor movement, scrolling, viewport changes, and timing. Typed form values are masked.",
+        acceptedAt: null,
+      },
+      requestId: "request_abc123",
+    });
+    expect(response.effective).toEqual(settings);
   });
 
-  it("accepts the stored Slack share server-event data shape", () => {
-    const result = trackingV2ServerEventDataSchema.safeParse({
+  it("accepts only compact IP address or CIDR management input", () => {
+    expect(trackingV2CreateInternalIpRangeRequestSchema.safeParse({ label: "Office", cidr: "203.0.113.0/24" }).success).toBe(true);
+    expect(trackingV2CreateInternalIpRangeRequestSchema.safeParse({ label: "VPN", cidr: "2001:db8::/48" }).success).toBe(true);
+    expect(trackingV2CreateInternalIpRangeRequestSchema.safeParse({ label: "Bad", cidr: "office.example/24" }).success).toBe(false);
+  });
+
+  it("stores Slack preview and webhook host data without full destinations", () => {
+    expect(trackingV2ServerEventDataSchema.safeParse({
       type: "slack_share",
       data: {
         platform: "slack",
@@ -325,42 +243,23 @@ describe("tracking v2 contract", () => {
         userAgentFamily: "slackbot",
         imageCacheKey: "og-image-cache-key",
       },
-    });
+    }).success).toBe(true);
 
-    expect(result.success).toBe(true);
+    expect(trackingV2ServerEventDataSchema.safeParse({
+      type: "webhook_send",
+      data: {
+        webhookId: "55555555-5555-4555-8555-555555555555",
+        endpointHost: "hooks.example",
+      },
+    }).success).toBe(true);
   });
 
-  it("checks event type helpers", () => {
+  it("keeps the registry and type helpers explicit", () => {
+    expect(trackingV2EventRegistry.site_visit.sessionScoped).toBe(true);
+    expect(trackingV2EventRegistry.slack_share.sessionScoped).toBe(false);
     expect(isTrackingV2EventType("button_click")).toBe(true);
     expect(isTrackingV2EventType("heartbeat")).toBe(false);
+    expect(isTrackingV2BrowserEventType("site_visit")).toBe(false);
     expect(isTrackingV2BrowserEventType("slack_share")).toBe(false);
-  });
-});
-
-describe("tracking v2 sanitizers", () => {
-  it("removes credentials, queries, and hashes from URLs", () => {
-    expect(sanitizeTrackingV2Url("https://user:pass@example.com/path?token=secret#frag")).toBe(
-      "https://example.com/path",
-    );
-  });
-
-  it("rejects non-http URLs", () => {
-    expect(sanitizeTrackingV2Url("javascript:alert(1)")).toBeNull();
-  });
-
-  it("keeps only the path for page locations", () => {
-    expect(sanitizeTrackingV2Path("https://example.com/brief?token=secret#pricing")).toBe("/brief");
-    expect(sanitizeTrackingV2Path("/brief?token=secret#pricing")).toBe("/brief");
-  });
-
-  it("normalizes referrer hosts", () => {
-    expect(extractTrackingV2ReferrerHost("https://Workspace.Slack.com/archives/C123?secret=value")).toBe(
-      "workspace.slack.com",
-    );
-  });
-
-  it("truncates labels with a stable fallback", () => {
-    expect(truncateTrackingV2Label("   ")).toBe("Untitled element");
-    expect(truncateTrackingV2Label("a".repeat(200))).toHaveLength(180);
   });
 });

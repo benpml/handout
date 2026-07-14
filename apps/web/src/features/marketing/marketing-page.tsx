@@ -63,7 +63,7 @@ const steps = [
 
 const faqItems = [
   {
-    question: "What can I add to a Lightsite?",
+    question: "What can I add to a Handout?",
     answer:
       "Add the client-facing material that moves a deal forward—documents, videos, links, timelines, next steps, and supporting context—all inside one simple site.",
   },
@@ -73,9 +73,9 @@ const faqItems = [
       "No. Prospects open the link you send and view the experience directly. You control what they see and can update the site without sending a new link.",
   },
   {
-    question: "What does Lightsite track?",
+    question: "What does Handout track?",
     answer:
-      "Lightsite helps you understand meaningful buyer activity, including visits, return visits, content engagement, and sharing signals, so you know when to follow up.",
+      "Handout helps you understand meaningful buyer activity, including visits, return visits, content engagement, and sharing signals, so you know when to follow up.",
   },
   {
     question: "Can I start without a credit card?",
@@ -107,8 +107,8 @@ function MarketingHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-border-subtle bg-background/95 supports-[backdrop-filter]:bg-background/85 supports-[backdrop-filter]:backdrop-blur-lg">
       <div className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-5 py-3 sm:px-8 lg:px-10">
-        <a href="#top" aria-label="Lightsite home" className="shrink-0 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-          <img src="/lightsite-logo.svg" alt="Lightsite" className="h-[18px] w-[87px]" />
+        <a href="#top" aria-label="Handout home" className="shrink-0 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <img src="/handout-logo.svg" alt="Handout" className="h-[18px] w-[90px]" />
         </a>
 
         <nav aria-label="Primary navigation" className="order-3 flex w-full items-center justify-between gap-4 text-sm text-tertiary-foreground md:order-none md:w-auto md:justify-center md:gap-8">
@@ -193,7 +193,7 @@ function ProductPreview() {
         <div className="flex items-start gap-3">
           <span className="mt-1 size-2 shrink-0 rounded-full bg-green-foreground shadow-[0_0_0_5px_var(--green-background)]" />
           <div>
-            <p className="text-sm font-medium">Maya is viewing your Lightsite</p>
+            <p className="text-sm font-medium">Maya is viewing your Handout</p>
             <p className="mt-1 text-xs text-primary-foreground/60">Business case · just now</p>
           </div>
         </div>
@@ -208,7 +208,7 @@ function ProductPreview() {
           </div>
           <div className="hidden min-w-0 items-center gap-2 rounded-md bg-muted px-3 py-1.5 text-xs text-muted-foreground sm:flex">
             <IconLink className="size-3.5" aria-hidden="true" />
-            lightsite.io/acme/launch-plan
+            handout.link/acme/launch-plan
           </div>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <span className="size-2 rounded-full bg-green-foreground" />
@@ -327,7 +327,7 @@ function ActivityItem({
 
 function AudienceStrip() {
   return (
-    <section aria-label="Teams that use Lightsite" className="border-b border-border-subtle px-5 py-10 sm:px-8 lg:px-10">
+    <section aria-label="Teams that use Handout" className="border-b border-border-subtle px-5 py-10 sm:px-8 lg:px-10">
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-6 sm:flex-row sm:justify-between">
         <p className="text-sm text-muted-foreground">Built for client-facing teams</p>
         <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm font-medium text-tertiary-foreground sm:justify-end">
@@ -348,7 +348,7 @@ function HowItWorks() {
         <SectionIntro
           eyebrow="How it works"
           title="From scattered follow-up to one clear next step."
-          description="Lightsite gives every deal a polished destination—and gives you the context to follow up at the right moment."
+          description="Handout gives every deal a polished destination—and gives you the context to follow up at the right moment."
         />
         <div className="mt-14 grid border-y border-border-subtle lg:grid-cols-3">
           {steps.map((step) => {
@@ -539,7 +539,7 @@ function PricingSection() {
         <SectionIntro
           eyebrow="Pricing"
           title="Start with the deal in front of you."
-          description="Create your first Lightsite for free. No card, no setup call, and no reason to keep sending attachment-heavy follow-ups."
+          description="Create your first Handout for free. No card, no setup call, and no reason to keep sending attachment-heavy follow-ups."
         />
 
         <div className="rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-10">
@@ -600,7 +600,7 @@ function FinalCta() {
       <div className="mx-auto flex max-w-7xl flex-col items-center rounded-3xl bg-primary px-6 py-16 text-center text-primary-foreground sm:px-10 sm:py-24">
         <p className="text-xs font-medium tracking-[0.18em] text-primary-foreground/60 uppercase">One link. One clear story.</p>
         <h2 className="mt-5 max-w-4xl text-4xl leading-[1] font-semibold tracking-[-0.05em] text-balance sm:text-7xl">Make the next follow-up the one they remember.</h2>
-        <p className="mt-6 max-w-xl text-base leading-7 text-primary-foreground/65">Build a Lightsite in minutes and give your prospect a better way to say yes.</p>
+        <p className="mt-6 max-w-xl text-base leading-7 text-primary-foreground/65">Build a Handout in minutes and give your prospect a better way to say yes.</p>
         <Button asChild variant="secondary" size="lg" className="mt-9 h-11 px-5">
           <a href="/auth?mode=sign-up">
             Start building free
@@ -617,7 +617,7 @@ function MarketingFooter() {
     <footer className="border-t border-border-subtle px-5 py-8 sm:px-8 lg:px-10">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <a href="#top" aria-label="Back to top" className="w-fit rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-          <img src="/lightsite-logo.svg" alt="Lightsite" className="h-[18px] w-[87px]" />
+          <img src="/handout-logo.svg" alt="Handout" className="h-[18px] w-[90px]" />
         </a>
         <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
           {navItems.map((item) => (
@@ -628,7 +628,7 @@ function MarketingFooter() {
           <a href="#faq" className="transition-colors hover:text-foreground">FAQ</a>
           <a href="/auth" className="transition-colors hover:text-foreground">Log in</a>
         </nav>
-        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Lightsite</p>
+        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Handout</p>
       </div>
     </footer>
   )

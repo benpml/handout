@@ -1,4 +1,4 @@
-import { buildPublicCacheKey } from "@lightsite/tracking-schema";
+import { buildPublicCacheKey } from "@handout/tracking-schema";
 
 import type { PublishedSitePayload } from "./types";
 

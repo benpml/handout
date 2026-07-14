@@ -1,10 +1,10 @@
 import { IconCalendarEvent, IconLink } from "@tabler/icons-react"
 import type { Editor } from "@tiptap/react"
-import { LIGHTSITE_TEXT_LIMITS } from "@lightsite/domain"
+import { HANDOUT_TEXT_LIMITS } from "@handout/domain"
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react"
 
 import { extractIframeSrc, getEmbedUrlHost, normalizeIframeEmbedUrl } from "../lib/embed-url"
-import type { LightsiteNextCalendarEmbedSettingsTarget } from "../tiptap/extensions/calendar-embed-settings"
+import type { HandoutNextCalendarEmbedSettingsTarget } from "../tiptap/extensions/calendar-embed-settings"
 import { useFloatingEditorPopoverPosition } from "./use-floating-editor-popover-position"
 
 type EditorCalendarEmbedSettingsMenuProps = {
@@ -12,13 +12,13 @@ type EditorCalendarEmbedSettingsMenuProps = {
 }
 
 type CalendarEmbedSettingsStorage = {
-  subscribe: (listener: (target: LightsiteNextCalendarEmbedSettingsTarget) => void) => () => void
+  subscribe: (listener: (target: HandoutNextCalendarEmbedSettingsTarget) => void) => () => void
 }
 
 export function EditorCalendarEmbedSettingsMenu({
   editor,
 }: EditorCalendarEmbedSettingsMenuProps) {
-  const [target, setTarget] = useState<LightsiteNextCalendarEmbedSettingsTarget | null>(null)
+  const [target, setTarget] = useState<HandoutNextCalendarEmbedSettingsTarget | null>(null)
   const [srcDraft, setSrcDraft] = useState("")
   const [error, setError] = useState<string | null>(null)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
@@ -38,7 +38,7 @@ export function EditorCalendarEmbedSettingsMenu({
       reset()
 
       if (removeDraft && activeTarget?.mode === "create") {
-        editor.chain().focus().removeLightsiteNextCalendarEmbedDraft(activeTarget.pos).run()
+        editor.chain().focus().removeHandoutNextCalendarEmbedDraft(activeTarget.pos).run()
         return
       }
 
@@ -50,9 +50,9 @@ export function EditorCalendarEmbedSettingsMenu({
   useEffect(() => {
     const storage = (
       editor.storage as unknown as {
-        lightsiteNextCalendarEmbedSettings?: CalendarEmbedSettingsStorage
+        handoutNextCalendarEmbedSettings?: CalendarEmbedSettingsStorage
       }
-    ).lightsiteNextCalendarEmbedSettings
+    ).handoutNextCalendarEmbedSettings
 
     if (!storage) {
       return
@@ -140,7 +140,7 @@ export function EditorCalendarEmbedSettingsMenu({
       editor
         .chain()
         .focus()
-        .setLightsiteNextCalendarEmbedAttrs(target.pos, {
+        .setHandoutNextCalendarEmbedAttrs(target.pos, {
           src: normalized.url,
         })
         .run()
@@ -160,7 +160,7 @@ export function EditorCalendarEmbedSettingsMenu({
     <div
       ref={menuRef}
       aria-label={isCreateMode ? "Add calendar" : "Edit calendar"}
-      className="lightsite-editor-calendar-settings-menu"
+      className="handout-editor-calendar-settings-menu"
       role="dialog"
       style={{ left: position.x, maxHeight: position.maxHeight, top: position.y }}
       onPointerDown={(event) => event.stopPropagation()}
@@ -168,19 +168,19 @@ export function EditorCalendarEmbedSettingsMenu({
     >
       <form onSubmit={save}>
         <label
-          className="lightsite-editor-button-settings-label"
-          htmlFor="lightsite-editor-calendar-url"
+          className="handout-editor-button-settings-label"
+          htmlFor="handout-editor-calendar-url"
         >
           Calendar link or embed code
         </label>
-        <div className="lightsite-editor-button-settings-field lightsite-editor-button-settings-field-textarea">
+        <div className="handout-editor-button-settings-field handout-editor-button-settings-field-textarea">
           <IconLink aria-hidden="true" />
           <textarea
             ref={inputRef}
             aria-invalid={error ? "true" : undefined}
-            id="lightsite-editor-calendar-url"
+            id="handout-editor-calendar-url"
             inputMode="url"
-            maxLength={LIGHTSITE_TEXT_LIMITS.embedCode}
+            maxLength={HANDOUT_TEXT_LIMITS.embedCode}
             placeholder="Paste link or embed code"
             rows={3}
             value={srcDraft}
@@ -191,26 +191,26 @@ export function EditorCalendarEmbedSettingsMenu({
           />
         </div>
         {previewHost ? (
-          <div className="lightsite-editor-calendar-settings-preview">
+          <div className="handout-editor-calendar-settings-preview">
             <IconCalendarEvent aria-hidden="true" />
             {previewHost}
           </div>
         ) : (
-          <div className="lightsite-editor-calendar-settings-preview">
-            Paste a link or embed code. Lightsite will handle either.
+          <div className="handout-editor-calendar-settings-preview">
+            Paste a link or embed code. Handout will handle either.
           </div>
         )}
-        {error ? <div className="lightsite-editor-button-settings-error">{error}</div> : null}
-        <div className="lightsite-editor-button-settings-actions">
+        {error ? <div className="handout-editor-button-settings-error">{error}</div> : null}
+        <div className="handout-editor-button-settings-actions">
           <button
-            className="lightsite-editor-button-settings-action"
+            className="handout-editor-button-settings-action"
             type="button"
             onClick={() => close(true)}
           >
             Cancel
           </button>
           <button
-            className="lightsite-editor-button-settings-action lightsite-editor-button-settings-action-primary"
+            className="handout-editor-button-settings-action handout-editor-button-settings-action-primary"
             type="submit"
           >
             {isCreateMode ? "Add" : "Save"}

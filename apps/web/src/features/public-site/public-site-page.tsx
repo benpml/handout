@@ -68,7 +68,7 @@ function PublicUnavailablePage() {
   return (
     <main className="flex min-h-svh items-center justify-center bg-background px-5 font-site text-foreground">
       <div className="w-full max-w-md">
-        <p className="text-sm font-medium text-muted-foreground">Lightsite</p>
+        <p className="text-sm font-medium text-muted-foreground">Handout</p>
         <h1 className="mt-3 text-3xl font-semibold tracking-normal">This page is unavailable</h1>
         <p className="mt-3 text-base leading-7 text-muted-foreground">
           The link may be unpublished, archived, or no longer available.

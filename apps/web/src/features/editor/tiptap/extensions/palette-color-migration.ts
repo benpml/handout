@@ -1,10 +1,10 @@
 import { Extension } from "@tiptap/core"
-import { normalizeEditorHighlightColor, normalizeEditorTextColor } from "@lightsite/design-tokens"
+import { normalizeEditorHighlightColor, normalizeEditorTextColor } from "@handout/design-tokens"
 import type { EditorState, Transaction } from "@tiptap/pm/state"
 import { Plugin } from "@tiptap/pm/state"
 
-export const LightsitePaletteColorMigration = Extension.create({
-  name: "lightsitePaletteColorMigration",
+export const HandoutPaletteColorMigration = Extension.create({
+  name: "handoutPaletteColorMigration",
 
   onCreate({ editor }) {
     const transaction = createPaletteMigrationTransaction(editor.state)

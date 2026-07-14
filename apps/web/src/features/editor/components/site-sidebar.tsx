@@ -9,7 +9,7 @@ import {
   IconWorld,
   IconX,
 } from "@tabler/icons-react"
-import { LIGHTSITE_TEXT_LIMITS } from "@lightsite/domain"
+import { HANDOUT_TEXT_LIMITS } from "@handout/domain"
 
 import {
   AlertDialog,
@@ -113,7 +113,7 @@ export function EditorSiteSidebar(props: EditorSiteSidebarProps) {
       />
       <aside
         aria-label={isEditing ? "Site sidebar editor" : "Site navigation"}
-        className="ls-editor-sidebar-desktop w-[289px] shrink-0 border-r border-transparent bg-background px-6 pt-[26px] text-foreground"
+        className="handout-editor-sidebar-desktop w-[289px] shrink-0 border-r border-transparent bg-background px-6 pt-[26px] text-foreground"
       >
         <SidebarContent {...props} isEditing={isEditing} />
       </aside>
@@ -134,7 +134,7 @@ function MobileSiteSidebar({
   isEditing: boolean
 }) {
   return (
-    <div className="ls-editor-mobile-bar h-11 shrink-0 items-center gap-2 border-b border-border-subtle bg-background px-3">
+    <div className="handout-editor-mobile-bar h-11 shrink-0 items-center gap-2 border-b border-border-subtle bg-background px-3">
       <Sheet>
         <SheetTrigger asChild>
           <Button
@@ -199,7 +199,7 @@ function SidebarContent({
   isEditing: boolean
 }) {
   return (
-    <div className="ls-editor-sidebar-content flex min-w-0 w-full flex-col gap-4">
+    <div className="handout-editor-sidebar-content flex min-w-0 w-full flex-col gap-4">
       <SidebarSection
         isEditing={isEditing}
         label={model.sections.tabs.label}
@@ -500,7 +500,7 @@ function PageRenamePopover({
           >
             <Input
               autoFocus
-              maxLength={LIGHTSITE_TEXT_LIMITS.siteName}
+              maxLength={HANDOUT_TEXT_LIMITS.siteName}
               value={draftName}
               onChange={(event) => setDraftName(event.target.value)}
             />
@@ -524,7 +524,7 @@ function PageRenamePopover({
 
 /**
  * PUBLISHED-SITE PARITY: Keep this section-label hierarchy aligned with the
- * `.ls-sidebar-section > h2` rule used by Preview and published sites.
+ * `.handout-sidebar-section > h2` rule used by Preview and published sites.
  */
 function SidebarSection({
   addControl,
@@ -672,7 +672,7 @@ function SectionLabelPopover({
         >
           <Input
             autoFocus
-            maxLength={LIGHTSITE_TEXT_LIMITS.sectionLabel}
+            maxLength={HANDOUT_TEXT_LIMITS.sectionLabel}
             value={draftLabel}
             onChange={(event) => setDraftLabel(event.target.value)}
           />
@@ -867,7 +867,7 @@ function SidebarItemEditorPopover({
               autoFocus
               value={label}
               aria-invalid={labelError}
-              maxLength={LIGHTSITE_TEXT_LIMITS.sidebarLabel}
+              maxLength={HANDOUT_TEXT_LIMITS.sidebarLabel}
               onChange={(event) => setLabel(event.target.value)}
               placeholder={showStyle ? "Book a call" : "Website"}
             />
@@ -883,7 +883,7 @@ function SidebarItemEditorPopover({
                 value={href}
                 aria-invalid={hrefError}
                 className="pl-8"
-                maxLength={LIGHTSITE_TEXT_LIMITS.url}
+                maxLength={HANDOUT_TEXT_LIMITS.url}
                 onChange={(event) => setHref(event.target.value)}
                 placeholder="https://example.com"
               />

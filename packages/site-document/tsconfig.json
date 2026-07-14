@@ -6,9 +6,9 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "@lightsite/design-tokens": ["../design-tokens/src/index.ts"],
-      "@lightsite/domain": ["../domain/src/index.ts"],
-      "@lightsite/tracking-schema": ["../tracking-schema/src/index.ts"]
+      "@handout/design-tokens": ["../design-tokens/src/index.ts"],
+      "@handout/domain": ["../domain/src/index.ts"],
+      "@handout/tracking-schema": ["../tracking-schema/src/index.ts"]
     },
     "ignoreDeprecations": "6.0"
   },

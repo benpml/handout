@@ -1,4 +1,4 @@
-import { normalizeWebsiteDomain } from "@lightsite/domain"
+import { normalizeWebsiteDomain } from "@handout/domain"
 
 export function getRecipientLogoUrl(website: string | null | undefined) {
   if (!website) return null

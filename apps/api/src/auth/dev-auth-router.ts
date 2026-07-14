@@ -1,4 +1,4 @@
-import { appBootstrapResponseSchema } from "@lightsite/contracts";
+import { appBootstrapResponseSchema } from "@handout/contracts";
 import { Router } from "express";
 import { asyncHandler } from "../http/async-handler";
 import { AppError } from "../http/errors";

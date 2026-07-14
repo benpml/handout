@@ -32,14 +32,12 @@ describe("tracking v2 session expiration", () => {
       activeAfter: new Date("2026-07-11T11:58:00.000Z"),
       occurredAt: new Date("2026-07-11T12:01:00.000Z"),
       activeMs: 30_000,
-      maxScrollDepthPercent: 50,
     });
     await repository.updateSessionHeartbeat({
       sessionId: fresh.id,
       activeAfter: new Date("2026-07-11T11:59:00.000Z"),
       occurredAt: new Date("2026-07-11T12:02:30.001Z"),
       activeMs: 30_000,
-      maxScrollDepthPercent: null,
     });
 
     const result = await createTrackingV2SessionExpirationService({
@@ -97,6 +95,40 @@ describe("tracking v2 session expiration", () => {
     expect(repository.sessions.get("session_newer")?.state).toBe("expired");
   });
 
+  it("never moves session time backward when lifecycle signals arrive out of order", async () => {
+    const repository = createMemoryTrackingV2Repository();
+    const session = await repository.createSession(sessionInput({
+      publicSessionId: "session-reordered",
+      startedAt: new Date("2026-07-11T12:00:00.000Z"),
+    }));
+    await repository.updateSessionHeartbeat({
+      sessionId: session.id,
+      activeAfter: new Date("2026-07-11T11:58:00.000Z"),
+      occurredAt: new Date("2026-07-11T12:01:00.000Z"),
+      activeMs: 30_000,
+    });
+    await repository.updateSessionHeartbeat({
+      sessionId: session.id,
+      activeAfter: new Date("2026-07-11T11:58:00.000Z"),
+      occurredAt: new Date("2026-07-11T12:00:30.000Z"),
+      activeMs: 20_000,
+    });
+    await repository.endSession({
+      sessionId: session.id,
+      activeAfter: new Date("2026-07-11T11:58:00.000Z"),
+      occurredAt: new Date("2026-07-11T12:00:45.000Z"),
+      reason: "pagehide",
+      activeMs: 25_000,
+    });
+
+    expect(repository.sessions.get("session-reordered")).toMatchObject({
+      lastSeenAt: new Date("2026-07-11T12:01:00.000Z"),
+      endedAt: new Date("2026-07-11T12:01:00.000Z"),
+      activeMs: 30_000,
+      durationMs: 60_000,
+    });
+  });
+
   it("runs immediately, does not overlap, and stops cleanly", async () => {
     vi.useFakeTimers();
     let releaseFirstRun: (() => void) | undefined;
@@ -136,21 +168,20 @@ function sessionInput(input: {
     workspaceId,
     siteId,
     recipientId: null,
+    recipientRevision: null,
     publishedVersionId,
+    manifestId: "44444444-4444-4444-8444-444444444444",
     eventTokenHash: `hash_${input.publicSessionId}`,
-    deviceIdHash: null,
-    ipAddress: null,
-    ipAddressHash: null,
+    initialPageId: "page-overview",
+    initialPageLabel: "Overview",
     city: null,
     region: null,
     countryCode: null,
     deviceType: "desktop",
     osName: "macOS",
     browserName: "Chrome",
-    userAgentFamily: "Chrome",
-    referrerHost: null,
-    initialPath: "/",
     startedAt: input.startedAt,
+    receivedAt: input.startedAt,
   };
 }
 
