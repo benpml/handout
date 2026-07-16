@@ -65,7 +65,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useActiveWorkspace } from "@/features/app-bootstrap/app-bootstrap-hooks"
+import { useActiveWorkspace, useAppBootstrap } from "@/features/app-bootstrap/app-bootstrap-hooks"
 import {
   buildRecipientPublicUrl,
   createRecipientEmailEmbedHtml,
@@ -111,6 +111,7 @@ export function RecipientDetailsPage() {
   const recipientId =
     "recipientId" in params && typeof params.recipientId === "string" ? params.recipientId : ""
   const activeWorkspace = useActiveWorkspace()
+  const bootstrap = useAppBootstrap()
   const [editOpen, setEditOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<TrackingEventDrawerData | null>(null)
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
@@ -329,6 +330,10 @@ export function RecipientDetailsPage() {
               />
               <RecipientMetadataCard
                 activityCount={trackingEvents.length}
+                author={{
+                  avatarUrl: bootstrap.user.avatarUrl,
+                  name: bootstrap.user.name?.trim() || bootstrap.user.email,
+                }}
                 recipient={recipient}
                 site={site}
               />
@@ -463,10 +468,12 @@ function RecipientDetailsOverflowMenu({
 
 function RecipientMetadataCard({
   activityCount,
+  author,
   recipient,
   site,
 }: {
   activityCount: number
+  author: { avatarUrl?: string | null; name: string }
   recipient: SiteRecipient
   site: SiteDetailResponse["site"]
 }) {
@@ -482,8 +489,8 @@ function RecipientMetadataCard({
         label="Author"
         value={
           <span className="flex min-w-0 items-center gap-1">
-            <UserAvatar />
-            <span className="truncate">John</span>
+            <UserAvatar avatarUrl={author.avatarUrl} name={author.name} />
+            <span className="truncate">{author.name}</span>
           </span>
         }
       />

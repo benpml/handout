@@ -2,6 +2,10 @@ export type WorkEmailValidationResult =
   | { ok: true; email: string; domain: string }
   | { ok: false; code: WorkEmailValidationCode; message: string };
 
+export type EmailValidationResult =
+  | { ok: true; email: string; domain: string }
+  | { ok: false; code: "email.invalid"; message: string };
+
 export type WorkEmailValidationCode =
   | "email.invalid"
   | "email.plus_addressing_blocked"
@@ -30,14 +34,14 @@ export function normalizeEmail(input: string): string {
   return input.trim().toLowerCase();
 }
 
-export function validateWorkEmail(input: string): WorkEmailValidationResult {
+export function validateEmail(input: string): EmailValidationResult {
   const email = normalizeEmail(input);
 
   if (!BASIC_EMAIL_PATTERN.test(email)) {
     return {
       ok: false,
       code: "email.invalid",
-      message: "Enter a valid work email address.",
+      message: "Enter a valid email address.",
     };
   }
 
@@ -47,9 +51,20 @@ export function validateWorkEmail(input: string): WorkEmailValidationResult {
     return {
       ok: false,
       code: "email.invalid",
-      message: "Enter a valid work email address.",
+      message: "Enter a valid email address.",
     };
   }
+
+  return { ok: true, email, domain };
+}
+
+export function validateWorkEmail(input: string): WorkEmailValidationResult {
+  const validation = validateEmail(input);
+
+  if (!validation.ok) return validation;
+
+  const { email, domain } = validation;
+  const localPart = email.split("@")[0] ?? "";
 
   if (localPart.includes("+")) {
     return {

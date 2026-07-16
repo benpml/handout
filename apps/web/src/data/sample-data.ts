@@ -80,26 +80,6 @@ export type TrackingEventRecord = {
   isPreviewBot?: boolean
 }
 
-export type TeamMemberRecord = {
-  id: string
-  name: string
-  email: string
-  role: WorkspaceRole
-  avatar: string
-  joinedAt: string
-  lastActiveAt: string
-  isCurrentUser?: boolean
-}
-
-export type WorkspaceInviteRecord = {
-  id: string
-  email: string
-  role: WorkspaceRole
-  status: "pending" | "expired" | "revoked" | "send_failed"
-  invitedBy: string
-  sentAt: string
-}
-
 export const currentUser: CurrentUser = {
   id: "user-ben",
   name: "Ben Segarra",
@@ -255,56 +235,6 @@ export const trackingEvents: TrackingEventRecord[] = [
     variantName: "Default link",
     target: "Public page",
     timestamp: "5h ago",
-  },
-]
-
-export const teamMembers: TeamMemberRecord[] = [
-  {
-    id: "member-ben",
-    name: "Ben Segarra",
-    email: "ben@handout.link",
-    role: "admin",
-    avatar: "BS",
-    joinedAt: "Jan 8",
-    lastActiveAt: "Now",
-    isCurrentUser: true,
-  },
-  {
-    id: "member-maya",
-    name: "Maya Patel",
-    email: "maya@handout.link",
-    role: "user",
-    avatar: "MP",
-    joinedAt: "Jan 10",
-    lastActiveAt: "18m ago",
-  },
-  {
-    id: "member-rina",
-    name: "Rina Cohen",
-    email: "rina@handout.link",
-    role: "user",
-    avatar: "RC",
-    joinedAt: "Jan 14",
-    lastActiveAt: "2h ago",
-  },
-]
-
-export const workspaceInvites: WorkspaceInviteRecord[] = [
-  {
-    id: "invite-1",
-    email: "sam@handout.link",
-    role: "user",
-    status: "pending",
-    invitedBy: "Ben",
-    sentAt: "1d ago",
-  },
-  {
-    id: "invite-2",
-    email: "ops@handout.link",
-    role: "user",
-    status: "send_failed",
-    invitedBy: "Ben",
-    sentAt: "3d ago",
   },
 ]
 

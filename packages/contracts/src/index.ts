@@ -310,6 +310,56 @@ export type PublicSiteResponse = z.infer<typeof publicSiteResponseSchema>;
 
 export const workspaceRoleSchema = z.enum(["admin", "user"]);
 export const workspacePlanSchema = z.enum(["free", "core", "pro"]);
+export const workspaceInvitationStatusSchema = z.enum(["pending", "expired"]);
+
+export const workspaceMemberSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  name: z.string(),
+  email: z.email(),
+  avatarUrl: z.string().nullable(),
+  role: workspaceRoleSchema,
+  joinedAt: z.string(),
+  lastActiveAt: z.string().nullable(),
+});
+
+export const workspaceInvitationSchema = z.object({
+  id: z.string(),
+  email: z.email(),
+  role: workspaceRoleSchema,
+  status: workspaceInvitationStatusSchema,
+  invitedByName: z.string().nullable(),
+  createdAt: z.string(),
+  expiresAt: z.string(),
+});
+
+export const workspaceTeamResponseSchema = z.object({
+  members: z.array(workspaceMemberSchema),
+  invitations: z.array(workspaceInvitationSchema),
+  permissions: z.object({
+    canManageMembers: z.boolean(),
+  }),
+  requestId: z.string(),
+});
+
+export const createWorkspaceInvitationRequestSchema = z.object({
+  email: z.string().trim().toLowerCase().max(HANDOUT_TEXT_LIMITS.email).pipe(z.email()),
+  role: workspaceRoleSchema,
+});
+
+export const createWorkspaceInvitationResponseSchema = z.object({
+  result: z.enum(["member_added", "invitation_created"]),
+  requestId: z.string(),
+});
+
+export const updateWorkspaceMemberRequestSchema = z.object({
+  role: workspaceRoleSchema,
+});
+
+export const updateWorkspaceMemberResponseSchema = z.object({
+  member: workspaceMemberSchema,
+  requestId: z.string(),
+});
 export const billingIntervalSchema = z.enum(["month", "year"]);
 export const billingSubscriptionStatusSchema = z.enum([
   "none",
@@ -390,6 +440,14 @@ export const createWorkspaceResponseSchema = z.object({
 
 export type WorkspaceRole = z.infer<typeof workspaceRoleSchema>;
 export type WorkspacePlan = z.infer<typeof workspacePlanSchema>;
+export type WorkspaceInvitationStatus = z.infer<typeof workspaceInvitationStatusSchema>;
+export type WorkspaceMember = z.infer<typeof workspaceMemberSchema>;
+export type WorkspaceInvitation = z.infer<typeof workspaceInvitationSchema>;
+export type WorkspaceTeamResponse = z.infer<typeof workspaceTeamResponseSchema>;
+export type CreateWorkspaceInvitationRequest = z.input<typeof createWorkspaceInvitationRequestSchema>;
+export type CreateWorkspaceInvitationResponse = z.infer<typeof createWorkspaceInvitationResponseSchema>;
+export type UpdateWorkspaceMemberRequest = z.input<typeof updateWorkspaceMemberRequestSchema>;
+export type UpdateWorkspaceMemberResponse = z.infer<typeof updateWorkspaceMemberResponseSchema>;
 export type BillingInterval = z.infer<typeof billingIntervalSchema>;
 export type BillingSubscriptionStatus = z.infer<typeof billingSubscriptionStatusSchema>;
 export type BillingSummary = z.infer<typeof billingSummarySchema>;

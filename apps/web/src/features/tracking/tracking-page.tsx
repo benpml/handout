@@ -329,7 +329,7 @@ function EventsTable({
               key={event.id}
               role="button"
               tabIndex={0}
-              className="h-10 cursor-pointer border-0"
+              className="group h-10 cursor-pointer border-0 hover:bg-transparent focus-visible:outline-none"
               onClick={() => onOpenEvent(event)}
               onKeyDown={(keyboardEvent) => {
                 if (keyboardEvent.key === "Enter" || keyboardEvent.key === " ") {
@@ -338,25 +338,25 @@ function EventsTable({
                 }
               }}
             >
-              <TableCell className="pl-2! pr-4!">
+              <TableCell className="rounded-l-lg pl-2! pr-4! transition-colors group-hover:bg-secondary group-focus-visible:bg-secondary">
                 <div className="flex min-w-0 items-center gap-3">
                   <TrackingRecipientAvatar item={event} size="md" />
                   <span className="truncate font-medium">{formatEventRecipient(event)}</span>
                 </div>
               </TableCell>
-              <TableCell className="pl-0! pr-4!">
+              <TableCell className="pl-0! pr-4! transition-colors group-hover:bg-secondary group-focus-visible:bg-secondary">
                 <span className="block truncate">{event.site.name}</span>
               </TableCell>
-              <TableCell className="pl-0! pr-4!">
+              <TableCell className="pl-0! pr-4! transition-colors group-hover:bg-secondary group-focus-visible:bg-secondary">
                 <div className="flex min-w-0 items-center gap-1.5 font-medium">
                   <EventTypeIcon event={event} />
                   <span className="truncate">{formatEventType(event.type)}</span>
                 </div>
               </TableCell>
-              <TableCell className="pl-0! pr-4!">
+              <TableCell className="pl-0! pr-4! transition-colors group-hover:bg-secondary group-focus-visible:bg-secondary">
                 <EventDetailsValue event={event} />
               </TableCell>
-              <TableCell className="truncate pl-0! pr-3! text-right text-tertiary-foreground">
+              <TableCell className="truncate rounded-r-lg pl-0! pr-3! text-right text-tertiary-foreground transition-colors group-hover:bg-secondary group-focus-visible:bg-secondary">
                 {formatRelativeTime(event.occurredAt)}
               </TableCell>
             </TableRow>
@@ -417,7 +417,7 @@ function SessionsTable({
             key={session.id}
             role="button"
             tabIndex={0}
-            className="h-[52px] cursor-pointer border-0"
+            className="group h-[52px] cursor-pointer border-0 hover:bg-transparent focus-visible:outline-none"
             onClick={() => onOpenSession(session.id)}
             onKeyDown={(event) => {
               if (event.key === "Enter" || event.key === " ") {
@@ -426,7 +426,7 @@ function SessionsTable({
               }
             }}
           >
-            <TableCell className="pl-2! pr-4!">
+            <TableCell className="rounded-l-lg pl-2! pr-4! transition-colors group-hover:bg-secondary group-focus-visible:bg-secondary">
               <div className="flex min-w-0 items-center gap-3">
                 <TrackingRecipientAvatar item={session} size="lg" />
                 <div className="min-w-0">
@@ -435,14 +435,14 @@ function SessionsTable({
                 </div>
               </div>
             </TableCell>
-            <TableCell className="truncate pl-0! pr-4!">{formatDurationMs(session.durationMs ?? session.activeMs)}</TableCell>
-            <TableCell className="pl-0! pr-4!">
+            <TableCell className="truncate pl-0! pr-4! transition-colors group-hover:bg-secondary group-focus-visible:bg-secondary">{formatDurationMs(session.durationMs ?? session.activeMs)}</TableCell>
+            <TableCell className="pl-0! pr-4! transition-colors group-hover:bg-secondary group-focus-visible:bg-secondary">
               <TrackingEventCountBadge count={eventCounts.get(session.id) ?? 0} />
             </TableCell>
-            <TableCell className="truncate pl-0! pr-4! text-tertiary-foreground">
+            <TableCell className="truncate pl-0! pr-4! text-tertiary-foreground transition-colors group-hover:bg-secondary group-focus-visible:bg-secondary">
               {formatRelativeTime(session.lastSeenAt)}
             </TableCell>
-            <TableCell className="pl-0! pr-3! text-right">
+            <TableCell className="rounded-r-lg pl-0! pr-3! text-right transition-colors group-hover:bg-secondary group-focus-visible:bg-secondary">
               <Button
                 variant="outline"
                 size="sm"

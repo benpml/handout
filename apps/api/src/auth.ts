@@ -2,10 +2,11 @@ import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { betterAuth } from "better-auth";
 import { APIError } from "better-auth/api";
 import { bearer } from "better-auth/plugins";
-import { validateWorkEmail } from "@handout/domain";
+import { validateEmail } from "@handout/domain";
 import { env } from "./env";
 import { db } from "@handout/db";
 import * as databaseSchema from "@handout/db";
+import { claimWorkspaceInvitationsForUser } from "./team/repository";
 
 export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
@@ -23,7 +24,7 @@ export const auth = betterAuth({
     user: {
       create: {
         before: async (user) => {
-          const validation = validateWorkEmail(user.email);
+          const validation = validateEmail(user.email);
 
           if (!validation.ok) {
             throw APIError.from("BAD_REQUEST", {
@@ -39,6 +40,12 @@ export const auth = betterAuth({
               emailVerified: true,
             },
           };
+        },
+        after: async (user) => {
+          await claimWorkspaceInvitationsForUser({
+            userId: user.id,
+            email: user.email,
+          });
         },
       },
     },

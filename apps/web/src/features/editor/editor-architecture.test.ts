@@ -34,6 +34,9 @@ describe("editor architecture", () => {
     expect(stylesheetSource).not.toContain("  .handout-editor-testimonial-card {\n")
     expect(stylesheetSource).not.toContain("  .handout-editor-page-title-shell {\n")
     expect(stylesheetSource).not.toContain("  .handout-editor-card-content :where(h1, h2) {\n")
+    expect(stylesheetSource).not.toContain(".handout-tiptap strong")
+    expect(stylesheetSource).not.toContain("span {\n    @apply m-0;\n    font: inherit;")
+    expect(stylesheetSource).not.toContain("leading-9 font-semibold tracking-normal")
     expect(stylesheetSource).not.toMatch(/color-mix\([^\n]*var\(--variable-/)
     expect(stylesheetSource).toContain("background: var(--variable-background);")
     expect(stylesheetSource).toContain("border-color: var(--variable-border);")
@@ -42,6 +45,13 @@ describe("editor architecture", () => {
     expect(SITE_DOCUMENT_CSS).toContain(".handout-image-card{display:grid")
     expect(SITE_DOCUMENT_CSS).toContain(".handout-testimonial{display:grid")
     expect(SITE_DOCUMENT_CSS).toContain(".handout-page-title{display:flex")
+    expect(SITE_DOCUMENT_CSS).toContain("gap:24px;padding:0 0 36px")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-page-title-subtitle,[data-handout-page-title-subtitle]")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-document-editor .tableWrapper>table")
+    expect(stylesheetSource).toContain(
+      ".handout-editor .ProseMirror > .collaboration-carets__caret.ProseMirror-widget",
+    )
+    expect(stylesheetSource).not.toContain(".react-renderer.node-iconCard + .react-renderer.node-iconCard")
   })
 
   it("uses the canonical site stylesheet and only invalidates preview content for document changes", () => {
@@ -66,11 +76,14 @@ describe("editor architecture", () => {
     expect(sidebarSource).not.toContain("md:w-[241px]")
     expect(sidebarSource).toContain("props.model.pages.length > 0")
     expect(sidebarSource).toContain('text-base leading-6 font-medium text-tertiary-foreground')
-    expect(sidebarSource).toContain('text-sm leading-6 font-medium tracking-normal text-muted-foreground')
     expect(sidebarSource).toContain("IconNotes")
     expect(sidebarSource).not.toContain("IconFileText")
+    expect(sidebarSource).toContain("style={popoverStyle}")
+    expect(sidebarSource).toContain('bg-[var(--handout-primary)] px-4 text-sm font-medium text-[var(--handout-primary-foreground)]')
     expect(previewSource).toContain("renderPublicSitePreviewHtml")
-    expect(SITE_DOCUMENT_CSS).toContain(".handout-sidebar-section>h2{height:26px;min-width:0;margin:0;overflow:hidden;color:var(--muted-foreground);font-size:14px;font-weight:500")
+    expect(sidebarSource).toContain("handout-editor-sidebar-section-title")
+    expect(sidebarSource).not.toContain("tracking-normal")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-sidebar-section>h2,.handout-editor-sidebar-section-title{height:26px;min-width:0;margin:0;overflow:hidden;color:var(--muted-foreground);font-size:14px;font-weight:500;letter-spacing:-.02em")
     expect(SITE_DOCUMENT_CSS).toContain(".handout-sidebar-mobile-title{min-width:0;flex:1;overflow:hidden;color:var(--tertiary-foreground);font-size:16px;font-weight:500")
     expect(SITE_DOCUMENT_CSS).toContain("--handout-primary")
   })
@@ -605,10 +618,11 @@ describe("editor architecture", () => {
     expect(blockViewsSource).toContain("openHandoutNextImageCardButtonSettings")
     expect(blockViewsSource).not.toContain("handout-editor-image-card-shell py-2")
     expect(blockViewsSource).not.toContain('className="py-2"')
-    expect(stylesheetSource).toContain("> .react-renderer.node-imageCard")
-    expect(stylesheetSource).toContain("> .react-renderer.node-iconCard")
-    expect(stylesheetSource).toContain("> .react-renderer.node-buttonBlock")
-    expect(stylesheetSource).toContain("> .handout-editor-image-card-shell")
+    expect(stylesheetSource).toContain(".react-renderer.node-imageCard")
+    expect(stylesheetSource).toContain(".react-renderer.node-iconCard")
+    expect(stylesheetSource).toContain(".react-renderer.node-buttonBlock")
+    expect(stylesheetSource).toContain(".handout-editor-image-card-shell")
+    expect(stylesheetSource).not.toMatch(/node-imageCard[\s\S]{0,160}padding-top: 8px/)
     expect(imageCardButtonSettingsSource).toContain('node.type.name !== "imageCard"')
     expect(imageCardButtonSettingsSource).toContain("previewHandoutNextImageCardButtonDraft")
     expect(imageCardButtonSettingsSource).toContain('"addToHistory"')
@@ -684,7 +698,7 @@ describe("editor architecture", () => {
   it("uses the shared semantic fill for table header cells", () => {
     expect(stylesheetSource).toContain("background: var(--table-header-background)")
     expect(SITE_DOCUMENT_CSS).toContain(
-      ".handout-table th{background:var(--table-header-background)",
+      ".handout-table th,.handout-document-editor .tableWrapper>table th{background:var(--table-header-background)",
     )
   })
 
@@ -1098,6 +1112,22 @@ describe("editor architecture", () => {
     expect(pageSource).toContain("deleteSiteVariable")
     expect(pageSource).not.toContain("duplicateSiteMutation")
     expect(pageSource).not.toContain("deleteSiteMutation")
+  })
+
+  it("opens a persistent upgrade dialog when publishing is blocked by the Free plan", () => {
+    const headerSource = editorModules["./components/editor-header.tsx"] as string
+    const pageSource = editorModules["./editor-page.tsx"] as string
+    const upgradeDialogSource =
+      editorModules["./components/publish-upgrade-dialog.tsx"] as string
+
+    expect(pageSource).toContain("PublishUpgradeDialog")
+    expect(pageSource).toContain("setPublishUpgradeOpen(true)")
+    expect(pageSource).not.toContain('toast.error("Upgrade to Core to publish.')
+    expect(upgradeDialogSource).toContain("Upgrade to publish")
+    expect(upgradeDialogSource).toContain("View Core plan")
+    expect(upgradeDialogSource).toContain("canManageBilling")
+    expect(headerSource).toContain("catch {")
+    expect(headerSource).toContain("setOpen(false)")
   })
 
   it("keeps suggestion pointer hover separate from keyboard selection state", () => {

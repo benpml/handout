@@ -52,6 +52,11 @@ export const workspaceStatusEnum = pgEnum("workspace_status", [
   "deleted",
 ]);
 export const workspaceMemberStatusEnum = pgEnum("workspace_member_status", ["active", "removed"]);
+export const workspaceInvitationStatusEnum = pgEnum("workspace_invitation_status", [
+  "pending",
+  "accepted",
+  "revoked",
+]);
 export const siteStatusEnum = pgEnum("site_status", ["draft", "published", "archived"]);
 export const siteVisibilityEnum = pgEnum("site_visibility", ["private", "team"]);
 export const siteAccessRoleEnum = pgEnum("site_access_role", ["none", "view_copy", "edit"]);
@@ -264,6 +269,35 @@ export const workspaceMembers = pgTable(
       table.workspaceId,
       table.status,
       table.role,
+    ),
+  }),
+);
+
+export const workspaceInvitations = pgTable(
+  "workspace_invitations",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    workspaceId: uuid("workspace_id").notNull().references(() => workspaces.id, { onDelete: "cascade" }),
+    email: varchar("email", { length: 320 }).notNull(),
+    role: workspaceRoleEnum("role").notNull().default("user"),
+    status: workspaceInvitationStatusEnum("status").notNull().default("pending"),
+    invitedByUserId: varchar("invited_by_user_id", { length: 191 }).references(() => user.id, { onDelete: "set null" }),
+    acceptedByUserId: varchar("accepted_by_user_id", { length: 191 }).references(() => user.id, { onDelete: "set null" }),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    acceptedAt: timestamp("accepted_at", { withTimezone: true }),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    workspaceEmailIdx: uniqueIndex("workspace_invitations_workspace_email_idx").on(
+      table.workspaceId,
+      table.email,
+    ),
+    emailStatusIdx: index("workspace_invitations_email_status_idx").on(table.email, table.status),
+    workspaceStatusIdx: index("workspace_invitations_workspace_status_idx").on(
+      table.workspaceId,
+      table.status,
     ),
   }),
 );
@@ -868,6 +902,7 @@ export const trackingInternalIpRanges = pgTable(
 
 export const workspacesRelations = relations(workspaces, ({ many, one }) => ({
   members: many(workspaceMembers),
+  invitations: many(workspaceInvitations),
   sites: many(sites),
   versions: many(siteVersions),
   trackingSettings: many(trackingSettings),
@@ -889,6 +924,8 @@ export const userRelations = relations(user, ({ many, one }) => ({
   accounts: many(account),
   createdTrackingInternalIpRanges: many(trackingInternalIpRanges),
   acceptedTrackingSettings: many(trackingSettings),
+  workspaceInvitationsSent: many(workspaceInvitations, { relationName: "workspaceInvitationSender" }),
+  workspaceInvitationsAccepted: many(workspaceInvitations, { relationName: "workspaceInvitationRecipient" }),
   profile: one(userProfiles, {
     fields: [user.id],
     references: [userProfiles.userId],
@@ -926,6 +963,23 @@ export const workspaceMembersRelations = relations(workspaceMembers, ({ one }) =
   workspace: one(workspaces, {
     fields: [workspaceMembers.workspaceId],
     references: [workspaces.id],
+  }),
+}));
+
+export const workspaceInvitationsRelations = relations(workspaceInvitations, ({ one }) => ({
+  workspace: one(workspaces, {
+    fields: [workspaceInvitations.workspaceId],
+    references: [workspaces.id],
+  }),
+  invitedBy: one(user, {
+    fields: [workspaceInvitations.invitedByUserId],
+    references: [user.id],
+    relationName: "workspaceInvitationSender",
+  }),
+  acceptedBy: one(user, {
+    fields: [workspaceInvitations.acceptedByUserId],
+    references: [user.id],
+    relationName: "workspaceInvitationRecipient",
   }),
 }));
 

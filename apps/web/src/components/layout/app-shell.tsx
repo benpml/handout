@@ -16,7 +16,7 @@ import { useTheme } from "next-themes"
 import type { SiteListItem } from "@handout/contracts"
 import type { AppBootstrapResponse } from "@handout/contracts"
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { RecipientAvatar } from "@/components/common/recipient-avatar"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -62,6 +62,7 @@ type AppShellProps = {
 
 export function AppShell({ bootstrap, children }: AppShellProps) {
   const activeWorkspace = bootstrap.activeWorkspace
+  const userName = bootstrap.user.name?.trim() || bootstrap.user.email
   const [createSiteOpen, setCreateSiteOpen] = useState(false)
   const [shareTarget, setShareTarget] = useState<SiteListItem | null>(null)
   const sitesQuery = useQuery({
@@ -170,10 +171,12 @@ export function AppShell({ bootstrap, children }: AppShellProps) {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton size="default">
-                <Avatar size="2xs" shape="square">
-                  <AvatarFallback>BS</AvatarFallback>
-                </Avatar>
-                <span className="truncate font-semibold">User Name</span>
+                <RecipientAvatar
+                  recipient={{ imageUrl: bootstrap.user.avatarUrl, name: userName }}
+                  shape="circle"
+                  size="2xs"
+                />
+                <span className="truncate font-semibold">{userName}</span>
                 <IconDotsVertical className="ml-auto" />
               </SidebarMenuButton>
             </SidebarMenuItem>

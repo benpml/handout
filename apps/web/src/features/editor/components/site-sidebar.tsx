@@ -1,4 +1,12 @@
-import { useEffect, useMemo, useRef, useState, type ComponentProps, type ReactNode } from "react"
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentProps,
+  type CSSProperties,
+  type ReactNode,
+} from "react"
 import {
   IconLink,
   IconMenu2,
@@ -73,6 +81,7 @@ type EditorSiteSidebarProps = {
   activePageId: string
   mode: EditorMode
   model: EditorSidebarModel
+  primaryColorStyle: CSSProperties
   onAddButton: (input: { label: string; href: string; style: EditorSidebarButtonStyle }) => void
   onAddLink: (input: { label: string; href: string }) => void
   onAddPage: () => void
@@ -194,6 +203,7 @@ function SidebarContent({
   onSelectPage,
   onUpdateButton,
   onUpdateLink,
+  primaryColorStyle,
   isEditing,
 }: EditorSiteSidebarProps & {
   isEditing: boolean
@@ -253,7 +263,7 @@ function SidebarContent({
                   onDelete={() => onDeleteLink(link.id)}
                   onSave={(input) => onUpdateLink(link.id, input)}
                   tooltipSide="right"
-                  triggerClassName="group/sidebar-link flex h-9 w-full items-center gap-2 rounded-lg px-2.5 text-left text-base leading-6 tracking-normal text-foreground outline-none transition hover:bg-muted focus-visible:bg-muted"
+                  triggerClassName="group/sidebar-link flex h-9 w-full items-center gap-2 rounded-lg px-2.5 text-left text-base leading-6 text-foreground outline-none transition hover:bg-muted focus-visible:bg-muted"
                   trigger={
                     <>
                       <IconWorld className="size-4 shrink-0 text-tertiary-foreground" />
@@ -268,7 +278,7 @@ function SidebarContent({
                   href={link.href}
                   rel="noreferrer"
                   target="_blank"
-                  className="flex h-9 w-full items-center gap-2 rounded-lg px-2.5 text-left text-base leading-6 tracking-normal text-foreground outline-none transition hover:bg-muted focus-visible:bg-muted"
+                  className="flex h-9 w-full items-center gap-2 rounded-lg px-2.5 text-left text-base leading-6 text-foreground outline-none transition hover:bg-muted focus-visible:bg-muted"
                 >
                   <IconWorld className="size-4 shrink-0 text-tertiary-foreground" />
                   <span className="min-w-0 flex-1 truncate">{link.label}</span>
@@ -284,10 +294,16 @@ function SidebarContent({
         label={model.sections.nextSteps.label}
         sectionKey="nextSteps"
         addLabel="Add button"
-        addControl={<ButtonEditorPopover onSave={onAddButton} />}
+        addControl={
+          <ButtonEditorPopover
+            onSave={onAddButton}
+            primaryColorStyle={primaryColorStyle}
+          />
+        }
         emptyAddControl={
           <ButtonEditorPopover
             onSave={onAddButton}
+            primaryColorStyle={primaryColorStyle}
             showTriggerTooltip={false}
             trigger={<EmptyAddContent label="Add button" />}
             triggerClassName={emptyAddButtonClassName}
@@ -304,11 +320,12 @@ function SidebarContent({
                   button={button}
                   onDelete={() => onDeleteButton(button.id)}
                   onSave={(input) => onUpdateButton(button.id, input)}
+                  primaryColorStyle={primaryColorStyle}
                   tooltipSide="right"
                   triggerClassName={cn(
-                    "flex h-9 w-full items-center justify-center gap-2 rounded-[10px] px-3 text-[15px] leading-5 font-medium tracking-normal outline-none transition",
+                    "handout-editor-sidebar-button flex h-9 w-full items-center justify-center gap-2 rounded-[10px] px-3 text-[15px] leading-5 font-medium outline-none transition",
                     button.style === "filled"
-                      ? "bg-foreground text-background hover:bg-foreground/90 focus-visible:ring-3 focus-visible:ring-ring/50"
+                      ? "bg-[var(--handout-primary)] text-[var(--handout-primary-foreground)] hover:brightness-95 focus-visible:ring-3 focus-visible:ring-ring/50"
                       : "border border-border bg-background text-foreground hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
                   )}
                   trigger={<span className="min-w-0 truncate">{button.label}</span>}
@@ -320,9 +337,9 @@ function SidebarContent({
                   rel="noreferrer"
                   target="_blank"
                   className={cn(
-                    "flex h-9 w-full items-center justify-center gap-2 rounded-[10px] px-3 text-[15px] leading-5 font-medium tracking-normal outline-none transition",
+                    "handout-editor-sidebar-button flex h-9 w-full items-center justify-center gap-2 rounded-[10px] px-3 text-[15px] leading-5 font-medium outline-none transition",
                     button.style === "filled"
-                      ? "bg-foreground text-background hover:bg-foreground/90 focus-visible:ring-3 focus-visible:ring-ring/50"
+                      ? "bg-[var(--handout-primary)] text-[var(--handout-primary-foreground)] hover:brightness-95 focus-visible:ring-3 focus-visible:ring-ring/50"
                       : "border border-border bg-background text-foreground hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
                   )}
                 >
@@ -359,14 +376,14 @@ function PageRow({
       className={cn(
         "group/page relative flex h-9 w-full items-center rounded-lg outline-none transition",
         active
-          ? "bg-secondary text-secondary-foreground"
+          ? "bg-[var(--handout-primary-soft)] text-[var(--handout-primary)]"
           : "text-tertiary-foreground hover:bg-muted"
       )}
     >
       <button
         type="button"
         aria-current={active ? "page" : undefined}
-        className="flex h-full min-w-0 flex-1 items-center gap-2 rounded-lg px-2.5 text-left text-base leading-6 tracking-normal outline-none focus-visible:bg-muted"
+        className="flex h-full min-w-0 flex-1 items-center gap-2 rounded-lg px-2.5 text-left text-base leading-6 outline-none focus-visible:bg-muted"
         onClick={() => onSelectPage(page.id)}
       >
         <IconNotes className="size-4 shrink-0" />
@@ -554,7 +571,7 @@ function SidebarSection({
   return (
     <section className="flex flex-col gap-2">
       <div className="group/section-header flex h-[26px] items-center gap-1">
-        <h2 className="min-w-0 flex-1 truncate text-sm leading-6 font-medium tracking-normal text-muted-foreground">
+        <h2 className="handout-editor-sidebar-section-title min-w-0 flex-1">
           {label}
         </h2>
         {isEditing ? (
@@ -614,7 +631,7 @@ function EmptyAddContent({ label }: { label: string }) {
 }
 
 const emptyAddButtonClassName =
-  "flex h-9 w-full items-center gap-2 rounded-lg px-2.5 text-left text-sm leading-5 tracking-normal text-muted-foreground outline-none transition hover:bg-muted hover:text-foreground focus-visible:bg-muted focus-visible:text-foreground"
+  "flex h-9 w-full items-center gap-2 rounded-lg px-2.5 text-left text-sm leading-5 text-muted-foreground outline-none transition hover:bg-muted hover:text-foreground focus-visible:bg-muted focus-visible:text-foreground"
 
 function SectionLabelPopover({
   label,
@@ -731,6 +748,7 @@ function ButtonEditorPopover({
   button,
   onDelete,
   onSave,
+  primaryColorStyle,
   showTriggerTooltip,
   tooltipSide,
   trigger,
@@ -739,6 +757,7 @@ function ButtonEditorPopover({
   button?: EditorSidebarButton
   onDelete?: () => void
   onSave: (input: { label: string; href: string; style: EditorSidebarButtonStyle }) => void
+  primaryColorStyle: CSSProperties
   showTriggerTooltip?: boolean
   tooltipSide?: TooltipSide
   trigger?: ReactNode
@@ -751,6 +770,7 @@ function ButtonEditorPopover({
       initialStyle={button?.style ?? "filled"}
       onDelete={onDelete}
       onSave={onSave}
+      popoverStyle={primaryColorStyle}
       showStyle
       title={button ? "Edit button" : "Add button"}
       trigger={trigger}
@@ -769,6 +789,7 @@ function SidebarItemEditorPopover({
   initialStyle = "filled",
   onDelete,
   onSave,
+  popoverStyle,
   showStyle = false,
   title,
   trigger,
@@ -783,6 +804,7 @@ function SidebarItemEditorPopover({
   initialStyle?: EditorSidebarButtonStyle
   onDelete?: () => void
   onSave: (input: { label: string; href: string; style: EditorSidebarButtonStyle }) => void
+  popoverStyle?: CSSProperties
   showStyle?: boolean
   title: string
   trigger?: ReactNode
@@ -856,6 +878,7 @@ function SidebarItemEditorPopover({
         sideOffset={8}
         collisionPadding={12}
         className="w-[304px] gap-3 p-3"
+        style={popoverStyle}
       >
         <PopoverHeader>
           <PopoverTitle>{title}</PopoverTitle>
@@ -954,7 +977,7 @@ function ButtonStyleSelector({
           )}
           onClick={() => onChange("filled")}
         >
-          <span className="inline-flex h-8 items-center justify-center rounded-lg bg-foreground px-4 text-sm font-medium text-background shadow-xs">
+          <span className="inline-flex h-8 items-center justify-center rounded-lg bg-[var(--handout-primary)] px-4 text-sm font-medium text-[var(--handout-primary-foreground)] shadow-xs">
             Primary
           </span>
         </button>

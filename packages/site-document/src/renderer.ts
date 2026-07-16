@@ -55,7 +55,7 @@ export type RenderPublicSiteOptions = {
 };
 
 export const PUBLIC_SITE_LOGO_ENDPOINT = "/api/public/site-logo" as const;
-export const PUBLIC_SITE_RUNTIME_PATH = "/site-runtime.v4.js" as const;
+export const PUBLIC_SITE_RUNTIME_PATH = "/site-runtime.v5.js" as const;
 
 type RenderContext = {
   logoDelivery: "preview" | "public";
@@ -501,7 +501,7 @@ export function getPrimaryColorStyle(color: SiteContent["settings"]["primaryColo
     return "--handout-primary:var(--foreground);--handout-primary-foreground:var(--background);--handout-primary-soft:var(--accent)";
   }
 
-  return `--handout-primary:var(--${color}-foreground);--handout-primary-foreground:var(--background);--handout-primary-soft:var(--${color}-background)`;
+  return `--handout-primary:var(--${color}-foreground);--handout-primary-foreground:var(--background);--handout-primary-soft:var(--${color}-background-subtle)`;
 }
 
 function renderTrackingConsent(payload: PublishedSitePayload, hasTracking: boolean) {
@@ -518,7 +518,7 @@ function renderTrackingConsent(payload: PublishedSitePayload, hasTracking: boole
     : `<button class="handout-consent-button" type="button" data-handout-consent="deny">Deny and proceed</button><button class="handout-consent-button handout-consent-button-primary" type="button" data-handout-consent="allow">Allow and proceed</button>`;
   const bootstrap = JSON.stringify(payload.trackingV2);
 
-  return `<aside class="handout-consent-popup" data-handout-consent-popup="${attr(popup)}" data-handout-consent-site-id="${attr(payload.site.id)}" data-handout-consent-notice-version="${TRACKING_V2_VISITOR_NOTICE_VERSION}" data-handout-consent-script-src="${TRACKING_V2_SCRIPT_ENDPOINT}" data-handout-consent-bootstrap="${attr(bootstrap)}" aria-labelledby="handout-consent-title"><h2 id="handout-consent-title">We value your privacy</h2><p>${body}</p><div class="handout-consent-actions">${actions}</div></aside><button class="handout-privacy-choices" type="button" data-handout-privacy-choices hidden>Privacy choices</button>`;
+  return `<aside class="handout-consent-popup" role="dialog" aria-modal="true" data-handout-consent-popup="${attr(popup)}" data-handout-consent-site-id="${attr(payload.site.id)}" data-handout-consent-notice-version="${TRACKING_V2_VISITOR_NOTICE_VERSION}" data-handout-consent-script-src="${TRACKING_V2_SCRIPT_ENDPOINT}" data-handout-consent-bootstrap="${attr(bootstrap)}" aria-labelledby="handout-consent-title"><div class="handout-consent-dialog"><div class="handout-consent-copy"><h2 id="handout-consent-title">We value your privacy</h2><p>${body}</p></div><div class="handout-consent-actions">${actions}</div></div></aside><button class="handout-privacy-choices" type="button" data-handout-privacy-choices hidden>Privacy choices</button>`;
 }
 
 function resolveVariableToken(node: TiptapNode, values: Record<string, string>) {
@@ -706,7 +706,9 @@ document.addEventListener('keydown',function(event){
   else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
 });
 var mobileQuery=window.matchMedia('(max-width:760px)');
-mobileQuery.addEventListener('change',function(event){if(!event.matches)setSidebarOpen(false,false);});
+function handleMobileChange(event){if(!event.matches)setSidebarOpen(false,false);}
+if(typeof mobileQuery.addEventListener==='function')mobileQuery.addEventListener('change',handleMobileChange);
+else if(typeof mobileQuery.addListener==='function')mobileQuery.addListener(handleMobileChange);
 var consentPopup=document.querySelector('[data-handout-consent-popup]');
 var privacyChoices=document.querySelector('[data-handout-privacy-choices]');
 if(consentPopup&&privacyChoices){

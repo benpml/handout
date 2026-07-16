@@ -43,6 +43,9 @@ import {
 } from "./sites/repository";
 import { createSiteRouter } from "./sites/router";
 import { createSiteService, type SiteService } from "./sites/service";
+import { createDbTeamRepository } from "./team/repository";
+import { createTeamRouter } from "./team/router";
+import { createTeamService, type TeamService } from "./team/service";
 import { createPublicTrackingScriptRouter } from "./tracking/public-script";
 import {
   createMemoryTrackingRateLimiter,
@@ -72,6 +75,7 @@ export type AppServices = {
   publicSites: PublicSiteService;
   publicSiteScreenshots: PublicSiteScreenshotService;
   sites: SiteService;
+  team: TeamService;
   trackingRateLimiter: TrackingRateLimiter;
   workspaces: WorkspaceService;
   getCurrentActor: CurrentActorProvider;
@@ -125,6 +129,8 @@ export function createApp(options: CreateAppOptions = {}) {
     options.publicSiteOrigin ?? env.PUBLIC_SITE_ORIGIN ?? env.WEB_ORIGIN;
   const sites =
     options.sites ?? createSiteService(createDbSiteRepository());
+  const team =
+    options.team ?? createTeamService(createDbTeamRepository());
   const trackingRateLimiter =
     options.trackingRateLimiter ?? createMemoryTrackingRateLimiter();
   const workspaces =
@@ -231,6 +237,13 @@ export function createApp(options: CreateAppOptions = {}) {
       }),
     );
   }
+  app.use(
+    "/api/workspaces/:workspaceId/team",
+    createTeamRouter({
+      teamService: team,
+      getCurrentActor: actorProvider,
+    }),
+  );
   app.use(
     "/api/workspaces",
     createWorkspaceRouter({

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { Link, useNavigate } from "@tanstack/react-router"
-import { HANDOUT_TEXT_LIMITS, normalizeEmail, validateWorkEmail } from "@handout/domain"
+import { HANDOUT_TEXT_LIMITS, normalizeEmail, validateEmail } from "@handout/domain"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -72,7 +72,7 @@ function LoginForm({
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const normalizedEmail = normalizeEmail(email)
-  const emailValidation = validateWorkEmail(email)
+  const emailValidation = validateEmail(email)
   const passwordIsValid = password.length >= 8
   const canSubmit = emailValidation.ok && passwordIsValid && !isSubmitting
 
@@ -144,8 +144,8 @@ function LoginForm({
           </CardTitle>
           <CardDescription>
             {mode === "sign-up"
-              ? "Create your account with your work email"
-              : "Log in with your work email"}
+              ? "Create your account with your email"
+              : "Log in with your email"}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -226,7 +226,7 @@ function LoginForm({
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center">
-        Use your company email to create and manage your Handout account.
+        Create and manage your Handout account.
       </FieldDescription>
     </div>
   )
@@ -282,14 +282,6 @@ function getBetterAuthErrorMessage(
   error: { message?: string; code?: string; status?: number },
   mode: AuthMode,
 ) {
-  if (error.code === "email.personal_domain_blocked") {
-    return "Use your company email to sign up for Handout."
-  }
-
-  if (error.code === "email.plus_addressing_blocked") {
-    return "Use your work email without a plus alias."
-  }
-
   if (error.message) {
     return error.message
   }

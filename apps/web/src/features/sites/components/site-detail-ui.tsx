@@ -5,7 +5,6 @@ import {
 } from "@tabler/icons-react"
 
 import { RecipientAvatar } from "@/components/common/recipient-avatar"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -121,17 +120,27 @@ export function RecipientLogoAvatar({
   size = "lg",
 }: {
   recipient: SiteRecipient
-  size?: ComponentProps<typeof Avatar>["size"]
+  size?: ComponentProps<typeof RecipientAvatar>["size"]
 }) {
   return (
     <RecipientAvatar recipient={recipient} size={size} />
   )
 }
 
-export function UserAvatar({ size = "2xs" }: { size?: ComponentProps<typeof Avatar>["size"] }) {
+export function UserAvatar({
+  avatarUrl,
+  name,
+  size = "2xs",
+}: {
+  avatarUrl?: string | null
+  name: string
+  size?: ComponentProps<typeof RecipientAvatar>["size"]
+}) {
   return (
-    <Avatar size={size}>
-      <AvatarFallback>J</AvatarFallback>
-    </Avatar>
+    <RecipientAvatar
+      recipient={{ imageUrl: avatarUrl, name }}
+      shape="circle"
+      size={size}
+    />
   )
 }

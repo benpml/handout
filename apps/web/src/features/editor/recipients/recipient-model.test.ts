@@ -92,7 +92,11 @@ describe("recipient model", () => {
       []
     )
 
-    expect(buildRecipientPublicUrl({ recipient, siteUri: "ab4125" })).toBe(
+    expect(buildRecipientPublicUrl({
+      publicOrigin: "https://handout.link",
+      recipient,
+      siteUri: "ab4125",
+    })).toBe(
       "https://handout.link/ab4125/linear-david"
     )
   })
@@ -115,7 +119,11 @@ describe("recipient model", () => {
     })
 
     expect(updated.linkSlug).toBe("linear-david")
-    expect(buildRecipientPublicUrl({ recipient: updated, siteUri: "ab4125" })).toBe(
+    expect(buildRecipientPublicUrl({
+      publicOrigin: "https://handout.link",
+      recipient: updated,
+      siteUri: "ab4125",
+    })).toBe(
       "https://handout.link/ab4125/linear-david"
     )
   })
@@ -132,7 +140,11 @@ describe("recipient model", () => {
       []
     )
 
-    const embed = createRecipientEmailEmbedHtml({ recipient, siteUri: "ab4125" })
+    const embed = createRecipientEmailEmbedHtml({
+      publicOrigin: "https://handout.link",
+      recipient,
+      siteUri: "ab4125",
+    })
     expect(embed).toContain(
       'src="https://handout.link/ab4125/linear-david/embed.jpg?v='
     )

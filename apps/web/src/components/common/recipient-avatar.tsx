@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 
 type RecipientAvatarIdentity = {
   company?: string | null
+  imageUrl?: string | null
   name?: string | null
   website?: string | null
 }
@@ -23,10 +24,12 @@ const fallbackColors = [
 export function RecipientAvatar({
   className,
   recipient,
+  shape = "square",
   size = "lg",
 }: {
   className?: string
   recipient: RecipientAvatarIdentity | null
+  shape?: ComponentProps<typeof Avatar>["shape"]
   size?: ComponentProps<typeof Avatar>["size"]
 }) {
   const identity = recipient?.company?.trim() || recipient?.name?.trim() || "Handout"
@@ -35,8 +38,10 @@ export function RecipientAvatar({
   const logoUrl = getRecipientLogoUrl(recipient?.website)
 
   return (
-    <Avatar className={className} size={size} shape="square">
-      {logoUrl ? <AvatarImage alt="" src={logoUrl} /> : null}
+    <Avatar className={className} size={size} shape={shape}>
+      {recipient?.imageUrl || logoUrl ? (
+        <AvatarImage alt="" src={recipient?.imageUrl || logoUrl || undefined} />
+      ) : null}
       <AvatarFallback className={cn(color.background, color.foreground, "font-medium")}>
         {fallback}
       </AvatarFallback>

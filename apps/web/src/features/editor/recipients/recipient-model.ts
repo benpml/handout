@@ -5,6 +5,8 @@ import {
   type HandoutTextLimitKey,
 } from "@handout/domain"
 
+import { buildPublicSiteUrl } from "@/lib/public-site-url"
+
 export { getRecipientLogoUrl } from "@/lib/recipient-logo"
 
 export type SiteRecipient = {
@@ -74,37 +76,54 @@ export function updateSiteRecipient(
 export function buildRecipientPublicUrl({
   recipient,
   siteUri,
+  publicOrigin,
 }: {
   recipient: SiteRecipient
   siteUri: string
+  publicOrigin?: string
 }) {
-  return `https://handout.link/${siteUri}/${recipient.linkSlug}`
+  return buildPublicSiteUrl(
+    `${siteUri}/${recipient.linkSlug}`,
+    publicOrigin
+  )
 }
 
 export function buildRecipientScreenshotUrl({
   recipient,
   siteUri,
   siteVersion,
+  publicOrigin,
 }: {
   recipient: SiteRecipient
   siteUri: string
   siteVersion?: string | null
+  publicOrigin?: string
 }) {
   const version = encodeURIComponent(`${siteVersion ?? "published"}.${recipient.updatedAt}`)
-  return `https://handout.link/${siteUri}/${recipient.linkSlug}/embed.jpg?v=${version}`
+  return `${buildPublicSiteUrl(
+    `${siteUri}/${recipient.linkSlug}/embed.jpg`,
+    publicOrigin
+  )}?v=${version}`
 }
 
 export function createRecipientEmailEmbedHtml({
   recipient,
   siteUri,
   siteVersion,
+  publicOrigin,
 }: {
   recipient: SiteRecipient
   siteUri: string
   siteVersion?: string | null
+  publicOrigin?: string
 }) {
-  const url = buildRecipientPublicUrl({ recipient, siteUri })
-  const screenshotUrl = buildRecipientScreenshotUrl({ recipient, siteUri, siteVersion })
+  const url = buildRecipientPublicUrl({ publicOrigin, recipient, siteUri })
+  const screenshotUrl = buildRecipientScreenshotUrl({
+    publicOrigin,
+    recipient,
+    siteUri,
+    siteVersion,
+  })
   const altText = `${recipient.name} at ${recipient.company}`
 
   return `<a href="${escapeHtmlAttribute(url)}" target="_blank" rel="noopener noreferrer"><img src="${escapeHtmlAttribute(screenshotUrl)}" alt="${escapeHtmlAttribute(altText)}" style="display:block;width:600px;max-width:100%;height:auto;border:0;border-radius:10px;" /></a>`

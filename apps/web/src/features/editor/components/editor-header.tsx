@@ -1,4 +1,4 @@
-import { memo, useState } from "react"
+import { memo, useState, type SetStateAction } from "react"
 import { Link } from "@tanstack/react-router"
 import type { WorkspacePlan } from "@handout/contracts"
 import type { SiteContent, SiteVariableDefinition } from "@handout/site-document"
@@ -24,10 +24,9 @@ import {
 } from "@tabler/icons-react"
 import { toast } from "sonner"
 
+import { RecipientAvatar } from "@/components/common/recipient-avatar"
 import { Badge } from "@/components/ui/badge"
 import {
-  Avatar,
-  AvatarFallback,
   AvatarGroup,
   AvatarGroupCount,
 } from "@/components/ui/avatar"
@@ -67,7 +66,7 @@ type EditorHeaderProps = {
   liveSiteDisplayUrl: string
   liveSiteUrl: string
   mode: EditorMode
-  onContentChange: (content: SiteContent) => void
+  onContentChange: (content: SetStateAction<SiteContent>) => void
   onCreateVariable: (input: Pick<SiteVariableDefinition, "defaultValue" | "description" | "label">) => void
   onDeleteVariable: (variableId: string) => void
   onEditVariable: (variableId: string, input: Pick<SiteVariableDefinition, "defaultValue" | "description" | "label">) => void
@@ -210,6 +209,7 @@ export function EditorHeader({
                   onEditVariable={onEditVariable}
                   plan={plan}
                   siteId={siteId}
+                  siteName={siteName}
                   usageCounts={usageCounts}
                   variables={variables}
                   workspaceId={workspaceId}
@@ -269,11 +269,11 @@ function EditorCollaborators({ collaborators }: { collaborators: EditorCollabora
       {visible.map((collaborator) => (
         <Tooltip key={collaborator.id}>
           <TooltipTrigger asChild>
-            <Avatar size="md">
-              <AvatarFallback>
-                {getInitials(collaborator.name)}
-              </AvatarFallback>
-            </Avatar>
+            <RecipientAvatar
+              recipient={{ name: collaborator.name }}
+              shape="circle"
+              size="md"
+            />
           </TooltipTrigger>
           <TooltipContent>{collaborator.name} is editing</TooltipContent>
         </Tooltip>
@@ -281,15 +281,6 @@ function EditorCollaborators({ collaborators }: { collaborators: EditorCollabora
       {hiddenCount > 0 ? <AvatarGroupCount>+{hiddenCount}</AvatarGroupCount> : null}
     </AvatarGroup>
   )
-}
-
-function getInitials(name: string) {
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("") || "?"
 }
 
 const EditorPublishMenu = memo(function EditorPublishMenu({
@@ -320,8 +311,12 @@ const EditorPublishMenu = memo(function EditorPublishMenu({
     : `${recipientCount} recipient ${recipientCount === 1 ? "copy" : "copies"}`
 
   const publish = async () => {
-    await onPublish()
-    setPublishedInCurrentOpen(true)
+    try {
+      await onPublish()
+      setPublishedInCurrentOpen(true)
+    } catch {
+      setOpen(false)
+    }
   }
 
   const share = () => {

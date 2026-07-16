@@ -240,7 +240,7 @@ export function createTrackingV2Service(options: TrackingV2ServiceOptions): Trac
         settings.recordingEnabled &&
         settings.recordingTermsVersion === TRACKING_V2_REPLAY_TERMS_VERSION &&
         settings.recordingTermsAcceptedAt &&
-        payload.content.settings.trackingConsentPopup === "popup-b" &&
+        payload.content.settings.trackingConsentPopup !== "none" &&
         sanitizeTrackingPrivacyPolicyUrl(payload.content.settings.trackingPrivacyPolicyUrl),
       );
       return {

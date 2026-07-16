@@ -1,11 +1,5 @@
-import { useId, useRef, type CSSProperties, type Ref } from "react"
-import {
-  IconBraces,
-  IconCheck,
-  IconDeviceDesktop,
-  IconMoon,
-  IconSun,
-} from "@tabler/icons-react"
+import { useId, useRef, type CSSProperties, type Ref, type SetStateAction } from "react"
+import { IconBraces, IconNotes } from "@tabler/icons-react"
 import type { SiteContent, SiteVariableDefinition } from "@handout/site-document"
 
 import { Button } from "@/components/ui/button"
@@ -35,35 +29,44 @@ import {
 
 type AppearanceSettingsProps = {
   content: SiteContent
-  onChange: (content: SiteContent) => void
+  onChange: (content: SetStateAction<SiteContent>) => void
+  siteName: string
   variables: SiteVariableDefinition[]
 }
 
 const modeOptions = [
-  { value: "light", label: "Light", description: "Always light mode", icon: IconSun },
-  { value: "dark", label: "Dark", description: "Always dark mode", icon: IconMoon },
+  { value: "light", label: "Light", description: "Always light mode" },
+  { value: "dark", label: "Dark", description: "Always dark mode" },
   {
     value: "system",
     label: "Automatic",
     description: "Follow the users system theme",
-    icon: IconDeviceDesktop,
   },
 ] as const
 
-export function AppearanceSettings({ content, onChange, variables }: AppearanceSettingsProps) {
+export function AppearanceSettings({
+  content,
+  onChange,
+  siteName,
+  variables,
+}: AppearanceSettingsProps) {
   const allVariables = mergeVariables(variables)
   const updateSettings = (settings: Partial<SiteContent["settings"]>) => {
-    onChange({ ...content, settings: { ...content.settings, ...settings } })
+    onChange((currentContent) => ({
+      ...currentContent,
+      settings: { ...currentContent.settings, ...settings },
+    }))
   }
 
   return (
-    <div className="flex flex-col gap-7 px-4 pb-4 pt-1">
+    <div className="flex flex-col gap-7 pb-4">
       <FieldGroup className="gap-7">
         <VariableTemplateField
           label="Title"
           maxLength={160}
           onChange={(siteTitle) => updateSettings({ siteTitle })}
-          value={content.settings.siteTitle}
+          placeholder="Site title..."
+          value={content.settings.siteTitle || siteName}
           variables={allVariables}
         />
         <VariableTemplateField
@@ -71,23 +74,29 @@ export function AppearanceSettings({ content, onChange, variables }: AppearanceS
           maxLength={1000}
           multiline
           onChange={(siteDescription) => updateSettings({ siteDescription })}
+          placeholder="Site description..."
           value={content.settings.siteDescription}
           variables={allVariables}
         />
       </FieldGroup>
 
-      <Field>
-        <FieldLabel>Mode</FieldLabel>
+      <Field className="gap-3">
+        <div>
+          <FieldLabel>Mode</FieldLabel>
+          <p className="text-sm leading-5 text-muted-foreground">
+            The color mode your site uses for visitors
+          </p>
+        </div>
         <ToggleGroup
           aria-label="Site appearance mode"
-          className="w-full gap-1.5"
+          className="grid h-[280px] w-full grid-rows-3 gap-1.5"
           orientation="vertical"
           type="single"
           value={content.themeMode}
           variant="outline"
           onValueChange={(value) => {
             if (value === "light" || value === "dark" || value === "system") {
-              onChange({ ...content, themeMode: value })
+              onChange((currentContent) => ({ ...currentContent, themeMode: value }))
             }
           }}
         >
@@ -95,27 +104,30 @@ export function AppearanceSettings({ content, onChange, variables }: AppearanceS
             <ToggleGroupItem
               key={option.value}
               aria-label={`${option.label}: ${option.description}`}
-              className="h-auto w-full flex-col items-stretch overflow-hidden rounded-xl p-0 data-[state=on]:border-foreground data-[state=on]:bg-transparent"
+              className="h-full w-full justify-start gap-4 overflow-hidden rounded-xl border-border bg-transparent py-1.5 pr-4 pl-1.5 text-left data-[state=off]:opacity-80 data-[state=on]:border-purple-foreground data-[state=on]:bg-transparent hover:bg-transparent"
               value={option.value}
             >
               <ModePreview mode={option.value} />
-              <div className="flex items-center gap-2 px-3 py-2 text-left">
-                <option.icon className="size-4 text-muted-foreground" />
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-medium text-foreground">{option.label}</span>
-                  <span className="block text-xs font-normal text-muted-foreground">
-                    {option.description}
-                  </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm leading-5 font-medium text-foreground">
+                  {option.label}
                 </span>
-                {content.themeMode === option.value ? <IconCheck className="size-4" /> : null}
-              </div>
+                <span className="block text-sm leading-5 font-normal text-muted-foreground">
+                  {option.description}
+                </span>
+              </span>
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
       </Field>
 
-      <Field>
-        <FieldLabel>Primary color</FieldLabel>
+      <Field className="gap-3">
+        <div>
+          <FieldLabel>Primary color</FieldLabel>
+          <p className="text-sm leading-5 text-muted-foreground">
+            The color used for primary buttons and other elements
+          </p>
+        </div>
         <ToggleGroup
           aria-label="Primary color"
           className="w-full justify-start gap-2.5"
@@ -131,10 +143,15 @@ export function AppearanceSettings({ content, onChange, variables }: AppearanceS
             <ToggleGroupItem
               key={option.value}
               aria-label={option.label}
-              className="size-6 rounded-full p-0 data-[state=on]:ring-2 data-[state=on]:ring-foreground data-[state=on]:ring-offset-2 data-[state=on]:ring-offset-popover"
+              className="group size-6 min-w-6 rounded-full border border-black/15 p-0 hover:opacity-90 data-[state=on]:border-black/15 data-[state=on]:bg-transparent"
               value={option.value}
             >
-              <span className={cn("size-full rounded-full", option.className)} />
+              <span
+                className={cn(
+                  "relative size-full rounded-full after:absolute after:top-1/2 after:left-1/2 after:hidden after:size-2 after:-translate-x-1/2 after:-translate-y-1/2 after:rounded-full after:bg-white group-data-[state=on]:after:block",
+                  option.className,
+                )}
+              />
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
@@ -149,6 +166,7 @@ function VariableTemplateField({
   maxLength,
   multiline = false,
   onChange,
+  placeholder,
   value,
   variables,
 }: {
@@ -156,6 +174,7 @@ function VariableTemplateField({
   maxLength: number
   multiline?: boolean
   onChange: (value: string) => void
+  placeholder: string
   value: string
   variables: SiteVariableDefinition[]
 }) {
@@ -175,13 +194,19 @@ function VariableTemplateField({
   }
 
   return (
-    <Field>
+    <Field className="gap-2">
       <FieldLabel htmlFor={id}>{label}</FieldLabel>
-      <InputGroup className={multiline ? "min-h-20 items-start" : undefined}>
+      <InputGroup
+        className={cn(
+          "overflow-hidden rounded-lg shadow-xs",
+          multiline ? "min-h-20 items-start" : "h-9",
+        )}
+      >
         {multiline ? (
           <InputGroupTextarea
             id={id}
             maxLength={maxLength}
+            placeholder={placeholder}
             ref={controlRef as Ref<HTMLTextAreaElement>}
             value={value}
             onChange={(event) => onChange(event.target.value)}
@@ -190,15 +215,25 @@ function VariableTemplateField({
           <InputGroupInput
             id={id}
             maxLength={maxLength}
+            placeholder={placeholder}
             ref={controlRef as Ref<HTMLInputElement>}
             value={value}
             onChange={(event) => onChange(event.target.value)}
           />
         )}
-        <InputGroupAddon align="inline-end" className={multiline ? "self-start" : undefined}>
+        <InputGroupAddon
+          align="inline-end"
+          className={cn(
+            "opacity-0 transition-opacity group-focus-within/input-group:opacity-100 group-hover/input-group:opacity-100",
+            multiline && "self-start",
+          )}
+        >
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <InputGroupButton size="icon-xs" aria-label={`Insert a variable in ${label.toLowerCase()}`}>
+              <InputGroupButton
+                size="icon-xs"
+                aria-label={`Insert a variable in ${label.toLowerCase()}`}
+              >
                 <IconBraces />
               </InputGroupButton>
             </DropdownMenuTrigger>
@@ -219,31 +254,36 @@ function VariableTemplateField({
 }
 
 function ModePreview({ mode }: { mode: (typeof modeOptions)[number]["value"] }) {
-  const isDark = mode === "dark"
-  const isAutomatic = mode === "system"
+  if (mode === "system") {
+    return (
+      <span className="flex h-full w-[100px] shrink-0 overflow-hidden rounded-lg border bg-card pl-4">
+        <span className="flex h-full min-w-0 flex-1 items-end pt-4">
+          <span className="flex size-full items-start rounded-tl-md border border-r-0 border-b-0 border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm leading-5 font-medium text-neutral-900">
+            Aa
+          </span>
+        </span>
+        <span className="flex h-full min-w-0 flex-1 items-end pt-4">
+          <span className="flex size-full items-start border border-r-0 border-b-0 border-l-0 border-neutral-600 bg-neutral-800 px-3 py-2.5 text-sm leading-5 font-medium text-neutral-200">
+            Aa
+          </span>
+        </span>
+      </span>
+    )
+  }
 
   return (
-    <div className={cn("h-[100px] w-full p-3", isDark ? "bg-neutral-800" : isAutomatic ? "bg-gradient-to-r from-neutral-100 to-neutral-800" : "bg-neutral-100")}>
-      <div className={cn(
-        "grid h-full grid-cols-[36px_1fr] overflow-hidden rounded-md border shadow-sm",
-        isDark
-          ? "border-neutral-700 bg-neutral-900"
-          : isAutomatic
-            ? "border-neutral-400 bg-gradient-to-r from-neutral-50 from-50% to-neutral-900 to-50%"
-            : "border-neutral-200 bg-neutral-50",
-      )}>
-        <div className={cn("border-r p-1.5", isDark ? "border-neutral-700 bg-neutral-800" : "border-neutral-200 bg-neutral-100")}>
-          <div className={cn("mb-2 h-2 w-4 rounded-full", isDark ? "bg-neutral-300" : "bg-neutral-600")} />
-          <div className={cn("mb-1 h-1.5 rounded-full", isDark ? "bg-neutral-600" : "bg-neutral-300")} />
-          <div className={cn("h-1.5 rounded-full", isDark ? "bg-neutral-600" : "bg-neutral-300")} />
-        </div>
-        <div className="p-2">
-          <div className={cn("mb-2 h-2 w-16 rounded-full", isDark ? "bg-neutral-200" : "bg-neutral-700")} />
-          <div className={cn("mb-1 h-1.5 w-full rounded-full", isDark ? "bg-neutral-600" : "bg-neutral-300")} />
-          <div className={cn("h-1.5 w-3/4 rounded-full", isDark ? "bg-neutral-600" : "bg-neutral-300")} />
-        </div>
-      </div>
-    </div>
+    <span className="flex h-full w-[100px] shrink-0 items-end overflow-hidden rounded-lg border bg-card pt-4 pl-4">
+      <span
+        className={cn(
+          "flex size-full items-start rounded-tl-md border border-r-0 border-b-0 px-3 py-2.5 text-sm leading-5 font-medium",
+          mode === "dark"
+            ? "border-neutral-600 bg-neutral-800 text-neutral-200"
+            : "border-neutral-200 bg-neutral-50 text-neutral-900",
+        )}
+      >
+        Aa
+      </span>
+    </span>
   )
 }
 
@@ -251,33 +291,36 @@ function PrimaryColorPreview({ color }: { color: SiteContent["settings"]["primar
   const style = getPreviewColorStyle(color)
 
   return (
-    <div className="mt-2.5 rounded-xl border bg-card p-3" style={style}>
-      <div className="mb-3 flex gap-1 border-b pb-2">
-        <span className="rounded-md bg-[var(--preview-soft)] px-2 py-1 text-xs font-medium text-[var(--preview-primary)]">
-          Active tab
-        </span>
-        <span className="px-2 py-1 text-xs text-muted-foreground">Another tab</span>
-      </div>
-      <Button size="compact" className="bg-[var(--preview-primary)] text-[var(--preview-foreground)] hover:bg-[var(--preview-primary)]">
-        Primary button
+    <div
+      className="flex h-20 items-center justify-center gap-3 rounded-lg border bg-card"
+      style={style}
+    >
+      <Button
+        className="bg-[var(--preview-primary)] text-[var(--preview-foreground)] hover:bg-[var(--preview-primary)]/80"
+      >
+        Button
       </Button>
+      <span className="flex h-8 items-center gap-2 rounded-lg bg-[var(--preview-primary-soft)] px-2 text-base leading-6 text-[var(--preview-primary)]">
+        <IconNotes className="size-4 shrink-0" />
+        Tab
+      </span>
     </div>
   )
 }
 
-function getPreviewColorStyle(color: SiteContent["settings"]["primaryColor"]) {
+function getPreviewColorStyle(color: SiteContent["settings"]["primaryColor"]): CSSProperties {
   if (color === "neutral") {
     return {
       "--preview-primary": "var(--foreground)",
       "--preview-foreground": "var(--background)",
-      "--preview-soft": "var(--accent)",
+      "--preview-primary-soft": "var(--accent)",
     } as CSSProperties
   }
 
   return {
     "--preview-primary": `var(--${color}-foreground)`,
     "--preview-foreground": "var(--background)",
-    "--preview-soft": `var(--${color}-background)`,
+    "--preview-primary-soft": `var(--${color}-background-subtle)`,
   } as CSSProperties
 }
 

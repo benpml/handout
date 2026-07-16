@@ -147,14 +147,14 @@ async function start(service: ReturnType<typeof harness>["service"], ipAddress =
 }
 
 describe("tracking v2 service", () => {
-  it("issues replay context only for equal consent choices and a valid customer privacy policy", async () => {
+  it("issues replay context for either consent popup and a valid customer privacy policy", async () => {
     const { service } = harness({ replay: true });
     const payload = publicPayload();
 
     await expect(service.preparePublicContext(payload)).resolves.toMatchObject({ trackingMode: "events_and_replay" });
 
     payload.content.settings.trackingConsentPopup = "popup-a";
-    await expect(service.preparePublicContext(payload)).resolves.toMatchObject({ trackingMode: "events" });
+    await expect(service.preparePublicContext(payload)).resolves.toMatchObject({ trackingMode: "events_and_replay" });
 
     payload.content.settings.trackingConsentPopup = "popup-b";
     payload.content.settings.trackingPrivacyPolicyUrl = "http://customer.example/privacy";

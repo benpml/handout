@@ -23,10 +23,15 @@ import {
 import { listSites, publishSite } from "@/features/sites/api"
 import { getSiteVariableUsageCounts } from "@/features/site-settings/model"
 import { queryKeys } from "@/lib/api/query-keys"
+import {
+  buildPublicSiteUrl,
+  getPublicSiteDisplayUrl,
+} from "@/lib/public-site-url"
 import { getApiErrorMessage, isApiClientError } from "@/lib/api/errors"
 import { cn } from "@/lib/utils"
 import { EditorCanvas } from "./components/editor-canvas"
 import { EditorHeader, type EditorPublishStatus } from "./components/editor-header"
+import { PublishUpgradeDialog } from "./components/publish-upgrade-dialog"
 import { EditorSitePreview } from "./components/site-preview"
 import { EditorSiteSidebar } from "./components/site-sidebar"
 import { RecipientShareDialog } from "./recipients/recipient-share-dialog"
@@ -174,6 +179,7 @@ function ReadyEditorPage({
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const activeWorkspace = useActiveWorkspace()
+  const [publishUpgradeOpen, setPublishUpgradeOpen] = useState(false)
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [variableDefinitions, setVariableDefinitions] =
     useState<HandoutVariableOption[]>(() => editorVariables)
@@ -227,12 +233,7 @@ function ReadyEditorPage({
     },
     onError: (error) => {
       if (isApiClientError(error) && error.code === "billing.upgrade_required") {
-        toast.error("Upgrade to Core to publish.", {
-          action: {
-            label: "View plans",
-            onClick: () => void navigate({ to: "/billing" }),
-          },
-        })
+        setPublishUpgradeOpen(true)
         return
       }
 
@@ -387,14 +388,13 @@ function ReadyEditorPage({
       ? "unpublished-changes"
       : "published"
     : "unpublished"
-  const publicSiteUrl = useMemo(
-    () => getPublicSiteUrl(activeWorkspace.slug, currentSite?.slug ?? ""),
-    [activeWorkspace.slug, currentSite?.slug]
-  )
-  const publicSiteDisplayUrl = useMemo(
-    () => getPublicSiteDisplayUrl(activeWorkspace.slug, currentSite?.slug ?? ""),
-    [activeWorkspace.slug, currentSite?.slug]
-  )
+  const currentSiteSlug = currentSite?.slug ?? ""
+  const publicSiteUrl = currentSiteSlug
+    ? buildPublicSiteUrl(`${activeWorkspace.slug}/${currentSiteSlug}`)
+    : ""
+  const publicSiteDisplayUrl = currentSiteSlug
+    ? getPublicSiteDisplayUrl(`${activeWorkspace.slug}/${currentSiteSlug}`)
+    : "handout.link/site-path"
 
   const publishCurrentSite = useCallback(
     () => publishSiteMutation.mutateAsync().then(() => undefined),
@@ -916,6 +916,7 @@ function ReadyEditorPage({
     () => getShareVariableDefinitions(activeEditor?.state.doc ?? null, variableDefinitions),
     [activeEditor, documentRevision, variableDefinitions],
   )
+  const primaryColorStyle = getEditorPrimaryColorStyle(siteDraft.settings.primaryColor)
 
   return (
     <div
@@ -924,7 +925,7 @@ function ReadyEditorPage({
       data-theme={siteTheme}
       data-site-id={siteId}
       className={cn(siteTheme, "flex h-svh min-h-0 flex-col overflow-hidden bg-background text-foreground")}
-      style={getEditorPrimaryColorStyle(siteDraft.settings.primaryColor)}
+      style={primaryColorStyle}
     >
       <EditorHeader
         canRedo={editorState?.canRedo ?? false}
@@ -970,6 +971,7 @@ function ReadyEditorPage({
             activePageId={activePageId}
             mode={editorMode}
             model={sidebarModel}
+            primaryColorStyle={primaryColorStyle}
             onAddButton={addSidebarButton}
             onAddLink={addSidebarLink}
             onAddPage={addPage}
@@ -1019,6 +1021,15 @@ function ReadyEditorPage({
         siteVersion={currentSite?.publishedAt}
         updateRecipient={updateRecipient}
         variables={shareVariableDefinitions}
+      />
+      <PublishUpgradeDialog
+        canManageBilling={activeWorkspace.role === "admin"}
+        onOpenChange={setPublishUpgradeOpen}
+        onViewPlans={() => {
+          setPublishUpgradeOpen(false)
+          void navigate({ to: "/billing" })
+        }}
+        open={publishUpgradeOpen}
       />
     </div>
   )
@@ -1127,32 +1138,6 @@ function getEditorPrimaryColorStyle(
   return {
     "--handout-primary": `var(--${color}-foreground)`,
     "--handout-primary-foreground": "var(--background)",
-    "--handout-primary-soft": `var(--${color}-background)`,
+    "--handout-primary-soft": `var(--${color}-background-subtle)`,
   } as CSSProperties
-}
-
-function getPublicSiteUrl(workspaceSlug: string, siteSlug: string) {
-  if (!workspaceSlug || !siteSlug) {
-    return ""
-  }
-
-  const path = `/${workspaceSlug}/${siteSlug}`
-
-  if (typeof window === "undefined") {
-    return `https://handout.link${path}`
-  }
-
-  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-    return `${window.location.origin}${path}`
-  }
-
-  return `https://handout.link${path}`
-}
-
-function getPublicSiteDisplayUrl(workspaceSlug: string, siteSlug: string) {
-  if (!workspaceSlug || !siteSlug) {
-    return "handout.link/site-path"
-  }
-
-  return `handout.link/${workspaceSlug}/${siteSlug}`
 }

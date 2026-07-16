@@ -155,7 +155,7 @@ describe("canonical site document", () => {
     expect(html).not.toContain("data-handout-element-kind");
     expect(html).not.toContain("data-handout-element-label");
     expect(html).not.toContain("data-handout-element-href");
-    expect(html).toContain('<script defer src="/site-runtime.v4.js"></script>');
+    expect(html).toContain('<script defer src="/site-runtime.v5.js"></script>');
     expect(html).toContain('url("/fonts/geist-latin-wght-normal.woff2")');
     expect(html).toContain('format("woff2")');
     expect(html).not.toContain("woff2-variations");
@@ -259,16 +259,18 @@ describe("canonical site document", () => {
     expect(SITE_DOCUMENT_CSS).toContain("letter-spacing:-.02em")
     expect(SITE_DOCUMENT_CSS).toContain("letter-spacing:-.03em")
     expect(SITE_DOCUMENT_CSS).toContain(".handout-document,.handout-document-editor{font-weight:325}")
-    expect(SITE_DOCUMENT_CSS).toContain(".handout-prosemirror>p{padding:0;color:var(--tertiary-foreground);font-size:16px;font-weight:325;font-variation-settings:\"wght\" 325")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-prosemirror strong{font-weight:700}")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-paragraph,.handout-prosemirror>p")
+    expect(SITE_DOCUMENT_CSS).toContain('font-weight:325;font-variation-settings:"wght" 325;line-height:26px')
     expect(SITE_DOCUMENT_CSS).toContain(".handout-document-editor .handout-prosemirror>p{padding:0;color:var(--tertiary-foreground);font-size:16px;font-weight:325;font-variation-settings:\"wght\" 325")
-    expect(SITE_DOCUMENT_CSS).toContain(".handout-page-title-subtitle{max-width:100%;margin:8px 0 0;color:var(--tertiary-foreground);font-size:16px;font-weight:325;font-variation-settings:\"wght\" 325")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-page-title-subtitle,[data-handout-page-title-subtitle]{max-width:100%;margin:8px 0 0")
     expect(SITE_DOCUMENT_CSS).toContain(".handout-prosemirror>h1+p,.handout-prosemirror>h2+p,.handout-prosemirror>h3+p{margin-top:14px}")
-    expect(SITE_DOCUMENT_CSS).toContain(".handout-page-title-subtitle{max-width:100%;margin:8px 0 0")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-page-title{display:flex;flex-direction:column;align-items:center;gap:24px;padding:0 0 36px")
     expect(SITE_DOCUMENT_CSS).toContain(".handout-document-editor .handout-prosemirror>h1+p,.handout-document-editor .handout-prosemirror>h2+p,.handout-document-editor .handout-prosemirror>h3+p{margin-top:14px}")
     expect(SITE_DOCUMENT_CSS).toContain(".handout-document-editor .handout-prosemirror{width:100%;min-width:0;max-width:100%")
     expect(SITE_DOCUMENT_CSS).toContain("width:min(612px,calc(100% - 104px));max-width:calc(100% - 104px)")
     expect(SITE_DOCUMENT_CSS).toContain(".handout-logo-grid{display:grid;width:100%;min-width:0;max-width:100%")
-    expect(SITE_DOCUMENT_CSS).toContain(".handout-table th{background:var(--table-header-background)")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-table th,.handout-document-editor .tableWrapper>table th{background:var(--table-header-background)")
     expect(SITE_DOCUMENT_CSS).toContain(".handout-button-block{display:inline-flex;width:max-content;min-height:32px;max-width:100%;align-items:center;justify-content:center;padding:0 12px;border-radius:8px;background:var(--handout-primary,var(--primary));color:var(--handout-primary-foreground,var(--primary-foreground));font-size:15px")
     expect(SITE_DOCUMENT_CSS).toContain(".handout-button-block-full{display:flex;width:100%;min-height:40px;padding:2px 12px}")
     expect(SITE_DOCUMENT_CSS).toContain(".handout-document-editor .handout-editor-button-block-full{min-height:40px;padding:2px 12px}")
@@ -276,9 +278,12 @@ describe("canonical site document", () => {
     expect(SITE_DOCUMENT_CSS).toContain("--handout-primary");
     expect(HANDOUT_THEME_CSS).toContain("--tertiary-foreground:var(--neutral-300)");
     expect(HANDOUT_THEME_CSS).toContain("--secondary-foreground:var(--neutral-200)");
-    expect(SITE_DOCUMENT_CSS).toContain("font-size:14px;font-weight:500;line-height:24px");
+    expect(SITE_DOCUMENT_CSS).toContain("font-size:14px;font-weight:500;letter-spacing:-.02em;line-height:24px");
     expect(SITE_DOCUMENT_CSS).not.toContain("text-transform:uppercase");
-    expect(SITE_DOCUMENT_CSS).toContain(".handout-sidebar-section>h2{height:26px;min-width:0;margin:0;overflow:hidden;color:var(--muted-foreground);font-size:14px;font-weight:500");
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-sidebar,.handout-editor-sidebar-content{font-family:\"Geist Variable\",\"Geist\"")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-editor-sidebar-content :where(button,a){font-family:inherit;letter-spacing:inherit}")
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-sidebar-section>h2,.handout-editor-sidebar-section-title{height:26px;min-width:0;margin:0;overflow:hidden;color:var(--muted-foreground);font-size:14px;font-weight:500;letter-spacing:-.02em");
+    expect(SITE_DOCUMENT_CSS).toContain("font-size:16px;font-weight:400;letter-spacing:-.02em;line-height:24px")
     expect(SITE_DOCUMENT_CSS).toContain(".handout-sidebar-mobile-title{min-width:0;flex:1;overflow:hidden;color:var(--tertiary-foreground);font-size:16px;font-weight:500");
     expect(SITE_DOCUMENT_CSS).toContain(".handout-tab{color:var(--tertiary-foreground)}");
     expect(SITE_DOCUMENT_CSS).toContain(".handout-tab svg{color:inherit}");
@@ -462,6 +467,7 @@ describe("canonical site document", () => {
     const html = renderPublicSiteHtml(payload, { includeTracking: false });
 
     expect(html).toContain("--handout-primary:var(--purple-foreground)");
+    expect(html).toContain("--handout-primary-soft:var(--purple-background-subtle)");
     expect(SITE_DOCUMENT_CSS).toContain(".handout-sidebar-row.is-active{background:var(--handout-primary-soft");
     expect(SITE_DOCUMENT_CSS).toContain("background:var(--handout-primary,var(--primary))");
   });
@@ -480,6 +486,9 @@ describe("canonical site document", () => {
 
     const popupHtml = renderPublicSiteHtml(payload);
     expect(popupHtml).toContain('data-handout-consent-popup="popup-b"');
+    expect(popupHtml).toContain('role="dialog" aria-modal="true"');
+    expect(popupHtml).toContain('class="handout-consent-dialog"');
+    expect(popupHtml).toContain('class="handout-consent-copy"');
     expect(popupHtml).toContain("Deny and proceed");
     expect(popupHtml).toContain("Allow and proceed");
     expect(popupHtml).toContain('data-handout-consent-site-id="22222222-2222-4222-8222-222222222222"');
@@ -488,8 +497,19 @@ describe("canonical site document", () => {
     expect(PUBLIC_SITE_RUNTIME).toContain("localStorage.setItem(consentStorageKey,JSON.stringify(value))");
     expect(PUBLIC_SITE_RUNTIME).toContain("data-handout-replay-consent");
     expect(PUBLIC_SITE_RUNTIME).toContain("handout:tracking-consent-withdrawn");
+    expect(PUBLIC_SITE_RUNTIME).toContain("typeof mobileQuery.addEventListener==='function'");
+    expect(() => new Function(PUBLIC_SITE_RUNTIME)).not.toThrow();
+    expect(SITE_DOCUMENT_CSS).toContain(".handout-consent-copy{display:flex;flex-direction:column}");
+    expect(SITE_DOCUMENT_CSS).toContain("padding:6px 0;font-size:16px");
+    expect(SITE_DOCUMENT_CSS).toContain("padding:0 10px;border:1px solid var(--border)");
     expect(popupHtml).toContain("Privacy choices");
     expect(popupHtml).toContain('href="https://customer.example/privacy"');
+
+    payload.content.settings.trackingConsentPopup = "popup-a";
+    const popupAHtml = renderPublicSiteHtml(payload);
+    expect(popupAHtml).toContain('data-handout-consent-popup="popup-a"');
+    expect(popupAHtml).toContain("You may decline and enter");
+    expect(popupAHtml).not.toContain("Deny and proceed");
 
     payload.content.settings.trackingConsentPopup = "none";
     const immediateHtml = renderPublicSiteHtml(payload);

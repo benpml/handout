@@ -1,11 +1,11 @@
 import {
-  IconAdjustmentsHorizontal,
-  IconBraces,
-  IconChartDots,
+  IconCodeAsterisk,
   IconDotsVertical,
+  IconPalette,
+  IconScanPosition,
   IconX,
 } from "@tabler/icons-react"
-import type { ReactNode } from "react"
+import type { ReactNode, SetStateAction } from "react"
 import type { WorkspacePlan } from "@handout/contracts"
 import type { SiteContent, SiteVariableDefinition } from "@handout/site-document"
 
@@ -30,12 +30,13 @@ type VariableInput = Pick<SiteVariableDefinition, "defaultValue" | "description"
 export type SiteSettingsDrawerProps = {
   canManageTracking: boolean
   content: SiteContent
-  onChange: (content: SiteContent) => void
+  onChange: (content: SetStateAction<SiteContent>) => void
   onCreateVariable: (input: VariableInput) => void
   onDeleteVariable: (variableId: string) => void
   onEditVariable: (variableId: string, input: VariableInput) => void
   plan: WorkspacePlan
   siteId: string
+  siteName: string
   usageCounts: Readonly<Record<string, number>>
   variables: SiteVariableDefinition[]
   workspaceId: string
@@ -50,6 +51,7 @@ export function SiteSettingsDrawer({
   onEditVariable,
   plan,
   siteId,
+  siteName,
   usageCounts,
   variables,
   workspaceId,
@@ -63,34 +65,40 @@ export function SiteSettingsDrawer({
       </SheetTrigger>
       <SheetContent
         aria-describedby={undefined}
-        className="inset-y-1.5 right-1.5 h-[calc(100%-12px)] w-[384px] max-w-[calc(100vw-12px)] gap-0 overflow-hidden rounded-2xl border-0 sm:max-w-[384px]"
+        className="inset-y-1.5! right-1.5! h-[calc(100%-12px)]! w-[384px] max-w-[calc(100vw-12px)] gap-5 overflow-hidden rounded-2xl border-0 bg-background px-4 pt-2 pb-4 sm:max-w-[384px]"
+        overlayClassName="bg-black/20 backdrop-blur-none"
         showCloseButton={false}
       >
-        <SheetHeader className="flex h-10 shrink-0 flex-row items-center justify-between px-4 py-0">
-          <SheetTitle className="text-sm">Site settings</SheetTitle>
+        <SheetHeader className="flex h-8 shrink-0 flex-row items-center justify-between rounded-sm px-1.5 py-1.5">
+          <SheetTitle className="text-sm leading-5">Site settings</SheetTitle>
           <SheetClose asChild>
-            <Button variant="ghost" size="icon-compact" aria-label="Close site settings">
+            <Button className="-mr-1.5" variant="ghost" size="icon-field" aria-label="Close site settings">
               <IconX />
             </Button>
           </SheetClose>
         </SheetHeader>
-        <Tabs defaultValue="appearance" className="min-h-0 flex-1 gap-0">
-          <TabsList variant="line" className="h-[42px] w-full shrink-0 justify-start gap-5 border-b px-4 py-0">
-            <TabsTrigger value="appearance" className="h-full flex-none px-0">
-              <IconAdjustmentsHorizontal data-icon="inline-start" />
+        <Tabs defaultValue="appearance" className="min-h-0 flex-1 gap-5">
+          <TabsList variant="line" className="h-[42px]! w-full shrink-0 justify-start gap-2 border-b border-border-subtle p-0">
+            <TabsTrigger value="appearance" className="h-full! flex-none -translate-y-0.5 px-1 after:bottom-[-3px]! after:h-px! [&_svg:not([class*='size-'])]:size-3.5">
+              <IconPalette data-icon="inline-start" />
               Appearance
             </TabsTrigger>
-            <TabsTrigger value="tracking" className="h-full flex-none px-0">
-              <IconChartDots data-icon="inline-start" />
+            <TabsTrigger value="tracking" className="h-full! flex-none -translate-y-0.5 px-1 after:bottom-[-3px]! after:h-px! [&_svg:not([class*='size-'])]:size-3.5">
+              <IconScanPosition data-icon="inline-start" />
               Tracking
             </TabsTrigger>
-            <TabsTrigger value="variables" className="h-full flex-none px-0">
-              <IconBraces data-icon="inline-start" />
+            <TabsTrigger value="variables" className="h-full! flex-none -translate-y-0.5 px-1 after:bottom-[-3px]! after:h-px! [&_svg:not([class*='size-'])]:size-3.5">
+              <IconCodeAsterisk data-icon="inline-start" />
               Variables
             </TabsTrigger>
           </TabsList>
           <SettingsTab value="appearance">
-            <AppearanceSettings content={content} onChange={onChange} variables={variables} />
+            <AppearanceSettings
+              content={content}
+              onChange={onChange}
+              siteName={siteName}
+              variables={variables}
+            />
           </SettingsTab>
           <SettingsTab value="tracking">
             <TrackingSettings
@@ -119,9 +127,9 @@ export function SiteSettingsDrawer({
 
 function SettingsTab({ children, value }: { children: ReactNode; value: string }) {
   return (
-    <TabsContent value={value} className="min-h-0 overflow-hidden">
+    <TabsContent value={value} className="min-h-0">
       <ScrollArea className="h-full">
-        <div className="pt-4">{children}</div>
+        <div className="px-px">{children}</div>
       </ScrollArea>
     </TabsContent>
   )

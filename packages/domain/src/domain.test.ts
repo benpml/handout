@@ -10,11 +10,20 @@ import {
   validateTextLimit,
   validateSiteSlug,
   validateVariantSlug,
+  validateEmail,
   validateWorkEmail,
   validateWorkspaceSlug,
 } from "./index";
 
 describe("domain email rules", () => {
+  it("accepts personal domains and plus aliases for general email use", () => {
+    expect(validateEmail(" Jane+Sales@Gmail.com ")).toEqual({
+      ok: true,
+      email: "jane+sales@gmail.com",
+      domain: "gmail.com",
+    });
+  });
+
   it("normalizes and accepts work email addresses", () => {
     expect(validateWorkEmail(" Jane@Acme.com ")).toEqual({
       ok: true,

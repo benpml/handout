@@ -32,6 +32,30 @@ const darkPalette = {
   "pink-background": "#cf38974d", "pink-foreground": "#efbfdd", "pink-border": "#cf389729",
 } as const
 
+const lightSubtleBackgroundPalette = {
+  "purple-background-subtle": "#755bde0f",
+  "blue-background-subtle": "#0085ee0f",
+  "cyan-background-subtle": "#0588f00f",
+  "teal-background-subtle": "#0d9b8a0f",
+  "green-background-subtle": "#2b9a660f",
+  "yellow-background-subtle": "#ffba180f",
+  "orange-background-subtle": "#ef5f000f",
+  "red-background-subtle": "#dc3e420f",
+  "pink-background-subtle": "#cf38970f",
+} as const
+
+const darkSubtleBackgroundPalette = {
+  "purple-background-subtle": "#755bde1f",
+  "blue-background-subtle": "#0085ee1f",
+  "cyan-background-subtle": "#0588f01f",
+  "teal-background-subtle": "#0d9b8a1f",
+  "green-background-subtle": "#2b9a661f",
+  "yellow-background-subtle": "#ffba181f",
+  "orange-background-subtle": "#ef5f001f",
+  "red-background-subtle": "#dc3e421f",
+  "pink-background-subtle": "#cf38971f",
+} as const
+
 describe("shared design tokens", () => {
   it("keeps every semantic light token available in dark mode", () => {
     expect(Object.keys(handoutDarkTokens).sort()).toEqual(
@@ -53,6 +77,8 @@ describe("shared design tokens", () => {
   it("uses the exact role-based palette in both modes", () => {
     expect(handoutLightTokens).toMatchObject(lightPalette)
     expect(handoutDarkTokens).toMatchObject(darkPalette)
+    expect(handoutLightTokens).toMatchObject(lightSubtleBackgroundPalette)
+    expect(handoutDarkTokens).toMatchObject(darkSubtleBackgroundPalette)
     expect(handoutLightTokens).toMatchObject({
       "variable-background": "var(--cyan-background)",
       "variable-foreground": "var(--cyan-foreground)",

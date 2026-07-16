@@ -1,7 +1,5 @@
 import { Badge } from "@/components/ui/badge"
-import type { SiteStatus, WorkspaceRole } from "@handout/contracts"
-
-type InviteStatus = "pending" | "expired" | "revoked" | "send_failed"
+import type { SiteStatus, WorkspaceInvitationStatus, WorkspaceRole } from "@handout/contracts"
 
 type SiteStatusBadgeProps = {
   status: SiteStatus
@@ -32,17 +30,9 @@ export function RoleBadge({ role }: { role: WorkspaceRole }) {
   )
 }
 
-export function InviteStatusBadge({ status }: { status: InviteStatus }) {
-  if (status === "send_failed") {
-    return <Badge variant="destructive">Send failed</Badge>
-  }
-
+export function InviteStatusBadge({ status }: { status: WorkspaceInvitationStatus }) {
   if (status === "expired") {
     return <Badge variant="outline">Expired</Badge>
-  }
-
-  if (status === "revoked") {
-    return <Badge variant="outline">Revoked</Badge>
   }
 
   return <Badge variant="secondary">Pending</Badge>

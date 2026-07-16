@@ -40,13 +40,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useActiveWorkspace } from "@/features/app-bootstrap/app-bootstrap-hooks"
+import { useActiveWorkspace, useAppBootstrap } from "@/features/app-bootstrap/app-bootstrap-hooks"
 import type { SiteRecipient } from "@/features/editor/recipients/recipient-model"
 import { useSiteRecipients } from "@/features/editor/recipients/use-site-recipients"
 import { TrackingSiteSettingsPanel } from "@/features/tracking/tracking-settings-panel"
 import { listTrackingV2Events } from "@/features/tracking/api"
 import { getApiErrorMessage } from "@/lib/api/errors"
 import { queryKeys } from "@/lib/api/query-keys"
+import {
+  buildPublicSiteUrl,
+  getPublicSiteDisplayUrl,
+} from "@/lib/public-site-url"
 
 import { deleteSite, getSite, getSiteContent } from "./api"
 import { DeleteSiteDialog } from "./components/delete-site-dialog"
@@ -64,6 +68,7 @@ export function SiteDetailsPage() {
   const params = useParams({ strict: false })
   const siteId = "siteId" in params && typeof params.siteId === "string" ? params.siteId : ""
   const activeWorkspace = useActiveWorkspace()
+  const bootstrap = useAppBootstrap()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [shareOpen, setShareOpen] = useState(false)
@@ -104,8 +109,12 @@ export function SiteDetailsPage() {
     return counts
   }, [recipientActivityQuery.data])
   const draftContent = siteContentQuery.data?.draftContent
-  const publicSitePath = site ? `/${activeWorkspace.slug}/${site.slug}` : ""
-  const publicSiteDisplayUrl = site ? `handout.link/${activeWorkspace.slug}/${site.slug}` : "handout.link/site"
+  const publicSitePath = site
+    ? buildPublicSiteUrl(`${activeWorkspace.slug}/${site.slug}`)
+    : ""
+  const publicSiteDisplayUrl = site
+    ? getPublicSiteDisplayUrl(`${activeWorkspace.slug}/${site.slug}`)
+    : "handout.link/site"
   const previewPayload = site && draftContent
     ? createSitePreviewPayload({
         content: draftContent,
@@ -203,6 +212,10 @@ export function SiteDetailsPage() {
               payload={previewPayload}
             />
             <SiteMetadataCard
+              author={{
+                avatarUrl: bootstrap.user.avatarUrl,
+                name: bootstrap.user.name?.trim() || bootstrap.user.email,
+              }}
               recipientCount={recipientsLoading ? site.recipientCount : recipients.length}
               site={site}
             />
@@ -295,9 +308,11 @@ function SiteDetailsOverflowMenu({
 }
 
 function SiteMetadataCard({
+  author,
   recipientCount,
   site,
 }: {
+  author: { avatarUrl?: string | null; name: string }
   recipientCount: number
   site: SiteDetailResponse["site"]
 }) {
@@ -309,8 +324,8 @@ function SiteMetadataCard({
         label="Author"
         value={
           <span className="flex min-w-0 items-center gap-1">
-            <UserAvatar />
-            <span className="truncate">John</span>
+            <UserAvatar avatarUrl={author.avatarUrl} name={author.name} />
+            <span className="truncate">{author.name}</span>
           </span>
         }
       />

@@ -38,6 +38,8 @@ import {
   type SiteVersionRecord,
 } from "./sites/repository";
 import { createSiteService } from "./sites/service";
+import { createMemoryTeamRepository, type TeamMemberRecord } from "./team/repository";
+import { createTeamService, type TeamService } from "./team/service";
 import {
   createLogoDevPreviewService,
   type WorkspaceLogoPreviewService,
@@ -60,6 +62,7 @@ function createTestApp(input: {
   sites?: SiteRecord[];
   siteVariants?: SiteVariantRecord[];
   siteVersions?: SiteVersionRecord[];
+  team?: TeamService;
   actor?: CurrentActor | null;
 } = {}) {
   const actor = "actor" in input ? (input.actor ?? null) : testActor;
@@ -77,6 +80,7 @@ function createTestApp(input: {
       input.siteVersions,
       input.siteVariants,
     )),
+    ...(input.team ? { team: input.team } : {}),
     workspaces: createWorkspaceService(createMemoryWorkspaceRepository(input.initialWorkspaces)),
     getCurrentActor: async () => actor,
   });
@@ -388,6 +392,49 @@ describe("Handout API", () => {
       },
       requestId: expect.any(String),
     });
+  });
+
+  it("serves and mutates the authenticated workspace team", async () => {
+    const workspaceId = "11111111-1111-4111-8111-111111111111";
+    const adminMember: TeamMemberRecord = {
+      id: "22222222-2222-4222-8222-222222222222",
+      workspaceId,
+      userId: testActor.userId,
+      name: testActor.name ?? "Jane Doe",
+      email: testActor.email,
+      avatarUrl: null,
+      role: "admin",
+      joinedAt: new Date("2026-01-01T00:00:00.000Z"),
+      lastActiveAt: new Date("2026-07-14T16:00:00.000Z"),
+    };
+    const repository = createMemoryTeamRepository({ members: [adminMember] });
+    const app = createTestApp({ team: createTeamService(repository) });
+
+    const initial = await request(app)
+      .get(`/api/workspaces/${workspaceId}/team`)
+      .expect(200);
+
+    expect(initial.body).toMatchObject({
+      members: [{ id: adminMember.id, email: testActor.email, role: "admin" }],
+      invitations: [],
+      permissions: { canManageMembers: true },
+    });
+
+    await request(app)
+      .post(`/api/workspaces/${workspaceId}/team/invitations`)
+      .send({ email: "teammate@acme.com", role: "user" })
+      .expect(201)
+      .expect((response) => {
+        expect(response.body.result).toBe("invitation_created");
+      });
+
+    const updated = await request(app)
+      .get(`/api/workspaces/${workspaceId}/team`)
+      .expect(200);
+
+    expect(updated.body.invitations).toMatchObject([
+      { email: "teammate@acme.com", role: "user", status: "pending" },
+    ]);
   });
 
   it("uses the dev bootstrap with the configured site service when the local bypass header is present", async () => {

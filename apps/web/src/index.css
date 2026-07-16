@@ -46,30 +46,39 @@
     --color-variable-foreground: var(--variable-foreground);
     --color-variable-border: var(--variable-border);
     --color-purple-background: var(--purple-background);
+    --color-purple-background-subtle: var(--purple-background-subtle);
     --color-purple-foreground: var(--purple-foreground);
     --color-purple-border: var(--purple-border);
     --color-blue-background: var(--blue-background);
+    --color-blue-background-subtle: var(--blue-background-subtle);
     --color-blue-foreground: var(--blue-foreground);
     --color-blue-border: var(--blue-border);
     --color-cyan-background: var(--cyan-background);
+    --color-cyan-background-subtle: var(--cyan-background-subtle);
     --color-cyan-foreground: var(--cyan-foreground);
     --color-cyan-border: var(--cyan-border);
     --color-teal-background: var(--teal-background);
+    --color-teal-background-subtle: var(--teal-background-subtle);
     --color-teal-foreground: var(--teal-foreground);
     --color-teal-border: var(--teal-border);
     --color-green-background: var(--green-background);
+    --color-green-background-subtle: var(--green-background-subtle);
     --color-green-foreground: var(--green-foreground);
     --color-green-border: var(--green-border);
     --color-yellow-background: var(--yellow-background);
+    --color-yellow-background-subtle: var(--yellow-background-subtle);
     --color-yellow-foreground: var(--yellow-foreground);
     --color-yellow-border: var(--yellow-border);
     --color-orange-background: var(--orange-background);
+    --color-orange-background-subtle: var(--orange-background-subtle);
     --color-orange-foreground: var(--orange-foreground);
     --color-orange-border: var(--orange-border);
     --color-red-background: var(--red-background);
+    --color-red-background-subtle: var(--red-background-subtle);
     --color-red-foreground: var(--red-foreground);
     --color-red-border: var(--red-border);
     --color-pink-background: var(--pink-background);
+    --color-pink-background-subtle: var(--pink-background-subtle);
     --color-pink-foreground: var(--pink-foreground);
     --color-pink-border: var(--pink-border);
     --color-sidebar-ring: var(--sidebar-ring);
@@ -199,10 +208,6 @@ html.gmail-extension-panel #root {
     @apply mt-3;
   }
 
-  .handout-tiptap strong {
-    @apply font-semibold;
-  }
-
   .handout-variable-token {
     @apply inline-flex items-baseline rounded-md bg-variable-background px-1 font-medium text-variable-foreground;
     font-size: inherit;
@@ -319,8 +324,6 @@ html.gmail-extension-panel #root {
   .handout-document-editor [data-node-view-content] div,
   .handout-document-editor [data-node-view-content] span {
     @apply m-0;
-    font: inherit;
-    line-height: inherit;
     vertical-align: baseline;
   }
 
@@ -405,7 +408,12 @@ html.gmail-extension-panel #root {
   }
 
   .handout-editor-prosemirror {
-    @apply min-h-full cursor-default px-0 pt-[54px] pb-32 outline-none;
+    @apply relative min-h-full cursor-default px-0 pt-[54px] pb-32 outline-none;
+  }
+
+  .handout-editor .ProseMirror > .collaboration-carets__caret.ProseMirror-widget {
+    position: absolute;
+    margin: 0 !important;
   }
 
   .handout-editor .ProseMirror-focused {
@@ -725,18 +733,6 @@ html.gmail-extension-panel #root {
     @apply block;
   }
 
-  .handout-editor
-    .ProseMirror
-    > .react-renderer.node-calendarEmbed
-    > .handout-editor-calendar-embed-shell,
-  .handout-editor
-    .ProseMirror
-    > .react-renderer.node-videoEmbed
-    > .handout-editor-video-embed-shell {
-    padding-top: 8px;
-    padding-bottom: 8px;
-  }
-
   .handout-editor-calendar-embed-empty,
   .handout-editor-video-embed-empty {
     @apply flex min-h-[220px] w-full flex-col items-center justify-center rounded-xl border border-dashed px-6 py-8 text-center outline-none transition;
@@ -965,45 +961,11 @@ html.gmail-extension-panel #root {
     margin-top: 20px;
   }
 
-  .handout-editor .ProseMirror > .react-renderer.node-iconCard + .react-renderer.node-iconCard,
-  .handout-editor .ProseMirror > .react-renderer.node-iconCard + .react-renderer.node-imageCard,
-  .handout-editor .ProseMirror > .react-renderer.node-iconCard + .react-renderer.node-testimonialCard,
-  .handout-editor .ProseMirror > .react-renderer.node-imageCard + .react-renderer.node-iconCard,
-  .handout-editor .ProseMirror > .react-renderer.node-imageCard + .react-renderer.node-imageCard,
-  .handout-editor .ProseMirror > .react-renderer.node-imageCard + .react-renderer.node-testimonialCard,
-  .handout-editor .ProseMirror > .react-renderer.node-testimonialCard + .react-renderer.node-iconCard,
-  .handout-editor .ProseMirror > .react-renderer.node-testimonialCard + .react-renderer.node-imageCard,
-  .handout-editor
-    .ProseMirror
-    > .react-renderer.node-testimonialCard
-    + .react-renderer.node-testimonialCard {
-    margin-top: 0;
-  }
-
   .handout-editor .ProseMirror > blockquote,
   .handout-editor .ProseMirror > pre,
   .handout-editor .ProseMirror > ul,
   .handout-editor .ProseMirror > ol {
     margin-top: 24px;
-  }
-
-  .handout-editor
-    .ProseMirror
-    > :is(p, h1, h2, h3, blockquote, ul, ol)
-    + :is(
-      .react-renderer.node-iconCard,
-      .react-renderer.node-imageCard,
-      .react-renderer.node-testimonialCard
-    ),
-  .handout-editor
-    .ProseMirror
-    > :is(
-      .react-renderer.node-iconCard,
-      .react-renderer.node-imageCard,
-      .react-renderer.node-testimonialCard
-    )
-    + :is(p, blockquote, ul, ol) {
-    margin-top: 12px;
   }
 
   .handout-editor .ProseMirror > h1 + blockquote,
@@ -1031,17 +993,17 @@ html.gmail-extension-panel #root {
   }
 
   .handout-editor .ProseMirror > h1 {
-    @apply px-0 py-0 text-2xl leading-9 font-semibold tracking-normal;
+    @apply px-0 py-0 text-2xl leading-9;
     color: var(--foreground);
   }
 
   .handout-editor .ProseMirror > h2 {
-    @apply px-0 py-0 text-xl leading-8 font-semibold tracking-normal;
+    @apply px-0 py-0 text-xl leading-8;
     color: var(--foreground);
   }
 
   .handout-editor .ProseMirror > h3 {
-    @apply px-0 py-0 text-base leading-[26px] font-semibold tracking-normal;
+    @apply px-0 py-0 text-base leading-[26px];
     color: var(--foreground);
   }
 
@@ -1101,9 +1063,9 @@ html.gmail-extension-panel #root {
   }
 
   .handout-editor [data-handout-grid-cell] {
-    @apply min-w-0 rounded-lg border border-dashed p-2 transition;
+    @apply min-w-0 rounded-xl border p-4 transition;
     background: transparent;
-    border-color: transparent;
+    border-color: var(--border);
     cursor: text;
     min-height: 38px;
   }
@@ -1177,17 +1139,17 @@ html.gmail-extension-panel #root {
   }
 
   .handout-editor [data-handout-grid-cell] > h1 {
-    @apply m-0 px-0 py-0 text-2xl leading-9 font-semibold tracking-normal;
+    @apply m-0 px-0 py-0 text-2xl leading-9;
     color: var(--foreground);
   }
 
   .handout-editor [data-handout-grid-cell] > h2 {
-    @apply m-0 px-0 py-0 text-xl leading-8 font-semibold tracking-normal;
+    @apply m-0 px-0 py-0 text-xl leading-8;
     color: var(--foreground);
   }
 
   .handout-editor [data-handout-grid-cell] > h3 {
-    @apply m-0 px-0 py-0 text-base leading-[26px] font-semibold tracking-normal;
+    @apply m-0 px-0 py-0 text-base leading-[26px];
     color: var(--foreground);
   }
 
@@ -1252,7 +1214,6 @@ html.gmail-extension-panel #root {
 
   .handout-editor .handout-editor-table th,
   .handout-editor .tableWrapper > table th {
-    @apply font-semibold;
     background: var(--table-header-background);
     color: var(--foreground);
   }
@@ -1298,7 +1259,7 @@ html.gmail-extension-panel #root {
   }
 
   .handout-editor-icon-list-inner {
-    @apply grid grid-cols-[24px_minmax(0,1fr)] items-start gap-2;
+    @apply grid grid-cols-[20px_minmax(0,1fr)] items-start gap-2;
   }
 
   .handout-editor-icon-bullet {
@@ -1536,28 +1497,6 @@ html.gmail-extension-panel #root {
     font-size: 16px;
     font-weight: 600;
     line-height: 1;
-  }
-
-  .handout-editor
-    .ProseMirror
-    > .react-renderer.node-imageCard
-    > .handout-editor-image-card-shell {
-    padding-top: 8px;
-    padding-bottom: 8px;
-  }
-
-  .handout-editor .ProseMirror > .react-renderer.node-iconCard > [data-handout-editor-block],
-  .handout-editor
-    .ProseMirror
-    > .react-renderer.node-testimonialCard
-    > .handout-editor-testimonial-card-shell,
-  .handout-editor
-    .ProseMirror
-    > .react-renderer.node-logoGrid
-    > .handout-editor-logo-grid-shell,
-  .handout-editor .ProseMirror > .react-renderer.node-buttonBlock > [data-handout-editor-block] {
-    padding-top: 8px;
-    padding-bottom: 8px;
   }
 
   .handout-editor-logo-grid-shell {
@@ -1801,10 +1740,6 @@ html.gmail-extension-panel #root {
     min-width: 0;
     overflow-wrap: anywhere;
     text-align: center;
-    font-size: 16px;
-    font-weight: 500;
-    letter-spacing: 0;
-    line-height: 24px;
     color: var(--foreground);
     outline: none;
   }

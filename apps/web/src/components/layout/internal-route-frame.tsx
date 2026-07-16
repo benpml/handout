@@ -160,7 +160,7 @@ function InternalUnavailableState({
 
   if (isAuthError) {
     title = "Sign in to continue"
-    description = devAuthErrorMessage ?? "Use a work email to access your Handout workspace."
+    description = devAuthErrorMessage ?? "Use your email to access your Handout workspace."
   }
 
   if (devAuthLoadError) {

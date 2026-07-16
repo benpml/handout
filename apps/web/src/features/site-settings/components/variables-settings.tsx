@@ -73,11 +73,11 @@ export function VariablesSettings({
   }
 
   return (
-    <div className="flex flex-col gap-5 px-4 pb-4 pt-1">
+    <div className="flex flex-col gap-3 pb-4">
       <div>
-        <h2 className="text-sm font-medium text-foreground">Variables</h2>
-        <p className="mt-0.5 text-xs leading-5 text-muted-foreground">
-          Configure recipient content variables on this site.
+        <h2 className="text-sm leading-5 font-medium text-foreground">Variables</h2>
+        <p className="text-sm leading-5 text-muted-foreground">
+          Create and manage variables to personalize your site.
         </p>
       </div>
 
@@ -143,8 +143,8 @@ function VariableRow({
   variable: SiteVariableDefinition
 }) {
   return (
-    <Item variant="outline" className="min-h-[58px] rounded-xl px-3 py-2.5">
-      <ItemMedia variant="icon" className="text-variable-foreground">
+    <Item variant="outline" className="min-h-[64px] rounded-xl px-3 py-3">
+      <ItemMedia variant="icon" className="text-variable-foreground [&_svg]:size-3.5">
         <IconBraces />
       </ItemMedia>
       <ItemContent className="gap-0">
@@ -158,10 +158,10 @@ function VariableRow({
           <Badge variant="secondary">System</Badge>
         ) : (
           <>
-            <Button variant="ghost" size="icon-compact" aria-label={`Edit ${variable.label}`} onClick={onEdit}>
+            <Button variant="ghost" size="icon-field" aria-label={`Edit ${variable.label}`} onClick={onEdit}>
               <IconEdit />
             </Button>
-            <Button variant="ghost" size="icon-compact" aria-label={`Delete ${variable.label}`} onClick={onDelete}>
+            <Button variant="ghost" size="icon-field" aria-label={`Delete ${variable.label}`} onClick={onDelete}>
               <IconTrash />
             </Button>
           </>

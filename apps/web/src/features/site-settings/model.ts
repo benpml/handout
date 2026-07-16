@@ -61,12 +61,12 @@ export const trackingConsentOptions: Array<{
   label: string
   value: SiteTrackingConsentPopup
 }> = [
-  { value: "popup-a", label: "Text decline", description: "Allow button with a text decline option." },
-  { value: "popup-b", label: "Equal choices", description: "Equal allow and deny buttons." },
+  { value: "popup-a", label: "Popup A", description: "Highest allow rate." },
+  { value: "popup-b", label: "Popup B", description: "Lower allow rate, more friendly." },
   {
     value: "none",
     label: "None",
-    description: "Use only when session replay is off.",
+    description: "I will obtain and record visitor consent myself beforehand.",
   },
 ]
 
