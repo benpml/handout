@@ -12,7 +12,7 @@ function NoiseOverlay({ id, className }: NoiseOverlayProps) {
     <svg
       aria-hidden="true"
       className={cn(
-        "pointer-events-none absolute inset-0 z-[1] size-full opacity-75 mix-blend-lighten",
+        "pointer-events-none absolute inset-0 z-[1] size-full opacity-100 mix-blend-lighten",
         className,
       )}
       preserveAspectRatio="none"
@@ -28,7 +28,7 @@ function NoiseOverlay({ id, className }: NoiseOverlayProps) {
         <feTurbulence
           type="fractalNoise"
           baseFrequency="0.95"
-          numOctaves="5"
+          numOctaves="8"
           seed="7"
           stitchTiles="stitch"
         />
