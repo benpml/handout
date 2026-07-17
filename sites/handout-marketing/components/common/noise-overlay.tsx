@@ -27,8 +27,8 @@ function NoiseOverlay({ id, className }: NoiseOverlayProps) {
       >
         <feTurbulence
           type="fractalNoise"
-          baseFrequency="0.72"
-          numOctaves="4"
+          baseFrequency="0.95"
+          numOctaves="5"
           seed="7"
           stitchTiles="stitch"
         />
