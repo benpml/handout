@@ -7,6 +7,10 @@ import Image from "next/image"
 import { Gravity, GravityBody } from "@/features/home/components/gravity"
 import { cn } from "@/lib/utils"
 
+const firstSpawnY = -80
+const fallSpacing = 175
+const fallSpawnY = (order: number) => firstSpawnY - order * fallSpacing
+
 const items = [
   {
     kind: "link",
@@ -15,7 +19,43 @@ const items = [
     y: 388,
     width: 293,
     rotation: 25.53,
-    spawnY: -80,
+    spawnY: fallSpawnY(0),
+  },
+  {
+    kind: "link",
+    label: "https://website.com/link",
+    x: -4,
+    y: 447.12,
+    width: 229,
+    rotation: -25.37,
+    spawnY: fallSpawnY(1),
+  },
+  {
+    kind: "pdf",
+    label: "pricing deck.pdf",
+    x: 49,
+    y: 470.78,
+    width: 172.61,
+    rotation: -21.33,
+    spawnY: fallSpawnY(2),
+  },
+  {
+    kind: "pdf",
+    label: "Acme Contract.pdf",
+    x: 22.67,
+    y: 225,
+    width: 193.61,
+    rotation: 36.34,
+    spawnY: fallSpawnY(3),
+  },
+  {
+    kind: "ppt",
+    label: "sales deck final.pptx",
+    x: 211.31,
+    y: 450,
+    width: 202,
+    rotation: 17.2,
+    spawnY: fallSpawnY(4),
   },
   {
     kind: "email",
@@ -26,43 +66,7 @@ const items = [
     width: 316,
     height: 137,
     rotation: 28.1,
-    spawnY: -245,
-  },
-  {
-    kind: "link",
-    label: "https://website.com/link",
-    x: -4,
-    y: 447.12,
-    width: 229,
-    rotation: -25.37,
-    spawnY: -390,
-  },
-  {
-    kind: "pdf",
-    label: "pricing deck.pdf",
-    x: 49,
-    y: 470.78,
-    width: 172.61,
-    rotation: -21.33,
-    spawnY: -520,
-  },
-  {
-    kind: "pdf",
-    label: "Acme Contract.pdf",
-    x: 22.67,
-    y: 225,
-    width: 193.61,
-    rotation: 36.34,
-    spawnY: -660,
-  },
-  {
-    kind: "ppt",
-    label: "sales deck final.pptx",
-    x: 211.31,
-    y: 450,
-    width: 202,
-    rotation: 17.2,
-    spawnY: -800,
+    spawnY: fallSpawnY(5),
   },
   {
     kind: "file",
@@ -71,7 +75,7 @@ const items = [
     y: 508,
     width: 228,
     rotation: 0,
-    spawnY: -940,
+    spawnY: fallSpawnY(6),
   },
 ] as const
 
@@ -179,6 +183,7 @@ function FallingItem({
             alt=""
             width={20}
             height={20}
+            unoptimized
             draggable={false}
             className="size-5 rounded-full object-cover"
           />
@@ -203,6 +208,7 @@ function FallingItem({
               alt=""
               width={22}
               height={22}
+              unoptimized
               draggable={false}
               className="size-[22px] shrink-0 object-cover"
             />

@@ -38,6 +38,11 @@ test("server-renders the Handout homepage", async () => {
   assert.match(html, /--border:var\(--neutral-alpha-a400\)/);
   assert.match(html, /\/scenes\/handout-hero\.json/);
   assert.match(html, /data-us-production="true"/);
+  assert.match(html, /\/images\/home\/before\/email-avatar\.jpg/);
+  assert.match(html, /\/images\/home\/before\/page-document\.jpg/);
+  assert.match(html, /\/images\/home\/before\/page-presentation\.jpg/);
+  assert.match(html, /\/images\/home\/before\/page-folder\.jpg/);
+  assert.doesNotMatch(html, /_vinext\/image\?url=.*images%2Fhome%2Fbefore/);
   assert.doesNotMatch(html, /\/images\/home\/hero\.jpg/);
   assert.doesNotMatch(html, /Website foundation|Semantic color tokens/);
 });
@@ -116,10 +121,14 @@ test("keeps homepage styling in canonical primitives and feature components", as
   assert.match(gravity, /ResizeObserver/);
   assert.match(falling, /email-avatar\.jpg/);
   assert.match(falling, /width=\{20\}/);
+  assert.match(falling, /const fallSpacing = 175/);
+  assert.match(falling, /kind: "email"[\s\S]*?spawnY: fallSpawnY\(5\)/);
+  assert.match(falling, /kind: "file"[\s\S]*?spawnY: fallSpawnY\(6\)/);
   assert.match(falling, /page-document\.jpg/);
   assert.match(falling, /page-presentation\.jpg/);
   assert.match(falling, /page-folder\.jpg/);
   assert.match(falling, /width=\{22\}/);
+  assert.equal(falling.match(/unoptimized/g)?.length, 2);
   assert.match(card, /canvas: "bg-background ring-0"/);
   assert.doesNotMatch(home, /border-neutral-|bg-neutral-|text-neutral-/);
 });
