@@ -1,8 +1,10 @@
-import { IconArrowUpRight, IconCopy, IconX } from "@tabler/icons-react"
-
 import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
 import { FallingBefore } from "@/features/home/components/falling-before"
-import { SectionFrame } from "@/features/home/components/section-frame"
+import {
+  SectionCellDivider,
+  SectionFrame,
+} from "@/features/home/components/section-frame"
 
 function BeforeAfter() {
   return (
@@ -13,7 +15,8 @@ function BeforeAfter() {
       innerClassName="min-h-[553px]"
     >
       <div className="grid md:grid-cols-2">
-        <div className="relative min-h-[553px] overflow-hidden border-b border-border md:border-r md:border-b-0">
+        <div className="relative min-h-[553px] overflow-hidden">
+          <SectionCellDivider />
           <div className="absolute top-10 left-8 z-10 flex max-w-[448px] flex-col gap-1.5 pr-8">
             <h2 className="text-title-sm">Before</h2>
             <p className="text-body-2xl text-muted-foreground">
@@ -37,39 +40,78 @@ function BeforeAfter() {
                 handout.link/abcxyz
               </span>
               <Button size="md">
-                <IconCopy data-icon aria-hidden="true" />
                 Share
               </Button>
             </div>
 
-            <div className="h-[290px] overflow-hidden rounded-2xl border border-border bg-background px-6 sm:px-9">
-              <div className="flex h-full flex-col">
-                <div className="flex h-[150px] flex-col items-center justify-center gap-4 border-b border-border text-center">
-                  <div className="flex items-center gap-2 text-label-md text-tertiary-foreground">
-                    <span className="rounded-md bg-primary px-2 py-1 text-primary-foreground">Acme</span>
-                    <IconX aria-hidden="true" className="size-3 text-muted-foreground" />
-                    <span className="rounded-md bg-card px-2 py-1 text-foreground">Brainbox</span>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <span className="text-label-xs text-muted-foreground">Call recap + next steps</span>
-                    <h3 className="text-title-xs">Title</h3>
-                  </div>
-                </div>
-                <div className="flex flex-1 flex-col items-start justify-center gap-3">
-                  <p className="text-body-md text-muted-foreground">
-                    Description text.
-                  </p>
-                  <Button variant="secondary" size="sm">
-                    Button
-                    <IconArrowUpRight data-icon aria-hidden="true" />
-                  </Button>
-                </div>
-              </div>
-            </div>
+            <HandoutPreview />
           </div>
         </div>
       </div>
     </SectionFrame>
+  )
+}
+
+function HandoutPreview() {
+  return (
+    <div className="h-[290px] overflow-hidden rounded-2xl border border-border bg-background px-6 sm:px-9">
+      <div className="flex h-full flex-col">
+        <Separator />
+        <div className="flex h-[148px] shrink-0 flex-col items-center pt-[33px] pb-[23px] text-center">
+          <div className="flex items-start gap-2">
+            <MiniLogo label="A" tone="brand" />
+            <MiniLogo label="B" tone="neutral" />
+          </div>
+          <div className="mt-4 flex w-full flex-col items-center gap-1">
+            <h3 className="text-[18.524px] leading-none font-semibold tracking-[-0.03em]">
+              Acme x Brainbox
+            </h3>
+            <p className="text-[10.585px] leading-4 tracking-[-0.02em] text-muted-foreground">
+              Call recap + next steps
+            </p>
+          </div>
+        </div>
+        <Separator />
+        <div className="py-[23px]">
+          <div className="flex h-[93px] w-[362px] items-center gap-4 rounded-[9px] border border-border bg-background p-1 pr-3">
+            <div className="h-[85px] w-[132px] shrink-0 rounded-[7px] border border-border bg-card" />
+            <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
+              <div className="w-full">
+                <p className="text-[10.585px] leading-4 font-medium text-foreground">
+                  Title
+                </p>
+                <p className="text-[9.262px] leading-4 tracking-[-0.02em] text-tertiary-foreground">
+                  Description text.
+                </p>
+              </div>
+              <span className="flex h-5 items-center rounded-[7px] border border-border bg-secondary px-2 text-[9.262px] leading-none font-medium shadow-control">
+                Button
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function MiniLogo({
+  label,
+  tone,
+}: {
+  label: string
+  tone: "brand" | "neutral"
+}) {
+  return (
+    <span
+      className={
+        tone === "brand"
+          ? "flex size-[35px] items-center justify-center rounded-[9px] border border-inverse-border bg-primary text-label-xs text-primary-foreground shadow-control"
+          : "flex size-[35px] items-center justify-center rounded-[9px] border border-border bg-card text-label-xs text-card-foreground shadow-control"
+      }
+    >
+      {label}
+    </span>
   )
 }
 

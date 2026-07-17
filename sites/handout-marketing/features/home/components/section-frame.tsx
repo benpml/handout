@@ -1,6 +1,7 @@
 import * as React from "react"
 
 import { CornerDecoration } from "@/components/common/corner-decoration"
+import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 
 type SectionFrameProps = React.ComponentProps<"section"> & {
@@ -8,6 +9,7 @@ type SectionFrameProps = React.ComponentProps<"section"> & {
   innerStyle?: React.CSSProperties
   centerTopHandle?: boolean
   centerBottomHandle?: boolean
+  handles?: "top" | "none"
   children?: React.ReactNode
 }
 
@@ -17,6 +19,7 @@ function SectionFrame({
   innerStyle,
   centerTopHandle = false,
   centerBottomHandle = false,
+  handles = "top",
   children,
   ...props
 }: SectionFrameProps) {
@@ -25,19 +28,28 @@ function SectionFrame({
       className={cn("relative", className)}
       {...props}
     >
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-border"
-      />
+      <Separator className="pointer-events-none absolute inset-x-0 top-0" />
       <div
         style={innerStyle}
         className={cn(
-          "relative mx-auto h-full w-[calc(100%-32px)] max-w-[1024px] border-x border-border lg:w-full",
+          "relative mx-auto h-full w-[calc(100%-32px)] max-w-[1024px] lg:w-full",
           innerClassName,
         )}
       >
-        <CornerDecoration className="absolute top-[-5px] left-[-6px] z-20" />
-        <CornerDecoration className="absolute top-[-5px] right-[-6px] z-20" />
+        <Separator
+          orientation="vertical"
+          className="pointer-events-none absolute inset-y-0 left-0 z-10 h-full"
+        />
+        <Separator
+          orientation="vertical"
+          className="pointer-events-none absolute inset-y-0 right-0 z-10 h-full"
+        />
+        {handles === "top" && (
+          <>
+            <CornerDecoration className="absolute top-[-5px] left-[-5px] z-20" />
+            <CornerDecoration className="absolute top-[-5px] right-[-5px] z-20" />
+          </>
+        )}
         {centerTopHandle && (
           <CornerDecoration className="absolute top-[-5px] left-1/2 z-20 hidden -translate-x-1/2 md:block" />
         )}
@@ -50,4 +62,16 @@ function SectionFrame({
   )
 }
 
-export { SectionFrame }
+function SectionCellDivider() {
+  return (
+    <>
+      <Separator className="pointer-events-none absolute inset-x-0 bottom-0 z-10 md:hidden" />
+      <Separator
+        orientation="vertical"
+        className="pointer-events-none absolute inset-y-0 right-0 z-10 hidden h-full md:block"
+      />
+    </>
+  )
+}
+
+export { SectionCellDivider, SectionFrame }

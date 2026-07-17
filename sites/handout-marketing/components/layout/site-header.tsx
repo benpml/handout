@@ -39,7 +39,7 @@ function SiteHeader({
         "flex w-full items-center justify-center max-md:justify-between",
         isSticky
           ? "max-w-[640px] rounded-2xl bg-background py-2.5 pr-3 pl-3.5 ring-1 ring-inset ring-border"
-          : "max-w-[726px]",
+          : "max-w-[761px]",
         className,
       )}
       {...props}

@@ -23,7 +23,7 @@ const items = [
     x: 250.39,
     y: 388,
     width: 293,
-    rotation: -25.53,
+    rotation: 25.53,
     delay: 0.08,
   },
   {
@@ -34,7 +34,7 @@ const items = [
     y: 214,
     width: 316,
     height: 137,
-    rotation: -28.1,
+    rotation: 28.1,
     delay: 0.2,
   },
   {
@@ -43,7 +43,7 @@ const items = [
     x: -4,
     y: 447.12,
     width: 229,
-    rotation: 25.37,
+    rotation: -25.37,
     delay: 0.32,
   },
   {
@@ -52,7 +52,7 @@ const items = [
     x: 49,
     y: 470.78,
     width: 172.61,
-    rotation: 21.33,
+    rotation: -21.33,
     delay: 0.44,
   },
   {
@@ -61,7 +61,7 @@ const items = [
     x: 22.67,
     y: 225,
     width: 193.61,
-    rotation: -36.34,
+    rotation: 36.34,
     delay: 0.56,
   },
   {
@@ -70,7 +70,7 @@ const items = [
     x: 211.31,
     y: 450,
     width: 202,
-    rotation: -17.2,
+    rotation: 17.2,
     delay: 0.68,
   },
   {
@@ -158,19 +158,19 @@ function FallingItem({
       {item.kind === "email" ? (
         <>
           <span className="flex size-[19px] items-center justify-center rounded-full bg-card text-tertiary-foreground">
-            <Icon data-icon aria-hidden="true" className="size-3" />
+            <Icon aria-hidden="true" className="size-3" />
           </span>
           <span className="flex flex-col gap-2">
             <span className="text-body-xl text-foreground">{item.label}</span>
-            <span className="line-clamp-2 text-body-md text-muted-foreground">
+            <span className="line-clamp-2 text-body-xl text-tertiary-foreground">
               {"body" in item ? item.body : null}
             </span>
           </span>
         </>
       ) : (
         <>
-          <Icon data-icon aria-hidden="true" className="size-[18px] shrink-0 text-tertiary-foreground" />
-          <span className="truncate text-body-lg text-foreground">{item.label}</span>
+          <Icon aria-hidden="true" className="size-[18px] shrink-0 text-tertiary-foreground" />
+          <span className="truncate text-body-2xl text-foreground">{item.label}</span>
         </>
       )}
     </div>

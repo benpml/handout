@@ -13,6 +13,8 @@ const buttonVariants = cva(
           "bg-primary text-primary-foreground shadow-control hover:bg-primary",
         secondary:
           "bg-secondary text-secondary-foreground shadow-control ring-1 ring-inset ring-border hover:bg-secondary-hover",
+        tertiary:
+          "bg-tertiary text-secondary-foreground hover:bg-muted",
         ghost:
           "bg-transparent text-secondary-foreground hover:bg-tertiary hover:text-secondary-foreground",
         inverse:
@@ -24,6 +26,13 @@ const buttonVariants = cva(
         lg: "h-[35px] rounded-lg px-3 text-label-lg",
       },
     },
+    compoundVariants: [
+      {
+        variant: "tertiary",
+        size: "md",
+        className: "rounded-[7px]",
+      },
+    ],
     defaultVariants: {
       variant: "primary",
       size: "sm",

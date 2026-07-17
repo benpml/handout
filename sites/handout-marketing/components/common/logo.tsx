@@ -5,12 +5,14 @@ import { cn } from "@/lib/utils"
 type LogoProps = React.ComponentProps<"svg"> & {
   color?: "default" | "inverse"
   type?: "full" | "icon"
+  size?: "default" | "footer"
 }
 
 function Logo({
   className,
   color = "default",
   type = "full",
+  size = "default",
   ...props
 }: LogoProps) {
   const isIcon = type === "icon"
@@ -22,7 +24,11 @@ function Logo({
       viewBox={isIcon ? "0 0 19 20" : "0 0 115 26"}
       className={cn(
         "shrink-0 overflow-hidden",
-        isIcon ? "h-5 w-[19px]" : "h-[26px] w-[115px]",
+        isIcon
+          ? "h-5 w-[19px]"
+          : size === "footer"
+            ? "h-6 w-[115.489px]"
+            : "h-[26px] w-[115px]",
         color === "inverse" ? "text-inverse-foreground" : "text-foreground",
         className,
       )}

@@ -11,7 +11,7 @@ function CornerDecoration({
       aria-hidden="true"
       data-slot="corner-decoration"
       className={cn(
-        "inline-block size-2.5 rounded-[3px] border border-neutral-alpha-a600 bg-secondary",
+        "inline-block size-2.5 rounded-[3px] border border-border bg-secondary",
         className,
       )}
       {...props}

@@ -83,7 +83,10 @@ test("keeps homepage styling in canonical primitives and feature components", as
   assert.match(utils, /"label-lg"/);
   assert.match(page, /<HomePage \/>/);
   assert.match(home, /<SectionFrame/);
-  assert.match(frame, /absolute inset-x-0 top-0 h-px bg-border/);
+  assert.match(frame, /import \{ Separator \} from "@\/components\/ui\/separator"/);
+  assert.match(frame, /<Separator className="pointer-events-none absolute inset-x-0 top-0" \/>/);
+  assert.match(frame, /function SectionCellDivider/);
+  assert.doesNotMatch(frame, /<span[^>]+bg-border/);
   assert.match(frame, /<CornerDecoration/);
   assert.match(falling, /IntersectionObserver/);
   assert.match(falling, /prefers-reduced-motion|falling-item/);

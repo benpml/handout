@@ -245,7 +245,7 @@
     opacity: 0;
     transform: translate3d(0, -620px, 0)
       rotate(calc(var(--fall-rotation) - 16deg));
-    transform-origin: center;
+    transform-origin: top left;
     will-change: transform, opacity;
   }
 
