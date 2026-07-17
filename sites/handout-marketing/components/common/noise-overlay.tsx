@@ -32,11 +32,19 @@ function NoiseOverlay({ id, className }: NoiseOverlayProps) {
           seed="7"
           stitchTiles="stitch"
         />
-        <feColorMatrix type="saturate" values="0" />
+        <feColorMatrix
+          type="matrix"
+          values="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 1 0"
+        />
         <feComponentTransfer>
-          <feFuncR type="linear" slope="1.4" intercept="-0.25" />
-          <feFuncG type="linear" slope="1.4" intercept="-0.25" />
-          <feFuncB type="linear" slope="1.4" intercept="-0.25" />
+          <feFuncR type="linear" slope="3.45" intercept="-1.556" />
+          <feFuncG type="linear" slope="3.45" intercept="-1.556" />
+          <feFuncB type="linear" slope="3.45" intercept="-1.556" />
+        </feComponentTransfer>
+        <feComponentTransfer>
+          <feFuncR type="gamma" amplitude="1" exponent="0.9" offset="0" />
+          <feFuncG type="gamma" amplitude="1" exponent="0.9" offset="0" />
+          <feFuncB type="gamma" amplitude="1" exponent="0.9" offset="0" />
         </feComponentTransfer>
       </filter>
       <rect width="100%" height="100%" filter={`url(#${filterId})`} />
