@@ -88,8 +88,10 @@ test("keeps homepage styling in canonical primitives and feature components", as
   assert.match(scene, /data-us-project-src="\/scenes\/handout-hero\.json"/);
   assert.match(scene, /data-us-production="true"/);
   assert.match(scene, /data-us-fps="24"/);
-  assert.match(noise, /<feTurbulence/);
-  assert.match(noise, /type="fractalNoise"/);
+  assert.match(noise, /const NOISE_OCTAVES = 8/);
+  assert.match(noise, /const SQUARE_GRAIN_DENSITY = 0\.82/);
+  assert.match(noise, /<canvas/);
+  assert.match(noise, /\[image-rendering:pixelated\]/);
   assert.match(noise, /opacity-100 mix-blend-lighten/);
   assert.match(header, /size="md"/);
   assert.match(header, /ring-1 ring-inset ring-border/);
