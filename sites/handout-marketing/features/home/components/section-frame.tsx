@@ -66,14 +66,26 @@ function SectionFrame({
   )
 }
 
-function SectionCellDivider() {
+type SectionCellDividerProps = {
+  mobile?: boolean
+  desktop?: boolean
+}
+
+function SectionCellDivider({
+  mobile = true,
+  desktop = true,
+}: SectionCellDividerProps) {
   return (
     <>
-      <Separator className="pointer-events-none absolute inset-x-0 bottom-0 z-10 md:hidden" />
-      <Separator
-        orientation="vertical"
-        className="pointer-events-none absolute inset-y-0 right-0 z-10 hidden h-full md:block"
-      />
+      {mobile && (
+        <Separator className="pointer-events-none absolute inset-x-0 bottom-0 z-10 md:hidden" />
+      )}
+      {desktop && (
+        <Separator
+          orientation="vertical"
+          className="pointer-events-none absolute inset-y-0 right-0 z-10 hidden h-full md:block"
+        />
+      )}
     </>
   )
 }

@@ -22,8 +22,8 @@ function FeatureRow({ title, bullets, image, graphic }: FeatureRowProps) {
   return (
     <SectionFrame innerClassName="min-h-[417px]">
       <div className="grid min-h-[417px] md:grid-cols-2">
-        <div className="relative flex min-h-[417px] items-center justify-center p-8">
-          <SectionCellDivider />
+        <div className="relative order-2 flex min-h-0 items-center justify-center p-8 md:order-1 md:min-h-[417px]">
+          <SectionCellDivider mobile={false} />
           <div className="flex w-full max-w-[340px] flex-col gap-9">
             <h3 className="text-title-md text-foreground">{title}</h3>
             <ul className="flex flex-col gap-3.5" role="list">
@@ -54,7 +54,8 @@ function FeatureRow({ title, bullets, image, graphic }: FeatureRowProps) {
             </ul>
           </div>
         </div>
-        <div className="min-h-[417px] overflow-hidden">
+        <div className="relative order-1 h-[417px] overflow-hidden md:order-2">
+          <SectionCellDivider desktop={false} />
           <GraphicPlaceholder image={image} variant={graphic} />
         </div>
       </div>
@@ -68,7 +69,7 @@ function FeatureSpacer() {
       aria-hidden="true"
       divider="none"
       handles="none"
-      innerClassName="h-9"
+      innerClassName="hidden h-9 md:block"
     />
   )
 }

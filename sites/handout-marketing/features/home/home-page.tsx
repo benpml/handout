@@ -160,7 +160,7 @@ function HomePage() {
       >
         <div className="flex max-w-[699px] flex-col items-center gap-6">
           <Badge>Meet Handout</Badge>
-          <h2 className="text-title-md md:text-title-lg">
+          <h2 className="text-title-lg">
             When prospects need information, send them a Handout link.
           </h2>
         </div>
@@ -174,7 +174,7 @@ function HomePage() {
       >
         <div className="flex max-w-[491px] flex-col items-center gap-6">
           <Badge>Features</Badge>
-          <h2 className="text-title-md md:text-title-lg">
+          <h2 className="text-title-lg">
             Why sales teams and prospects love it
           </h2>
         </div>
@@ -191,7 +191,7 @@ function HomePage() {
         <div className="flex w-full flex-col items-center gap-6">
           <Badge>Features</Badge>
           <div className="flex w-full flex-col items-center gap-6">
-            <h2 className="w-full max-w-[566px] text-title-md md:text-title-lg">
+            <h2 className="w-full max-w-[566px] text-title-lg">
               More reasons to try it.
             </h2>
             <p className="w-full text-body-lg text-muted-foreground">
@@ -211,7 +211,7 @@ function HomePage() {
         <div className="flex w-full flex-col items-center gap-6">
           <Badge>Features</Badge>
           <div className="flex w-full flex-col items-center gap-6">
-            <h2 className="w-full max-w-[566px] text-title-md md:text-title-lg">
+            <h2 className="w-full max-w-[566px] text-title-lg">
               Let your agent build and personalize Handouts.
             </h2>
             <p className="w-full text-body-lg text-muted-foreground">
@@ -236,7 +236,7 @@ function HomePage() {
         </Badge>
         <div className="relative z-10 mt-6 flex w-full flex-col items-center gap-6">
           <div className="flex w-full flex-col items-center gap-3">
-            <h2 className="w-full max-w-[566px] text-title-md text-inverse-foreground md:text-title-lg">
+            <h2 className="w-full max-w-[566px] text-title-lg text-inverse-foreground">
               Start right now for free.
             </h2>
             <p className="w-full text-body-lg text-inverse-secondary-foreground">
@@ -270,7 +270,7 @@ function Hero() {
         </div>
 
         <div className="mx-auto mt-24 flex w-full max-w-[560px] flex-col items-center px-6 text-center sm:px-0">
-          <h1 className="w-full max-w-[486px] text-title-md md:text-title-xl">
+          <h1 className="w-full max-w-[486px] text-title-xl">
             Create one pagers that close prospects.
           </h1>
           <p className="mt-[17px] w-full text-body-xl text-inverse-secondary-foreground sm:w-[439px] sm:text-body-2xl sm:whitespace-nowrap">
