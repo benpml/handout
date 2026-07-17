@@ -63,7 +63,14 @@ function FeatureRow({ title, bullets, image, graphic }: FeatureRowProps) {
 }
 
 function FeatureSpacer() {
-  return <SectionFrame aria-hidden="true" innerClassName="h-9" />
+  return (
+    <SectionFrame
+      aria-hidden="true"
+      divider="none"
+      handles="none"
+      innerClassName="h-9"
+    />
+  )
 }
 
 export { FeatureRow, FeatureSpacer }

@@ -9,6 +9,7 @@ type SectionFrameProps = React.ComponentProps<"section"> & {
   innerStyle?: React.CSSProperties
   centerTopHandle?: boolean
   centerBottomHandle?: boolean
+  divider?: "top" | "none"
   handles?: "top" | "none"
   children?: React.ReactNode
 }
@@ -19,6 +20,7 @@ function SectionFrame({
   innerStyle,
   centerTopHandle = false,
   centerBottomHandle = false,
+  divider = "top",
   handles = "top",
   children,
   ...props
@@ -28,7 +30,9 @@ function SectionFrame({
       className={cn("relative", className)}
       {...props}
     >
-      <Separator className="pointer-events-none absolute inset-x-0 top-0" />
+      {divider === "top" && (
+        <Separator className="pointer-events-none absolute inset-x-0 top-0" />
+      )}
       <div
         style={innerStyle}
         className={cn(
@@ -44,7 +48,7 @@ function SectionFrame({
           orientation="vertical"
           className="pointer-events-none absolute inset-y-0 right-0 z-10 h-full"
         />
-        {handles === "top" && (
+        {divider === "top" && handles === "top" && (
           <>
             <CornerDecoration className="absolute top-[-5px] left-[-5px] z-20" />
             <CornerDecoration className="absolute top-[-5px] right-[-5px] z-20" />

@@ -25,7 +25,6 @@ import { SiteHeader } from "@/components/layout/site-header"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
 import { TextLink } from "@/components/ui/text-link"
 import { BeforeAfter } from "@/features/home/components/before-after"
 import {
@@ -262,14 +261,6 @@ function Hero() {
       <UnicornHeroScene />
       <NoiseOverlay id="hero-noise" />
       <div className="relative z-10 mx-auto h-full w-[calc(100%-32px)] max-w-[1024px] lg:w-full">
-        <Separator
-          orientation="vertical"
-          className="pointer-events-none absolute inset-y-0 left-0 h-full bg-inverse-border"
-        />
-        <Separator
-          orientation="vertical"
-          className="pointer-events-none absolute inset-y-0 right-0 h-full bg-inverse-border"
-        />
         <div className="pt-9">
           <SiteHeader
             variant="inverse"
