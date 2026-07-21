@@ -56,7 +56,11 @@ export default {
     }
 
     if (routeKind === "recipient-link") {
-      return withEdgeHeader(await fetchOrigin(request, env), "proxy", request.method);
+      return withEdgeHeader(
+        withNoStore(await fetchOrigin(request, env), request.method),
+        "proxy",
+        request.method,
+      );
     }
 
     if (routeKind !== "public-site") {
@@ -369,6 +373,17 @@ async function writeR2Snapshot(env: Env, key: string, response: Response) {
 function withEdgeHeader(response: Response, value: string, requestMethod: string) {
   const headers = new Headers(response.headers);
   headers.set("x-handout-edge-cache", value);
+
+  return new Response(requestMethod === "HEAD" ? null : response.body, {
+    headers,
+    status: response.status,
+    statusText: response.statusText,
+  });
+}
+
+function withNoStore(response: Response, requestMethod: string) {
+  const headers = new Headers(response.headers);
+  headers.set("cache-control", "no-store");
 
   return new Response(requestMethod === "HEAD" ? null : response.body, {
     headers,
