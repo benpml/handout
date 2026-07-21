@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, sql } from "drizzle-orm";
 import {
   db as defaultDb,
   session,
@@ -310,7 +310,7 @@ export async function claimWorkspaceInvitationsForUser(
       .where(and(
         eq(workspaceInvitations.email, input.email.toLowerCase()),
         eq(workspaceInvitations.status, "pending"),
-        sql`${workspaceInvitations.expiresAt} > ${now}`,
+        gt(workspaceInvitations.expiresAt, now),
       ));
 
     if (invitations.length === 0) return;
