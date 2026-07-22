@@ -1,5 +1,8 @@
 import { validateSiteSlug, validateWorkspaceSlug } from "@handout/domain";
-import { normalizePublishedSitePayload } from "@handout/site-document";
+import {
+  buildPublicPreviewVersion,
+  normalizePublishedSitePayload,
+} from "@handout/site-document";
 import type { PublicSiteRepository } from "./repository";
 import type { PublicRecipientLinkInput } from "./recipient-link";
 import {
@@ -157,7 +160,7 @@ async function resolveShortLinkRecord(
     status: "available",
     payload,
     shortCode: record.shortCode,
-    version: `${normalized.site.publishedVersionId}.${normalized.selectedVariant.revisionNumber}`,
+    version: buildPublicPreviewVersion(normalized),
     cacheControl: PUBLIC_SITE_AVAILABLE_CACHE_CONTROL,
   };
 }

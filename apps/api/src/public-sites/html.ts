@@ -1,5 +1,6 @@
 import { normalizePublishedSitePayload } from "@handout/content-schema";
 import {
+  buildPublicPreviewVersion,
   buildPublicScreenshotPath,
   HANDOUT_THEME_CSS,
   renderPublicSiteHtml,
@@ -20,7 +21,7 @@ export function renderPublicSiteHtmlDocument(input: PublicHtmlRenderInput) {
 
   const ogImagePath = input.publicPath
     ? `${input.publicPath.replace(/\/+$/, "")}/embed.jpg?v=${encodeURIComponent(
-        `${payload.site.publishedVersionId}.${payload.selectedVariant?.revisionNumber ?? 0}`,
+        buildPublicPreviewVersion(payload),
       )}`
     : buildPublicScreenshotPath(payload);
   const ogImageUrl = new URL(ogImagePath, input.origin).toString();

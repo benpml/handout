@@ -5,9 +5,16 @@ import { createMemoryTrackingRateLimiter } from "../tracking/rate-limit";
 import { createEncryptedTrackingV2ContextTokenService } from "../tracking/v2/context-token";
 import type { TrackingV2Service } from "../tracking/v2/service";
 import { createPublicSiteDocumentRouter } from "./document-router";
-import type { PublicSiteScreenshotService } from "./screenshot";
+import {
+  getPublicSiteScreenshotCacheKey,
+  type PublicSiteScreenshotService,
+} from "./screenshot";
 import type { PublicSiteService } from "./service";
-import { createDefaultSiteContent, PUBLIC_SITE_PAYLOAD_SCHEMA_VERSION } from "@handout/site-document";
+import {
+  buildPublicPreviewVersion,
+  createDefaultSiteContent,
+  PUBLIC_SITE_PAYLOAD_SCHEMA_VERSION,
+} from "@handout/site-document";
 
 describe("public site screenshot route", () => {
   it("serves the recipient JPEG and records Slack's image load against that recipient", async () => {
@@ -93,8 +100,10 @@ describe("public site screenshot route", () => {
       .expect(204);
 
     expect(renderScreenshot).not.toHaveBeenCalled();
+    const expectedPayload = buildShortLinkPayload();
+    expectedPayload.selectedVariant.revisionNumber = 7;
     expect(recordSlackShare).toHaveBeenCalledWith(expect.objectContaining({
-      imageCacheKey: "jpg-q75:11111111-1111-4111-8111-111111111111:22222222-2222-4222-8222-222222222222:33333333-3333-4333-8333-333333333333:44444444-4444-4444-8444-444444444444:7",
+      imageCacheKey: getPublicSiteScreenshotCacheKey(expectedPayload),
     }));
   });
 
@@ -290,6 +299,7 @@ describe("public recipient link routes", () => {
 
   it("keeps the short alias stable while rendering versioned metadata and image URLs", async () => {
     const payload = buildShortLinkPayload();
+    const previewVersion = buildPublicPreviewVersion(payload);
     const publicSiteService: PublicSiteService = {
       async resolve() {
         return { status: "unavailable", cacheControl: "no-store" };
@@ -303,7 +313,7 @@ describe("public recipient link routes", () => {
           cacheControl: "public, max-age=60",
           payload,
           shortCode: "aZ7k2Qr9LmNp",
-          version: "33333333-3333-4333-8333-333333333333.3",
+          version: previewVersion,
         };
       },
     };
@@ -318,12 +328,12 @@ describe("public recipient link routes", () => {
     expect(alias.headers.location).toContain("/aZ7k2Qr9LmNp?v=");
 
     const document = await request(app)
-      .get("/aZ7k2Qr9LmNp?v=33333333-3333-4333-8333-333333333333.3")
+      .get(`/aZ7k2Qr9LmNp?v=${encodeURIComponent(previewVersion)}`)
       .expect(200);
     expect(document.text).toContain("<title>John at Linear</title>");
     expect(document.text).toContain('<link rel="canonical" href="https://handout.test/aZ7k2Qr9LmNp">');
     expect(document.text).toContain(
-      'content="https://handout.test/aZ7k2Qr9LmNp/embed.jpg?v=33333333-3333-4333-8333-333333333333.3"',
+      `content="https://handout.test/aZ7k2Qr9LmNp/embed.jpg?v=${previewVersion}"`,
     );
   });
 });
@@ -405,7 +415,7 @@ function buildShortLinkPayload() {
       title: "John at Linear",
       description: "A personalized brief.",
       ogImageUrl: null,
-      robots: "noindex,nofollow",
+      robots: "noindex,nofollow" as const,
     },
     content,
     selectedVariant: {

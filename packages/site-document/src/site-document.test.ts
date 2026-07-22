@@ -4,6 +4,8 @@ import { HANDOUT_TEXT_LIMITS } from "@handout/domain";
 import { TRACKING_V2_SCRIPT_ENDPOINT } from "@handout/tracking-schema";
 
 import {
+  buildPublicPreviewVersion,
+  buildPublicScreenshotPath,
   createDefaultSiteContent,
   defaultSiteDefaults,
   getSiteMetadata,
@@ -31,6 +33,22 @@ import {
 } from "./index";
 
 describe("canonical site document", () => {
+  it("rotates personalized preview versions when the workspace logo changes", () => {
+    const payload = buildPayload();
+    const initialVersion = buildPublicPreviewVersion(payload);
+    const initialPath = buildPublicScreenshotPath(payload);
+
+    payload.workspace.logoUrl = "/api/workspaces/logo-assets/55555555-5555-4555-8555-555555555555";
+    const uploadedLogoVersion = buildPublicPreviewVersion(payload);
+
+    expect(initialVersion).toMatch(/^33333333-3333-4333-8333-333333333333\.1\.w[a-z0-9]+$/);
+    expect(initialPath).toContain(`embed.jpg?v=${encodeURIComponent(initialVersion)}`);
+    expect(uploadedLogoVersion).not.toBe(initialVersion);
+    expect(buildPublicScreenshotPath(payload)).toContain(
+      `embed.jpg?v=${encodeURIComponent(uploadedLogoVersion)}`,
+    );
+  });
+
   it("rejects unsafe session replay defaults", () => {
     expect(siteDefaultsSchema.safeParse({
       ...defaultSiteDefaults,

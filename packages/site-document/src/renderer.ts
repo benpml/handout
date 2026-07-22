@@ -631,9 +631,36 @@ export function buildPublicPath(payload: PublishedSitePayload) {
 }
 
 export function buildPublicScreenshotPath(payload: PublishedSitePayload) {
-  const revision = payload.selectedVariant?.revisionNumber ?? 0;
-  const version = `${payload.site.publishedVersionId}.${revision}`;
+  const version = buildPublicPreviewVersion(payload);
   return `${buildPublicPath(payload)}/embed.jpg?v=${encodeURIComponent(version)}`;
+}
+
+export function buildPublicPreviewVersion(payload: PublishedSitePayload) {
+  const revision = payload.selectedVariant?.revisionNumber ?? 0;
+  const workspaceLogoIdentity = [
+    payload.workspace.logoUrl ?? "",
+    payload.workspace.websiteDomain,
+  ].join("\u0000");
+
+  return `${payload.site.publishedVersionId}.${revision}.w${hashPreviewIdentity(workspaceLogoIdentity)}`;
+}
+
+function hashPreviewIdentity(value: string) {
+  let first = 0xdeadbeef;
+  let second = 0x41c6ce57;
+
+  for (let index = 0; index < value.length; index += 1) {
+    const code = value.charCodeAt(index);
+    first = Math.imul(first ^ code, 2_654_435_761);
+    second = Math.imul(second ^ code, 1_597_334_677);
+  }
+
+  first = Math.imul(first ^ (first >>> 16), 2_246_822_507) ^
+    Math.imul(second ^ (second >>> 13), 3_266_489_909);
+  second = Math.imul(second ^ (second >>> 16), 2_246_822_507) ^
+    Math.imul(first ^ (first >>> 13), 3_266_489_909);
+
+  return (4_294_967_296 * (2_097_151 & second) + (first >>> 0)).toString(36);
 }
 
 function resolveAbsoluteUrl(value: string, origin: string | null) {

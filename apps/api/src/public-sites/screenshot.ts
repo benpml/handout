@@ -3,6 +3,7 @@ import { isIP } from "node:net";
 import type { Browser, BrowserContext } from "playwright";
 import { chromium } from "playwright";
 import { normalizePublishedSitePayload } from "@handout/content-schema";
+import { buildPublicPreviewVersion } from "@handout/site-document";
 import { renderPublicSiteScreenshotHtmlDocument } from "./html";
 
 export const PUBLIC_SITE_SCREENSHOT_WIDTH = 1200;
@@ -44,9 +45,8 @@ export function getPublicSiteScreenshotCacheKey(payload: Record<string, unknown>
     `jpg-q${PUBLIC_SITE_SCREENSHOT_JPEG_QUALITY}`,
     normalized.workspace.id,
     normalized.site.id,
-    normalized.site.publishedVersionId,
+    buildPublicPreviewVersion(normalized),
     normalized.selectedVariant?.id ?? "default",
-    normalized.selectedVariant?.revisionNumber ?? 0,
   ].join(":");
 }
 
@@ -173,17 +173,42 @@ export function createPlaywrightPublicSiteScreenshotRenderer(): PublicSiteScreen
             assetsReady,
             new Promise((resolve) => window.setTimeout(resolve, timeoutMs)),
           ]);
-          document.querySelectorAll<HTMLImageElement>(
-            '.handout-page-title-logo[data-handout-logo-kind="recipient"] img',
-          ).forEach((image) => {
-            if (image.naturalWidth > 0) return;
+          const removeLogoTile = (image: HTMLImageElement) => {
             const tile = image.closest('.handout-page-title-logo');
             const group = tile?.parentElement;
             tile?.remove();
-            if (group && !group.querySelector('.handout-page-title-logo')) {
-              group.remove();
-            }
-          });
+            if (group && !group.querySelector('.handout-page-title-logo')) group.remove();
+          };
+          const waitForImage = (image: HTMLImageElement) => image.complete
+            ? Promise.resolve()
+            : new Promise<void>((resolve) => {
+                image.addEventListener("load", () => resolve(), { once: true });
+                image.addEventListener("error", () => resolve(), { once: true });
+              });
+          const workspaceFallbacks: HTMLImageElement[] = [];
+
+          document.querySelectorAll<HTMLImageElement>('.handout-page-title-logo img')
+            .forEach((image) => {
+              if (image.naturalWidth > 0) return;
+              const tile = image.closest('.handout-page-title-logo');
+              if (tile?.getAttribute('data-handout-logo-kind') !== 'workspace') {
+                removeLogoTile(image);
+                return;
+              }
+              image.alt = "Handout";
+              image.src = "/handout-logo.svg";
+              workspaceFallbacks.push(image);
+            });
+
+          if (workspaceFallbacks.length) {
+            await Promise.race([
+              Promise.all(workspaceFallbacks.map(waitForImage)),
+              new Promise((resolve) => window.setTimeout(resolve, timeoutMs)),
+            ]);
+            workspaceFallbacks.forEach((image) => {
+              if (image.naturalWidth === 0) removeLogoTile(image);
+            });
+          }
           window.scrollTo(0, 0);
         }, ASSET_SETTLE_TIMEOUT_MS);
 

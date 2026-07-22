@@ -36,6 +36,43 @@ describe("public site screenshots", () => {
     }
   }, 20_000);
 
+  it("loads the Handout fallback before capturing a failed workspace logo", async () => {
+    const requestedPaths: string[] = [];
+    const renderer = createPlaywrightPublicSiteScreenshotRenderer();
+    const server = createServer((request, response) => {
+      requestedPaths.push(request.url ?? "");
+      if (request.url === "/missing-workspace-logo.jpg") {
+        response.statusCode = 404;
+        response.end();
+        return;
+      }
+      if (request.url === "/handout-logo.svg") {
+        response.setHeader("content-type", "image/svg+xml");
+        response.end('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><path d="M0 0h10v10H0z"/></svg>');
+        return;
+      }
+      response.end("ok");
+    });
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const address = server.address();
+    const origin = typeof address === "object" && address
+      ? `http://127.0.0.1:${address.port}`
+      : "http://127.0.0.1";
+
+    try {
+      await renderer.render({
+        html: '<!doctype html><html><head></head><body><main class="handout-site"><span class="handout-page-title-logo" data-handout-logo-kind="workspace"><img src="/missing-workspace-logo.jpg" alt="Acme logo"></span></main></body></html>',
+        origin,
+      });
+
+      expect(requestedPaths).toContain("/missing-workspace-logo.jpg");
+      expect(requestedPaths).toContain("/handout-logo.svg");
+    } finally {
+      await renderer.close?.();
+      await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+    }
+  }, 20_000);
+
   it("renders canonical personalized HTML and caches immutable recipient revisions", async () => {
     const render = vi.fn(async (_input: PublicSiteScreenshotRenderInput) => Buffer.from("jpg"));
     const renderer: PublicSiteScreenshotRenderer = { render };
