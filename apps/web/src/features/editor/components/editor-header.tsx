@@ -4,8 +4,6 @@ import type { WorkspacePlan } from "@handout/contracts"
 import type { SiteContent, SiteVariableDefinition } from "@handout/site-document"
 import {
   IconAlertTriangle,
-  IconArrowBackUp,
-  IconArrowForwardUp,
   IconCards,
   IconChevronLeft,
   IconCircleCheck,
@@ -15,6 +13,7 @@ import {
   IconMoon,
   IconPencil,
   IconRocket,
+  IconSettings,
   IconShare3,
   IconSun,
   IconUpload,
@@ -34,7 +33,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Spinner } from "@/components/ui/spinner"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Tooltip,
   TooltipContent,
@@ -54,22 +52,18 @@ export type EditorPublishStatus = "published" | "unpublished" | "unpublished-cha
 
 const publishStatusConfig = {
   published: {
-    badgeLabel: "Published",
     dotClassName: "bg-green-foreground",
     menuLabel: "Published",
   },
   unpublished: {
-    badgeLabel: "Unpublished",
     dotClassName: "bg-muted-foreground",
     menuLabel: "Not yet published",
   },
   "unpublished-changes": {
-    badgeLabel: "Unpublished changes",
     dotClassName: "bg-orange-foreground",
     menuLabel: "Unpublished Changes",
   },
 } satisfies Record<EditorPublishStatus, {
-  badgeLabel: string
   dotClassName: string
   menuLabel: string
 }>
@@ -83,8 +77,6 @@ const SequenceEmbedDialog = lazy(() => loadSequenceEmbedDialog().then((module) =
 const SEQUENCE_EMBED_ENABLED = false
 
 type EditorHeaderProps = {
-  canRedo: boolean
-  canUndo: boolean
   canManageTracking: boolean
   collaborators: EditorCollaborator[]
   content: SiteContent
@@ -99,10 +91,8 @@ type EditorHeaderProps = {
   onEditVariable: (variableId: string, input: Pick<SiteVariableDefinition, "defaultValue" | "description" | "label">) => void
   onModeChange: (mode: EditorMode) => void
   onPublish: () => Promise<void>
-  onRedo: () => void
   onShare: () => void
   onToggleEditorTheme: () => void
-  onUndo: () => void
   plan: WorkspacePlan
   publishStatus: EditorPublishStatus
   publicId: string
@@ -117,8 +107,6 @@ type EditorHeaderProps = {
 }
 
 export function EditorHeader({
-  canRedo,
-  canUndo,
   canManageTracking,
   collaborators,
   content,
@@ -133,10 +121,8 @@ export function EditorHeader({
   onEditVariable,
   onModeChange,
   onPublish,
-  onRedo,
   onShare,
   onToggleEditorTheme,
-  onUndo,
   plan,
   publishStatus,
   publicId,
@@ -152,99 +138,95 @@ export function EditorHeader({
   return (
     <TooltipProvider>
       <header className="sticky top-0 z-20 flex h-[46px] shrink-0 items-center border-b border-border bg-background text-foreground">
-        <div className="grid h-[30px] w-full min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-2 px-2.5 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
-          <div className="flex min-w-0 items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon-compact"
-              className="shrink-0 hover:text-accent-foreground"
-              asChild
-              aria-label="Back to sites"
-            >
-              <Link to="/sites">
-                <IconChevronLeft />
-              </Link>
-            </Button>
-            <div className="flex min-w-0 items-center gap-1.5">
-              <h1 className="min-w-0 truncate text-sm leading-5 font-medium tracking-normal text-foreground/80">
+        <div className="flex h-[30px] w-full min-w-0 items-center gap-2 pl-2.5 pr-3">
+          <Button
+            variant="ghost"
+            size="icon-compact"
+            className="shrink-0 shadow-xs hover:text-accent-foreground"
+            asChild
+            aria-label="Back to sites"
+          >
+            <Link to="/sites">
+              <IconChevronLeft />
+            </Link>
+          </Button>
+          <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
+            <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
+              <h1 className="min-w-0 flex-1 truncate text-sm leading-5 font-medium tracking-normal text-foreground">
                 {siteName}
               </h1>
-              <EditorPublishStatusBadge status={publishStatus} />
               <EditorSaveStatusBadge status={saveStatus} />
             </div>
-          </div>
-
-          <div className="hidden min-w-0 items-center justify-center lg:flex">
-            <EditorModeTabs mode={mode} onModeChange={onModeChange} />
-          </div>
-
-          <div className="flex min-w-0 items-center justify-end gap-1 sm:gap-1.5">
             <EditorCollaborators collaborators={collaborators} />
-            <EditorModeToggle mode={mode} onModeChange={onModeChange} />
-            <EditorHistoryControls
-              canUndo={canUndo}
-              canRedo={canRedo}
-              onUndo={onUndo}
-              onRedo={onRedo}
-            />
-            <Button
-              variant="ghost"
-              size="icon-compact"
-              className="hidden text-tertiary-foreground hover:text-accent-foreground min-[480px]:inline-flex"
-              aria-label={`Switch editor to ${editorTheme === "dark" ? "light" : "dark"} mode`}
-              onClick={onToggleEditorTheme}
-            >
-              {editorTheme === "dark" ? <IconSun /> : <IconMoon />}
-            </Button>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button className="hidden md:inline-flex" variant="outline" size="compact" onClick={onShare}>
-                  <IconShare3 data-icon="inline-start" />
-                  Share
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Share and edit recipients</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  aria-label="Share and edit recipients"
-                  className="md:hidden"
-                  variant="outline"
-                  size="icon-compact"
-                  onClick={onShare}
-                >
-                  <IconShare3 />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Share and edit recipients</TooltipContent>
-            </Tooltip>
-            <EditorPublishMenu
-                  isPublishing={isPublishing}
-                  lastPublishedAt={lastPublishedAt}
-                  liveSiteDisplayUrl={liveSiteDisplayUrl}
-                  liveSiteUrl={liveSiteUrl}
-                  onPublish={onPublish}
-                  onShare={onShare}
-                  publishStatus={publishStatus}
-                  publicId={publicId}
-                  recipientCount={recipientCount}
-                  variables={variables}
-            />
-            <EditorSiteSettingsMenu
-                  canManageTracking={canManageTracking}
-                  content={content}
-                  onChange={onContentChange}
-                  onCreateVariable={onCreateVariable}
-                  onDeleteVariable={onDeleteVariable}
-                  onEditVariable={onEditVariable}
-                  plan={plan}
-                  siteId={siteId}
-                  siteName={siteName}
-                  usageCounts={usageCounts}
-                  variables={variables}
-                  workspaceId={workspaceId}
-            />
+          </div>
+
+          <div className="flex min-w-max flex-1 items-center justify-end gap-2">
+            <div className="flex shrink-0 items-center gap-1.5">
+              <EditorModeToggle mode={mode} onModeChange={onModeChange} />
+              <Button
+                variant="ghost"
+                size="icon-compact"
+                className="text-tertiary-foreground shadow-xs hover:text-accent-foreground"
+                aria-label={`Switch editor to ${editorTheme === "dark" ? "light" : "dark"} mode`}
+                onClick={onToggleEditorTheme}
+              >
+                {editorTheme === "dark" ? <IconSun /> : <IconMoon />}
+              </Button>
+            </div>
+            <div className="flex shrink-0 items-center gap-1.5">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    aria-label="Send and personalize"
+                    className="border-border max-[639px]:size-[30px] max-[639px]:px-0 dark:border-border"
+                    variant="outline"
+                    size="compact"
+                    onClick={onShare}
+                  >
+                    <IconShare3 className="hidden max-[639px]:block" />
+                    <span className="max-[639px]:hidden">Send</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Send and personalize</TooltipContent>
+              </Tooltip>
+              <EditorPublishMenu
+                isPublishing={isPublishing}
+                lastPublishedAt={lastPublishedAt}
+                liveSiteDisplayUrl={liveSiteDisplayUrl}
+                liveSiteUrl={liveSiteUrl}
+                onPublish={onPublish}
+                onShare={onShare}
+                publishStatus={publishStatus}
+                publicId={publicId}
+                recipientCount={recipientCount}
+                variables={variables}
+              />
+              <EditorSiteSettingsMenu
+                canManageTracking={canManageTracking}
+                content={content}
+                onChange={onContentChange}
+                onCreateVariable={onCreateVariable}
+                onDeleteVariable={onDeleteVariable}
+                onEditVariable={onEditVariable}
+                plan={plan}
+                siteId={siteId}
+                siteName={siteName}
+                trigger={
+                  <Button
+                    aria-label="Site settings"
+                    className="border-border dark:border-border"
+                    size="icon-compact"
+                    title="Site settings"
+                    variant="outline"
+                  >
+                    <IconSettings />
+                  </Button>
+                }
+                usageCounts={usageCounts}
+                variables={variables}
+                workspaceId={workspaceId}
+              />
+            </div>
           </div>
         </div>
       </header>
@@ -284,18 +266,21 @@ function EditorCollaborators({ collaborators }: { collaborators: EditorCollabora
     return null
   }
 
-  const visible = collaborators.slice(0, 3)
+  const visible = collaborators.slice(0, 2)
   const hiddenCount = collaborators.length - visible.length
 
   return (
-    <AvatarGroup aria-label={`${collaborators.length} other editor${collaborators.length === 1 ? "" : "s"}`}>
+    <AvatarGroup
+      aria-label={`${collaborators.length} other editor${collaborators.length === 1 ? "" : "s"}`}
+      className="-space-x-1 shrink-0 *:data-[slot=avatar]:ring-1"
+    >
       {visible.map((collaborator) => (
         <Tooltip key={collaborator.id}>
           <TooltipTrigger asChild>
             <RecipientAvatar
               recipient={{ name: collaborator.name }}
               shape="circle"
-              size="md"
+              size="sm"
             />
           </TooltipTrigger>
           <TooltipContent>{collaborator.name} is editing</TooltipContent>
@@ -482,24 +467,6 @@ function PublishDetailRow({
   )
 }
 
-function EditorPublishStatusBadge({ status }: { status: EditorPublishStatus }) {
-  const config = publishStatusConfig[status]
-
-  return (
-    <>
-      <span
-        aria-label={config.badgeLabel}
-        className={cn("size-2 shrink-0 rounded-full sm:hidden", config.dotClassName)}
-        role="status"
-      />
-      <Badge variant="outline" className="hidden gap-1 sm:inline-flex">
-        <span aria-hidden="true" className={cn("size-[5px] rounded-full", config.dotClassName)} />
-        {config.badgeLabel}
-      </Badge>
-    </>
-  )
-}
-
 function getLastPublishedLabel(lastPublishedAt: string | null) {
   if (!lastPublishedAt) {
     return "Last published Never"
@@ -537,38 +504,6 @@ function getLastPublishedLabel(lastPublishedAt: string | null) {
   return `Last published ${days}d ago`
 }
 
-function EditorModeTabs({
-  mode,
-  onModeChange,
-}: {
-  mode: EditorMode
-  onModeChange: (mode: EditorMode) => void
-}) {
-  return (
-    <Tabs
-      value={mode}
-      onValueChange={(value) => onModeChange(value as EditorMode)}
-      className="flex-none gap-0"
-      aria-label="Editor mode"
-    >
-      <TabsList className="h-[30px] rounded-full p-0.5">
-        <TabsTrigger
-          value="edit"
-          className="h-[26px] w-[70px] flex-none rounded-full px-2 py-1 text-sm leading-5 font-medium data-[state=active]:shadow-sm"
-        >
-          Edit
-        </TabsTrigger>
-        <TabsTrigger
-          value="preview"
-          className="h-[26px] w-[70px] flex-none rounded-full px-2 py-1 text-sm leading-5 font-medium data-[state=active]:shadow-sm"
-        >
-          Preview
-        </TabsTrigger>
-      </TabsList>
-    </Tabs>
-  )
-}
-
 function EditorModeToggle({
   mode,
   onModeChange,
@@ -582,7 +517,7 @@ function EditorModeToggle({
   return (
     <Button
       aria-label={label}
-      className="lg:hidden"
+      className="shadow-xs"
       size="icon-compact"
       title={label}
       type="button"
@@ -591,62 +526,5 @@ function EditorModeToggle({
     >
       {isPreview ? <IconPencil /> : <IconEye />}
     </Button>
-  )
-}
-
-function EditorHistoryControls({
-  canRedo,
-  canUndo,
-  onRedo,
-  onUndo,
-}: {
-  canRedo: boolean
-  canUndo: boolean
-  onRedo: () => void
-  onUndo: () => void
-}) {
-  return (
-    <div className="hidden items-center gap-0.5 md:flex">
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span className="inline-flex">
-            <Button
-              variant="ghost"
-              size="icon-compact"
-              aria-label="Undo change"
-              disabled={!canUndo}
-              className={cn(
-                canUndo ? "text-tertiary-foreground" : "text-muted-foreground",
-                "hover:text-accent-foreground"
-              )}
-              onClick={onUndo}
-            >
-              <IconArrowBackUp />
-            </Button>
-          </span>
-        </TooltipTrigger>
-        <TooltipContent>Undo change</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span className="inline-flex">
-            <Button
-              variant="ghost"
-              size="icon-compact"
-              aria-label="Redo change"
-              disabled={!canRedo}
-              className={cn(
-                canRedo ? "text-tertiary-foreground" : "text-muted-foreground",
-                "hover:text-accent-foreground"
-              )}
-              onClick={onRedo}
-            >
-              <IconArrowForwardUp />
-            </Button>
-          </span>
-        </TooltipTrigger>
-        <TooltipContent>Redo change</TooltipContent>
-      </Tooltip>
-    </div>
   )
 }
