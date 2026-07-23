@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => {
     build: {
       rollupOptions: {
         output: {
+          chunkFileNames: 'assets/[hash].js',
           manualChunks(id) {
             if (
               id.includes('node_modules/@tiptap') ||
