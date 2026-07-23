@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type SetStateAction } from "react"
 import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query"
 import { useNavigate, useParams } from "@tanstack/react-router"
-import { useEditor, useEditorState, type Editor } from "@tiptap/react"
+import { useEditor, type Editor } from "@tiptap/react"
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model"
 import type { Transaction } from "@tiptap/pm/state"
 import type { ListSitesResponse } from "@handout/contracts"
@@ -377,25 +377,6 @@ function ReadyEditorPage({
     editorProps,
   }, [activePageId, collaboration.isReady, collaboration.document, collaboration.provider])
   const activeEditor = editor && !editor.isDestroyed ? editor : null
-  const editorState = useEditorState({
-    editor: activeEditor,
-    selector: ({ editor: currentEditor }) => ({
-      canRedo: currentEditor && !currentEditor.isDestroyed
-        ? currentEditor.can().redo()
-        : false,
-      canUndo: currentEditor && !currentEditor.isDestroyed
-        ? currentEditor.can().undo()
-        : false,
-    }),
-  })
-
-  const undo = useCallback(() => {
-    editor?.chain().focus().undo().run()
-  }, [editor])
-
-  const redo = useCallback(() => {
-    editor?.chain().focus().redo().run()
-  }, [editor])
 
   useEffect(() => {
     if (!activeEditor || legacyInlineImageMigrationRunRef.current?.editor === activeEditor) {
@@ -1004,8 +985,6 @@ function ReadyEditorPage({
       style={primaryColorStyle}
     >
       <EditorHeader
-        canRedo={editorState?.canRedo ?? false}
-        canUndo={editorState?.canUndo ?? false}
         canManageTracking={activeWorkspace.role === "admin"}
         collaborators={collaboration.collaborators}
         content={siteDraft}
@@ -1032,9 +1011,7 @@ function ReadyEditorPage({
         usageCounts={siteVariableUsageCounts}
         variables={siteSettingsVariables}
         workspaceId={activeWorkspace.id}
-        onRedo={redo}
         onToggleEditorTheme={toggleEditorTheme}
-        onUndo={undo}
       />
       <div className="flex min-h-0 flex-1 flex-col bg-background md:flex-row">
         <div

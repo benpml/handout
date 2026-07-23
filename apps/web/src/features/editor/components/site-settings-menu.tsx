@@ -1,4 +1,4 @@
-import type { SetStateAction } from "react"
+import type { ReactNode, SetStateAction } from "react"
 import type { WorkspacePlan } from "@handout/contracts"
 import type { SiteContent, SiteVariableDefinition } from "@handout/site-document"
 
@@ -19,6 +19,7 @@ export type EditorSiteSettingsMenuProps = {
   usageCounts: Readonly<Record<string, number>>
   variables: SiteVariableDefinition[]
   workspaceId: string
+  trigger?: ReactNode
 }
 
 export function EditorSiteSettingsMenu(props: EditorSiteSettingsMenuProps) {
