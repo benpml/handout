@@ -1552,7 +1552,12 @@ describe("editor architecture", () => {
     expect(headerSource).toContain('pl-2.5 pr-3')
     expect(headerSource).toContain('<EditorModeToggle mode={mode} onModeChange={onModeChange} />')
     expect(headerSource).toContain("IconEye")
-    expect(headerSource).toContain("IconPencil")
+    expect(headerSource).not.toContain("IconPencil")
+    expect(headerSource).toContain('const label = isPreview ? "Stop previewing" : "Preview site"')
+    expect(headerSource).toContain('aria-pressed={isPreview}')
+    expect(headerSource).toContain(
+      'isPreview && "bg-blue-background text-blue-foreground hover:bg-blue-background hover:text-blue-foreground"'
+    )
     expect(headerSource).toContain("IconMoon")
     expect(headerSource).toContain("IconSettings")
     expect(headerSource).toContain(">Send</span>")

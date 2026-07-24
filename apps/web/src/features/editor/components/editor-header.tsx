@@ -11,7 +11,6 @@ import {
   IconCloudOff,
   IconEye,
   IconMoon,
-  IconPencil,
   IconRocket,
   IconSettings,
   IconShare3,
@@ -519,20 +518,24 @@ function EditorModeToggle({
   onModeChange: (mode: EditorMode) => void
 }) {
   const isPreview = mode === "preview"
-  const label = isPreview ? "Edit site" : "Preview site"
+  const label = isPreview ? "Stop previewing" : "Preview site"
 
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
           aria-label={label}
-          className="shadow-none"
+          aria-pressed={isPreview}
+          className={cn(
+            "shadow-none",
+            isPreview && "bg-blue-background text-blue-foreground hover:bg-blue-background hover:text-blue-foreground"
+          )}
           size="icon-compact"
           type="button"
           variant="ghost"
           onClick={() => onModeChange(isPreview ? "edit" : "preview")}
         >
-          {isPreview ? <IconPencil /> : <IconEye />}
+          <IconEye />
         </Button>
       </TooltipTrigger>
       <TooltipContent>{label}</TooltipContent>
