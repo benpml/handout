@@ -1576,9 +1576,11 @@ describe("editor architecture", () => {
     expect(headerSource).toContain('"Editing site"')
     expect(headerSource).toContain("PREVIEW_CLICK_TOOLTIP_DURATION_MS = 1000")
     expect(headerSource).toContain("hoverTooltipSuppressedRef.current = true")
+    expect(headerSource).toContain("setClosingClickTooltipLabel(nextClickTooltipLabel)")
     expect(headerSource).toContain("pointerLeftSinceClickRef.current = true")
     expect(headerSource).toContain("if (!hoverTooltipSuppressedRef.current)")
-    expect(headerSource).toContain("<TooltipContent>{clickTooltipLabel ?? label}</TooltipContent>")
+    expect(headerSource).toContain("?? closingClickTooltipLabel")
+    expect(headerSource).toContain("<TooltipContent>{tooltipContent}</TooltipContent>")
     expect(headerSource).toContain('aria-pressed={isPreview}')
     expect(headerSource).toContain(
       'isPreview && "bg-blue-background text-blue-foreground hover:bg-blue-background hover:text-blue-foreground"'

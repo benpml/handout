@@ -531,31 +531,48 @@ function EditorModeToggle({
   const label = isPreview ? "Stop previewing" : "Preview site"
   const [hoverTooltipOpen, setHoverTooltipOpen] = useState(false)
   const [clickTooltipLabel, setClickTooltipLabel] = useState<string | null>(null)
+  const [closingClickTooltipLabel, setClosingClickTooltipLabel] = useState<string | null>(null)
   const clickTooltipTimeoutRef = useRef<number | null>(null)
+  const clickTooltipExitTimeoutRef = useRef<number | null>(null)
   const hoverTooltipSuppressedRef = useRef(false)
   const pointerLeftSinceClickRef = useRef(false)
   const tooltipOpen = clickTooltipLabel !== null || hoverTooltipOpen
+  const tooltipContent = clickTooltipLabel
+    ?? closingClickTooltipLabel
+    ?? label
 
   useEffect(() => () => {
     if (clickTooltipTimeoutRef.current !== null) {
       window.clearTimeout(clickTooltipTimeoutRef.current)
     }
+    if (clickTooltipExitTimeoutRef.current !== null) {
+      window.clearTimeout(clickTooltipExitTimeoutRef.current)
+    }
   }, [])
 
   const changeMode = () => {
     const nextMode = isPreview ? "edit" : "preview"
+    const nextClickTooltipLabel = nextMode === "preview" ? "Previewing site" : "Editing site"
 
     hoverTooltipSuppressedRef.current = true
     pointerLeftSinceClickRef.current = false
     setHoverTooltipOpen(false)
-    setClickTooltipLabel(nextMode === "preview" ? "Previewing site" : "Editing site")
+    setClickTooltipLabel(nextClickTooltipLabel)
+    setClosingClickTooltipLabel(nextClickTooltipLabel)
     if (clickTooltipTimeoutRef.current !== null) {
       window.clearTimeout(clickTooltipTimeoutRef.current)
+    }
+    if (clickTooltipExitTimeoutRef.current !== null) {
+      window.clearTimeout(clickTooltipExitTimeoutRef.current)
     }
     clickTooltipTimeoutRef.current = window.setTimeout(() => {
       setHoverTooltipOpen(false)
       setClickTooltipLabel(null)
       clickTooltipTimeoutRef.current = null
+      clickTooltipExitTimeoutRef.current = window.setTimeout(() => {
+        setClosingClickTooltipLabel(null)
+        clickTooltipExitTimeoutRef.current = null
+      }, 250)
     }, PREVIEW_CLICK_TOOLTIP_DURATION_MS)
     onModeChange(nextMode)
   }
@@ -581,11 +598,24 @@ function EditorModeToggle({
           type="button"
           variant="ghost"
           onBlur={() => {
-            hoverTooltipSuppressedRef.current = false
-            pointerLeftSinceClickRef.current = false
+            if (clickTooltipLabel === null) {
+              hoverTooltipSuppressedRef.current = false
+              pointerLeftSinceClickRef.current = false
+            }
             setHoverTooltipOpen(false)
           }}
           onClick={changeMode}
+          onFocus={() => {
+            if (hoverTooltipSuppressedRef.current && clickTooltipLabel === null) {
+              hoverTooltipSuppressedRef.current = false
+              pointerLeftSinceClickRef.current = false
+              if (clickTooltipExitTimeoutRef.current !== null) {
+                window.clearTimeout(clickTooltipExitTimeoutRef.current)
+                clickTooltipExitTimeoutRef.current = null
+              }
+              setClosingClickTooltipLabel(null)
+            }
+          }}
           onPointerEnter={() => {
             if (
               hoverTooltipSuppressedRef.current
@@ -594,6 +624,11 @@ function EditorModeToggle({
             ) {
               hoverTooltipSuppressedRef.current = false
               pointerLeftSinceClickRef.current = false
+              if (clickTooltipExitTimeoutRef.current !== null) {
+                window.clearTimeout(clickTooltipExitTimeoutRef.current)
+                clickTooltipExitTimeoutRef.current = null
+              }
+              setClosingClickTooltipLabel(null)
             }
           }}
           onPointerLeave={() => {
@@ -606,7 +641,7 @@ function EditorModeToggle({
           <IconEye />
         </Button>
       </TooltipTrigger>
-      <TooltipContent>{clickTooltipLabel ?? label}</TooltipContent>
+      <TooltipContent>{tooltipContent}</TooltipContent>
     </Tooltip>
   )
 }
