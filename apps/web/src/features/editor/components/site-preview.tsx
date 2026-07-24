@@ -5,9 +5,13 @@ import {
   type SiteContent,
 } from "@handout/site-document"
 
+import { cn } from "@/lib/utils"
+
 type EditorSitePreviewProps = {
   activePageSlug: string | null
   content: SiteContent
+  isReady: boolean
+  onReady: () => void
   siteId: string
   siteName: string
   siteSlug: string
@@ -23,6 +27,8 @@ type EditorSitePreviewProps = {
 export function EditorSitePreview({
   activePageSlug,
   content,
+  isReady,
+  onReady,
   siteId,
   siteName,
   siteSlug,
@@ -46,8 +52,12 @@ export function EditorSitePreview({
 
   return (
     <iframe
-      className="h-full min-h-0 w-full border-0 bg-background"
+      className={cn(
+        "absolute inset-0 h-full min-h-0 w-full border-0 bg-background transition-opacity duration-150 ease-out",
+        isReady ? "opacity-100" : "pointer-events-none opacity-0"
+      )}
       data-editor-site-preview=""
+      onLoad={onReady}
       sandbox={SITE_DOCUMENT_IFRAME_SANDBOX}
       srcDoc={html}
       title={`${siteName} preview`}

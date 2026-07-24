@@ -126,6 +126,21 @@ describe("editor architecture", () => {
     expect(pageSource).not.toContain('editorProps: {\n      attributes:')
   })
 
+  it("keeps the editor visible until the canonical preview iframe is ready", () => {
+    const pageSource = editorModules["./editor-page.tsx"] as string
+    const previewSource = editorModules["./components/site-preview.tsx"] as string
+
+    expect(pageSource).toContain("const [previewReady, setPreviewReady] = useState(false)")
+    expect(pageSource).toContain("setPreviewReady(false)")
+    expect(pageSource).toContain('onModeChange={changeEditorMode}')
+    expect(pageSource).toContain('editorMode === "preview" && previewReady')
+    expect(pageSource).toContain('"pointer-events-none opacity-0"')
+    expect(pageSource).not.toContain('editorMode === "edit" ? "flex" : "hidden"')
+    expect(previewSource).toContain('onLoad={onReady}')
+    expect(previewSource).toContain('isReady ? "opacity-100" : "pointer-events-none opacity-0"')
+    expect(previewSource).toContain("transition-opacity duration-150 ease-out")
+  })
+
   it("keeps icon picker menus inside the viewport", () => {
     const blockViewsSource = editorModules["./tiptap/nodes/block-views.tsx"] as string
     const iconPickerStyles = stylesheetSource.slice(

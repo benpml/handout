@@ -193,6 +193,7 @@ function ReadyEditorPage({
     promise: Promise<void>
   } | null>(null)
   const [editorMode, setEditorMode] = useState<EditorMode>("edit")
+  const [previewReady, setPreviewReady] = useState(false)
   const [documentRevision, setDocumentRevision] = useState(0)
   const sitesQuery = useQuery({
     queryKey: queryKeys.sites(activeWorkspace.id),
@@ -965,6 +966,13 @@ function ReadyEditorPage({
     () => getSiteVariableUsageCounts(previewContent),
     [previewContent],
   )
+  const changeEditorMode = useCallback((nextMode: EditorMode) => {
+    setPreviewReady(false)
+    setEditorMode(nextMode)
+  }, [setEditorMode, setPreviewReady])
+  const markPreviewReady = useCallback(() => {
+    setPreviewReady(true)
+  }, [setPreviewReady])
   const shareVariableDefinitions = useMemo(
     () => getShareVariableDefinitions(activeEditor?.state.doc ?? null, variableDefinitions),
     [activeEditor, documentRevision, variableDefinitions],
@@ -998,7 +1006,7 @@ function ReadyEditorPage({
         onCreateVariable={createSiteVariable}
         onDeleteVariable={deleteSiteVariable}
         onEditVariable={editSiteVariable}
-        onModeChange={setEditorMode}
+        onModeChange={changeEditorMode}
         onPublish={publishCurrentSite}
         onShare={openShareDialog}
         plan={activeWorkspace.plan}
@@ -1013,12 +1021,14 @@ function ReadyEditorPage({
         workspaceId={activeWorkspace.id}
         onToggleEditorTheme={toggleEditorTheme}
       />
-      <div className="flex min-h-0 flex-1 flex-col bg-background md:flex-row">
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-background md:flex-row">
         <div
           aria-hidden={editorMode === "preview" ? true : undefined}
           className={cn(
-            "min-h-0 min-w-0 flex-1 flex-col md:flex-row",
-            editorMode === "edit" ? "flex" : "hidden"
+            "absolute inset-0 flex min-h-0 min-w-0 flex-col transition-opacity duration-150 ease-out md:flex-row",
+            editorMode === "preview" && previewReady
+              ? "pointer-events-none opacity-0"
+              : "opacity-100"
           )}
         >
           <EditorSiteSidebar
@@ -1069,6 +1079,8 @@ function ReadyEditorPage({
             siteName={siteName}
             siteSlug={currentSite?.slug ?? "preview"}
             workspace={activeWorkspace}
+            isReady={previewReady}
+            onReady={markPreviewReady}
           />
         ) : null}
       </div>

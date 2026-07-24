@@ -13,6 +13,8 @@ describe("editor site preview", () => {
       <EditorSitePreview
         activePageSlug="overview"
         content={createDefaultSiteContent("Preview")}
+        isReady={false}
+        onReady={() => undefined}
         siteId="site-preview"
         siteName="Preview"
         siteSlug="preview"
@@ -29,5 +31,30 @@ describe("editor site preview", () => {
     expect(html).toContain('data-editor-site-preview=""')
     expect(html).toContain(`sandbox="${SITE_DOCUMENT_IFRAME_SANDBOX}"`)
     expect(html).toContain("Geist Variable")
+    expect(html).toContain("pointer-events-none opacity-0")
+  })
+
+  it("reveals the already-loaded iframe without remounting its content", () => {
+    const html = renderToStaticMarkup(
+      <EditorSitePreview
+        activePageSlug="overview"
+        content={createDefaultSiteContent("Preview")}
+        isReady
+        onReady={() => undefined}
+        siteId="site-preview"
+        siteName="Preview"
+        siteSlug="preview"
+        workspace={{
+          id: "workspace-preview",
+          logoUrl: null,
+          name: "Preview workspace",
+          slug: "preview-workspace",
+          websiteDomain: null,
+        }}
+      />
+    )
+
+    expect(html).toContain("opacity-100")
+    expect(html).not.toContain("pointer-events-none opacity-0")
   })
 })
